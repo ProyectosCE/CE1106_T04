@@ -646,3 +646,5 @@ _deps
 
 # End of https://www.toptal.com/developers/gitignore/api/cmake
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains+all,visualstudiocode,git,java,intellij,clion,c++,c,maven,conan,gradle,python,opencv
+
+Configuration/Working Data/*
