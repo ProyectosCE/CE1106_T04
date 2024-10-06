@@ -102,14 +102,6 @@ int main(void) {
     connectToServer(sock, serv_addr);
     readServerMessage(sock, buffer);
     processServerMessage(buffer);
-    
-    // Crear JSON para enviar al servidor
-    cJSON *json = cJSON_CreateObject();
-    cJSON_AddStringToObject(json, "command", "print");
-    cJSON_AddStringToObject(json, "message", "Hola desde el cliente");\
-    char *jsonString = cJSON_Print(json);
-    sendJsontoServer(sock, jsonString);
-    cJSON_Delete(json);
 
     close(sock);
     return 0;

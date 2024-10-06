@@ -8,6 +8,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -77,7 +79,7 @@ public class Server {
                 // Agregar el cliente a la lista
                 clients.add(clientChannel);
 
-                sendSetNumberMessageToClient(clientChannel, 42);
+                sendSetNumberMessage(42);
 
                 // Manejar la conexión del cliente en un nuevo hilo
                 executorService.submit(() -> handleClient(clientChannel));
@@ -100,6 +102,7 @@ public class Server {
                 if (bytesRead == -1) {
                     System.out.println("Cliente desconectado " + clientChannel.getRemoteAddress());
                     clientChannel.close();
+                    clients.remove(clientChannel); // Remover el cliente de la lista en caso de error
                     return;
                 }
 
@@ -127,9 +130,16 @@ public class Server {
                 buffer.clear();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error manejando el cliente: " + e.getMessage());
+            clients.remove(clientChannel); // Remover el cliente de la lista en caso de error
+            try {
+                clientChannel.close();
+            } catch (IOException closeException) {
+                closeException.printStackTrace();
+            }
         }
     }
+
 
     /* Method: getCommandFromJson
         Este metodo convierte un JSON en un comando concreto. El metodo analiza el JSON para determinar el tipo de comando y crea una instancia del comando correspondiente.
@@ -168,16 +178,13 @@ public class Server {
         }
     }
 
-    /* Method: sendSetNumberMessageToClient
-        Este metodo envía un mensaje "setNumber" a un cliente recién conectado. El metodo crea un mensaje JSON con el comando "setNumber" y el número especificado y lo envía al cliente.
-    */
-    private static void sendSetNumberMessageToClient(SocketChannel clientChannel, int number) {
+    private static void sendSetNumberMessage(int number) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(Map.of(
                     "command", "setNumber",
                     "number", number
             ));
-            sendMessageToClient(clientChannel, jsonMessage);
+            sendMessageToAllClients(jsonMessage);
         } catch (IOException e) {
             e.printStackTrace();
         }
