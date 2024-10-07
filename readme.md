@@ -1,3 +1,5 @@
+[![Board Status](https://dev.azure.com/Tareas-CE1106/19261266-b380-47c7-9691-c7104b1053da/9410d459-fa3e-49c3-a2c2-1b3fe665f194/_apis/work/boardbadge/158326a9-d45d-4992-8795-0e8053a56803?columnOptions=1)](https://dev.azure.com/Tareas-CE1106/19261266-b380-47c7-9691-c7104b1053da/_boards/board/t/9410d459-fa3e-49c3-a2c2-1b3fe665f194/Microsoft.EpicCategory/)
+
 # Instituto Tecnológico de Costa Rica
 
 ## Tarea 4 - breakOutTec
