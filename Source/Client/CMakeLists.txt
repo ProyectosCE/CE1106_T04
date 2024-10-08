@@ -8,7 +8,9 @@ set(CMAKE_C_STANDARD 23)
 find_package(cJSON)
 
 #Executables here:
-add_executable(Client main.c)
+add_executable(Client main.c
+        connection.h
+        connection.c)
 
 
 #Targets here:
