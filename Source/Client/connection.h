@@ -24,4 +24,6 @@ void processServerMessage();
 
 void sendJsontoServer(const char *json);
 
+void sendClientType(const char *type);
+
 #endif //CLIENT_CONNECTION_H
