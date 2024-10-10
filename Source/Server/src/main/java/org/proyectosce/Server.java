@@ -44,6 +44,9 @@ public class Server {
     private static final ExecutorService executorService = Executors.newCachedThreadPool(); // Pool de hilos
     private static final Set<SocketChannel> clients = ConcurrentHashMap.newKeySet(); // Almacenar clientes
 
+    private static final Set<SocketChannel> players = ConcurrentHashMap.newKeySet(); // Lista para jugadores
+    private static final Set<SocketChannel> spectators = ConcurrentHashMap.newKeySet(); // Lista para espectadores
+
 
     // Constructor privado
     /* Constructor: Server
@@ -101,9 +104,20 @@ public class Server {
                 int bytesRead = clientChannel.read(buffer);
 
                 if (bytesRead == -1) {
-                    System.out.println("Cliente desconectado " + clientChannel.getRemoteAddress());
+                    // Remover el cliente de la lista de jugadores o espectadores
+                    if (players.contains(clientChannel)) {
+                        System.out.println("Jugador desconectado: " + clientChannel.getRemoteAddress());
+                        players.remove(clientChannel);
+                    } else if (spectators.contains(clientChannel)) {
+                        System.out.println("Espectador desconectado: " + clientChannel.getRemoteAddress());
+                        spectators.remove(clientChannel);
+                    }
+
+                    // Cerrar el canal del cliente
                     clientChannel.close();
                     clients.remove(clientChannel); // Remover el cliente de la lista en caso de error
+
+
                     return;
                 }
 
@@ -115,7 +129,7 @@ public class Server {
                 System.out.println("Datos recibidos: " + jsonData);
 
                 // Procesar el comando con el patrón Command
-                Command command = getCommandFromJson(jsonData);
+                Command command = getCommandFromJson(jsonData, clientChannel);
                 if (command != null) {
                     command.execute();
                 } else {
@@ -145,12 +159,21 @@ public class Server {
     /* Method: getCommandFromJson
         Este metodo convierte un JSON en un comando concreto. El metodo analiza el JSON para determinar el tipo de comando y crea una instancia del comando correspondiente.
     */
-    private static Command getCommandFromJson(Map<String, Object> jsonData) {
+    private static Command getCommandFromJson(Map<String, Object> jsonData, SocketChannel clientChannel) throws IOException {
         String commandType = (String) jsonData.get("command");
 
         if ("print".equals(commandType)) {
             String message = (String) jsonData.get("message");
             return new PrintCommand(message);
+        } else if ("connect".equals(commandType)){
+            String role = (String) jsonData.get("role");
+            if ("player".equals(role)) {
+                players.add(clientChannel);
+                return new PrintCommand("Jugador conectado en:" + clientChannel.getRemoteAddress());
+            } else if ("spectator".equals(role)) {
+                spectators.add(clientChannel);
+                return new PrintCommand("Espectador conectado en:" + clientChannel.getRemoteAddress());
+            }
         }
         return null;
     }
@@ -179,6 +202,41 @@ public class Server {
         }
     }
 
+    /* Method: sendMessagetoPlayers
+        Este metodo envía un mensaje JSON a todos los jugadores conectados. El metodo itera sobre la lista de jugadores y envía el mensaje JSON a cada jugador.
+    */
+    private static void sendMessagetoPlayers(String jsonMessage) {
+        for (SocketChannel player : players) {
+            sendMessageToClient(player, jsonMessage);
+            // print
+            try {
+                System.out.println("Mensaje enviado al jugador " + player.getRemoteAddress() + ": " + jsonMessage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /* Method: sendMessagetoSpectators
+        Este metodo envía un mensaje JSON a todos los espectadores conectados. El metodo itera sobre la lista de espectadores y envía el mensaje JSON a cada espectador.
+    */
+    private static void sendMessagetoSpectators(String jsonMessage) {
+        executorService.submit(() -> {
+            for (SocketChannel spectator : spectators) {
+                sendMessageToClient(spectator, jsonMessage);
+                // print
+                try {
+                    System.out.println("Mensaje enviado al espectador " + spectator.getRemoteAddress() + ": " + jsonMessage);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+    }
+
+    /* Method: sendSetNumberMessage
+        Este metodo envía un mensaje "setNumber" a todos los clientes conectados. El metodo crea un mensaje JSON con el comando "setNumber" y el número especificado y lo envía a todos los clientes.
+    */
     private static void sendSetNumberMessage(int number) {
         try {
             String jsonMessage = objectMapper.writeValueAsString(Map.of(

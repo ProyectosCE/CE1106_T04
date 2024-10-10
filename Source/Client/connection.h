@@ -31,6 +31,7 @@ void processServerMessage();
 
 void sendJsontoServer(const char *json);
 
+//types: player, spectator
 void sendClientType(const char *type);
 
 #endif //CLIENT_CONNECTION_H
