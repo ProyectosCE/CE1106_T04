@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 #include "connection.h"
 
 int main(void) {

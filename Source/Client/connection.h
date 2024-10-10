@@ -5,6 +5,13 @@
 #ifndef CLIENT_CONNECTION_H
 #define CLIENT_CONNECTION_H
 
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include "cjson/cJSON.h"
+
 /*
  * Metodos para recibir comandos del servidor
  */
@@ -18,7 +25,7 @@ void start_server();
 
 void connectToServer();
 
-void readServerMessage();
+int readServerMessage();
 
 void processServerMessage();
 

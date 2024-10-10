@@ -2,12 +2,6 @@
 // Created by jimmy on 08/10/24.
 //
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include "cjson/cJSON.h"
 #include "connection.h"
 
 #define SERVER_IP "127.0.0.1"
@@ -44,11 +38,7 @@ void start_server() {
     serv_addr.sin_port = htons(PORT);
 
     connectToServer();
-
-
-    // cambiar despues
     readServerMessage();
-    processServerMessage();
 }
 
 void connectToServer() {
@@ -60,8 +50,8 @@ void connectToServer() {
     // Reintentar hasta que se conecte
     while (1) {
         if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-            printf("Error al conectar al servidor, reintentando en %d segundos...\n", 5);
-            sleep(5);
+            printf("Error al conectar al servidor, reintentando en %d segundos...\n", 1);
+            sleep(1);
         } else {
             printf("Conectado al servidor\n");
             break;
@@ -69,10 +59,12 @@ void connectToServer() {
     }
 }
 
-void readServerMessage() {
+int readServerMessage() {
     int valread = read(sock, buffer, 1024);
     buffer[valread] = '\0';
     //printf("Respuesta del servidor (JSON): %s\n", buffer);
+    processServerMessage();
+    return 0;
 }
 
 void processServerMessage() {
@@ -112,4 +104,15 @@ void processServerMessage() {
 void sendJsontoServer(const char *json) {
     send(sock, json, strlen(json), 0);
     printf("Mensaje enviado al servidor: %s\n", json);
+}
+
+void sendClientType(const char *type){
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddStringToObject(json, "command", "connect");
+    cJSON_AddStringToObject(json, "role", type);
+    char *jsonString = cJSON_Print(json);
+    sendJsontoServer(jsonString);
+
+    free(jsonString);
+    cJSON_Delete(json);
 }
