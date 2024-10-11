@@ -1,7 +1,11 @@
-#include <stdio.h>
+#include "connection.h"
 
 int main(void) {
-    printf("Hello, World!\n");
+    start_server();
+
+    // Pruebas
+    //sendClientType("player");
+
     return 0;
 }
 
