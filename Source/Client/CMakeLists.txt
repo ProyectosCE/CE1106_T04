@@ -10,7 +10,11 @@ find_package(cJSON)
 #Executables here:
 add_executable(Client main.c
         connection.h
-        connection.c)
+        connection.c
+        game.c
+        game.h
+        spectator.c
+        spectator.h)
 
 
 #Targets here:
