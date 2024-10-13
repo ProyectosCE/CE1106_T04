@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 23)
 
 #FIND PACKEGES HERE:
 find_package(cJSON)
+find_package(raylib)
 
 #Executables here:
 add_executable(Client main.c
@@ -18,4 +19,4 @@ add_executable(Client main.c
 
 
 #Targets here:
-target_link_libraries(Client cjson::cjson)
+target_link_libraries(Client cjson::cjson raylib)

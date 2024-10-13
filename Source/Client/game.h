@@ -10,6 +10,7 @@
 static const int screenWidth = 800;
 static const int screenHeight = 450;
 
+static bool gameOver = false;
 
 void InitGame();         // Initialize game
 void UpdateGame();       // Update game (one frame)

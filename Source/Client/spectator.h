@@ -8,6 +8,6 @@
 #include "raylib.h"
 #include "game.h"
 
-void DrawSpectator();
+
 
 #endif //CLIENT_SPECTATOR_H

@@ -20,7 +20,6 @@ void DrawMenu();
 void *serverCommunication(void *arg);
 void *gameLoop(void *arg);
 
-
 int main(void) {
     pthread_t serverThread, gameThread;
 
@@ -72,6 +71,7 @@ void *gameLoop(void *arg) {
     return NULL;
 }
 
+
 void start_game() {
     if (currentScreen == MENU) {
         UpdateMenu();
@@ -79,7 +79,7 @@ void start_game() {
     } else if (currentScreen == GAME) {
         UpdateDrawFrame();
     } else if (currentScreen == SPECTATOR) {
-        DrawSpectator();
+        // TODO: Implementar el loop del espectador
     }
 }
 

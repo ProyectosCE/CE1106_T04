@@ -38,7 +38,6 @@ void start_server() {
     serv_addr.sin_port = htons(PORT);
 
     connectToServer();
-    readServerMessage();
 }
 
 void connectToServer() {
