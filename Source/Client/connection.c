@@ -53,7 +53,7 @@ void connectToServer() {
             sleep(1);
         } else {
             printf("Conectado al servidor\n");
-            break;
+            return;
         }
     }
 }

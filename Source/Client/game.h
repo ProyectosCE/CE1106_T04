@@ -16,7 +16,15 @@ typedef struct Player {
     bool halfRacket;
 } Player;
 
+typedef struct Ball {
+    Vector2 position;
+    Vector2 speed;
+    int radius;
+    bool active;
+} Ball;
+
 #define PLAYER_MAX_LIFE         3
+#define MAX_BALLS              20
 
 static const int screenWidth = 800;
 static const int screenHeight = 450;
@@ -25,6 +33,7 @@ static bool gameOver = false;
 static bool Pause = false;
 
 static Player player = { 0 };
+static Ball balls[MAX_BALLS] = { 0 };
 
 void InitGame();         // Initialize game
 void UpdateGame();       // Update game (one frame)

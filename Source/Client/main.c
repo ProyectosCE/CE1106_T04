@@ -14,7 +14,6 @@ typedef enum {
 GameScreen currentScreen = MENU;
 bool isPlayer = true;
 
-void start_game();
 void UpdateMenu();
 void DrawMenu();
 void *serverCommunication(void *arg);
