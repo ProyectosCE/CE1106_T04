@@ -19,6 +19,20 @@ void InitGame(){
         balls[i].radius = 7;
         balls[i].active = false;
     }
+
+    // Inicializar los ladrillos
+    brickSize = (Vector2){ GetScreenWidth()/BRICKS_PER_LINE, 20 };
+
+    int initialDownPosition = 50;
+
+    for (int i = 0; i < LINES_OF_BRICKS; i++)
+    {
+        for (int j = 0; j < BRICKS_PER_LINE; j++)
+        {
+            brick[i][j].position = (Vector2){ j*brickSize.x + brickSize.x/2, i*brickSize.y + initialDownPosition };
+            brick[i][j].active = true;
+        }
+    }
 }
 
 void UpdateGame(){
@@ -117,7 +131,7 @@ void DrawGame(){
         // Dibujar la vida del jugador
         for (int i = 0; i < player.life; i++) DrawRectangle(20 + 40*i, screenHeight - 30, 35, 10, LIGHTGRAY);
 
-        if (Pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2, screenHeight/2 - 40, 40, GRAY);
+        if (Pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2, screenHeight/2 - 10, 40, GRAY);
 
         // Dibujar la bola en la posición inicial
         DrawCircleV(balls[0].position, balls[0].radius, MAROON);
@@ -130,6 +144,43 @@ void DrawGame(){
         }
 
         float brickSpacing = 5.0f;
+
+        // Dibujar los ladrillos
+        for (int i = 0; i < LINES_OF_BRICKS; i++)
+        {
+            for (int j = 0; j < BRICKS_PER_LINE; j++)
+            {
+                if (brick[i][j].active)
+                {
+                    Color brickColor;
+
+                    if (i < 2) {
+                        brickColor = RED;  // Nivel 4 (líneas 6 y 7)
+                        brick[i][j].color = RED;
+                        brick[i][j].points = 400;
+                    } else if (i < 4) {
+                        brickColor = ORANGE; // Nivel 3 (líneas 4 y 5)
+                        brick[i][j].color = ORANGE;
+                        brick[i][j].points = 300;
+                    } else if (i < 6) {
+                        brickColor = YELLOW; // Nivel 2 (líneas 2 y 3)
+                        brick[i][j].color = YELLOW;
+                        brick[i][j].points = 200;
+                    } else {
+                        brickColor = GREEN;  // Nivel 1 (líneas 0 y 1)
+                        brick[i][j].color = GREEN;
+                        brick[i][j].points = 100;
+                    }
+
+                    // Dibuja el ladrillo con el color correspondiente
+                    DrawRectangle(brick[i][j].position.x - (brickSize.x / 2) + brickSpacing / 2,
+                                  brick[i][j].position.y - (brickSize.y / 2) + brickSpacing / 2,
+                                  brickSize.x - brickSpacing,
+                                  brickSize.y - brickSpacing,
+                                  brickColor);
+                }
+            }
+        }
     } else {
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
     }
@@ -143,4 +194,3 @@ void UpdateDrawFrame(){
     UpdateGame();
     DrawGame();
 }
-
