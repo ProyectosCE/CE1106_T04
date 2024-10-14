@@ -7,10 +7,24 @@
 
 #include <raylib.h>
 
+typedef struct Player {
+    Vector2 position;
+    Vector2 size;
+    int life;
+    int score;
+    bool doubleRacket;
+    bool halfRacket;
+} Player;
+
+#define PLAYER_MAX_LIFE         3
+
 static const int screenWidth = 800;
 static const int screenHeight = 450;
 
 static bool gameOver = false;
+static bool Pause = false;
+
+static Player player = { 0 };
 
 void InitGame();         // Initialize game
 void UpdateGame();       // Update game (one frame)
