@@ -54,7 +54,7 @@ void ComServer_sendMessage(ComServer *server, const char *message) {
     }
 
     // Convertir el mensaje a JSON utilizando JsonProcessor
-    char *jsonMessage = JsonProcessor_toJson(server->jsonProcessor, message);
+    char *jsonMessage = JsonProcessor_createJsonMessage(server->jsonProcessor, message);
 
     // Enviar el mensaje al servidor usando el SocketServer
     SocketServer_send(server->socketServer, jsonMessage);
@@ -78,7 +78,7 @@ char *ComServer_getProcessedMessage(ComServer *server) {
 
     if (bytesReceived > 0) {
         // Procesar el mensaje JSON
-        return JsonProcessor_fromJson(server->jsonProcessor, buffer);
+        return JsonProcessor_processJsonMessage(server->jsonProcessor, buffer);
     }
 
     return NULL;
@@ -94,7 +94,7 @@ void ComServer_processIncomingMessage(ComServer *server, const char *message) {
     }
 
     // Procesar el mensaje JSON recibido
-    char *processedMessage = JsonProcessor_fromJson(server->jsonProcessor, message);
+    char *processedMessage = JsonProcessor_processJsonMessage(server->jsonProcessor, message);
 
     // Mostrar el mensaje procesado (Simular que lo devuelve al main)
     printf("Mensaje recibido del servidor y procesado: %s\n", processedMessage);
