@@ -1,8 +1,11 @@
-//
-// Created by amv22 on 18/10/2024.
-//
+#ifndef SOCKET_SERVER_H
+#define SOCKET_SERVER_H
 
-#ifndef CLIENT_SOCKETSERVER_H
-#define CLIENT_SOCKETSERVER_H
+/*
+ * Funciones para manejar la conexión de socket
+ */
+void startSocketConnection(); // Inicia la conexión del socket con el servidor
+void sendToServer(const char *jsonMessage); // Envía un mensaje JSON al servidor
+int receiveFromServer(char *buffer); // Recibe un mensaje del servidor y lo almacena en el buffer
 
-#endif //CLIENT_SOCKETSERVER_H
+#endif // SOCKET_SERVER_H
