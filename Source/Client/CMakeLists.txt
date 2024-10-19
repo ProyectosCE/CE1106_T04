@@ -10,12 +10,16 @@ find_package(raylib)
 
 #Executables here:
 add_executable(Client main.c
-        connection.h
-        connection.c
         game.c
         game.h
         spectator.c
-        spectator.h)
+        spectator.h
+        comunicaciones/comServer.c
+        comunicaciones/comServer.h
+        comunicaciones/socketServer.c
+        comunicaciones/socketServer.h
+        comunicaciones/jsonProcessor.c
+        comunicaciones/jsonProcessor.h)
 
 
 #Targets here:
