@@ -1,16 +1,24 @@
 #ifndef COM_SERVER_H
 #define COM_SERVER_H
 
-// Inicia el servidor de comunicación
-void startComServer();
+#include "socketServer.h"
+#include "jsonProcessor.h"
 
-// Enviar mensajes desde main a JsonProcessor y luego a SocketServer
-void sendMessageToServer(const char *message);
+typedef struct {
+    // Estructura interna para manejar los datos de comunicación
+    int isRunning;  // Para saber si el servidor está corriendo
+    SocketServer *socketServer;  // Puntero a la estructura de SocketServer
+    JsonProcessor *jsonProcessor;  // Puntero a la estructura de JsonProcessor
+} ComServer;
 
-// Recibir mensajes ya procesados desde el servidor, listos para ser usados en el main
-char *getProcessedMessage();
+// Constructor y Destructor
+ComServer *ComServer_create();
+void ComServer_destroy(ComServer *server);
 
-// Bucle que maneja la escucha de mensajes entrantes del servidor
-_Noreturn void *messageListeningLoop(void *arg);
+// Métodos de la clase
+void ComServer_start(ComServer *server);
+void ComServer_sendMessage(ComServer *server, const char *message);
+char *ComServer_getProcessedMessage(ComServer *server);
+void ComServer_processIncomingMessage(ComServer *server, const char *message);
 
 #endif // COM_SERVER_H

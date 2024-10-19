@@ -1,77 +1,104 @@
-#include "comServer.h"
-#include "socketServer.h"
-#include "jsonProcessor.h"
+#include "ComServer.h"
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
-#include <unistd.h>
-
-char *lastProcessedMessage = NULL;  // Variable para almacenar el último mensaje procesado
 
 /*
- * Inicia el servidor de comunicaciones
+ * Constructor: Inicializa la estructura ComServer
  */
-void startComServer() {
-    startSocketConnection();  // Iniciar la conexión de socket
+ComServer *ComServer_create() {
+    ComServer *server = (ComServer *)malloc(sizeof(ComServer));
+    if (server == NULL) {
+        printf("Error al asignar memoria para ComServer\n");
+        return NULL;
+    }
+
+    // Inicializar valores
+    server->isRunning = 0;
+    server->socketServer = SocketServer_create();  // Inicializa el socket server
+    server->jsonProcessor = JsonProcessor_create();  // Inicializa el procesador de JSON
+
+    return server;
 }
 
 /*
- * Recibe un mensaje desde main, lo procesa y lo envía al servidor usando SocketServer
+ * Destructor: Libera los recursos de ComServer
  */
-void sendMessageToServer(const char *message) {
-    // Convertir mensaje de main a JSON
-    char *jsonMessage = processToJson(message);
+void ComServer_destroy(ComServer *server) {
+    if (server != NULL) {
+        SocketServer_destroy(server->socketServer);  // Libera recursos de SocketServer
+        JsonProcessor_destroy(server->jsonProcessor);  // Libera recursos de JsonProcessor
+        free(server);
+    }
+}
 
-    // Enviar el mensaje JSON al servidor usando SocketServer
-    sendToServer(jsonMessage);
+/*
+ * Método para iniciar la conexión de comunicación
+ */
+void ComServer_start(ComServer *server) {
+    if (server == NULL) {
+        printf("Servidor no inicializado.\n");
+        return;
+    }
+    server->isRunning = 1;
+    SocketServer_start(server->socketServer);  // Inicia la conexión de socket
+}
+
+/*
+ * Método para enviar mensajes al servidor
+ */
+void ComServer_sendMessage(ComServer *server, const char *message) {
+    if (server == NULL) {
+        printf("Servidor no inicializado.\n");
+        return;
+    }
+
+    // Convertir el mensaje a JSON utilizando JsonProcessor
+    char *jsonMessage = JsonProcessor_toJson(server->jsonProcessor, message);
+
+    // Enviar el mensaje al servidor usando el SocketServer
+    SocketServer_send(server->socketServer, jsonMessage);
 
     // Liberar memoria
     free(jsonMessage);
 }
-/*
- * Procesar mensajes entrantes desde el servidor
- */
-void processIncomingMessage(const char *message) {
-    // Procesar el JSON recibido
-    char *processedMessage = processFromJson(message);
 
-    // Si ya había un mensaje procesado previo, liberarlo
-    if (lastProcessedMessage != NULL) {
-        free(lastProcessedMessage);
+/*
+ * Método para recibir mensajes procesados desde el servidor
+ */
+char *ComServer_getProcessedMessage(ComServer *server) {
+    if (server == NULL) {
+        printf("Servidor no inicializado.\n");
+        return NULL;
     }
 
-    // Almacenar el nuevo mensaje procesado
-    lastProcessedMessage = strdup(processedMessage);
+    // Recibir mensaje del servidor
+    char buffer[1024];
+    int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
+
+    if (bytesReceived > 0) {
+        // Procesar el mensaje JSON
+        return JsonProcessor_fromJson(server->jsonProcessor, buffer);
+    }
+
+    return NULL;
+}
+
+/*
+ * Método para procesar mensajes entrantes desde el servidor
+ */
+void ComServer_processIncomingMessage(ComServer *server, const char *message) {
+    if (server == NULL) {
+        printf("Servidor no inicializado.\n");
+        return;
+    }
+
+    // Procesar el mensaje JSON recibido
+    char *processedMessage = JsonProcessor_fromJson(server->jsonProcessor, message);
+
+    // Mostrar el mensaje procesado (Simular que lo devuelve al main)
+    printf("Mensaje recibido del servidor y procesado: %s\n", processedMessage);
 
     // Liberar memoria
     free(processedMessage);
-}
-
-/*
- * Obtener el último mensaje procesado para el main
- */
-char *getProcessedMessage() {
-    // Retornar una copia del último mensaje procesado
-    if (lastProcessedMessage != NULL) {
-        return strdup(lastProcessedMessage);  // Retornar una copia para que main lo maneje
-    }
-    return NULL;  // No hay mensaje disponible
-}
-
-/*
- * Bucle que maneja la escucha de mensajes entrantes del servidor
- */
-_Noreturn void *messageListeningLoop(void *arg) {
-    char buffer[1024];
-    // Bucle infinito para recibir mensajes del servidor
-    while (1) {
-        int bytesReceived = receiveFromServer(buffer);  // Recibir mensaje del servidor
-        if (bytesReceived > 0) {
-            // Procesar el mensaje recibido
-            processIncomingMessage(buffer);
-        } else {
-            printf("Error al recibir el mensaje del servidor\n");
-        }
-        sleep(2);  // Pausa antes de la próxima iteración
-    }
 }
