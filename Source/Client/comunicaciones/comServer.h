@@ -1,8 +1,11 @@
-//
-// Created by amv22 on 18/10/2024.
-//
+#ifndef COM_SERVER_H
+#define COM_SERVER_H
 
-#ifndef CLIENT_COMSERVER_H
-#define CLIENT_COMSERVER_H
+/*
+ * Funciones para manejar la comunicación entre main, SocketServer y JsonProcessor.
+ */
+void startComServer(); // Inicia el servidor de comunicación
+void sendMessageToServer(const char *message); // Enviar mensajes desde main a JsonProcessor y luego a SocketServer
+void processIncomingMessage(const char *message); // Procesar mensajes entrantes desde SocketServer y devolverlos a main
 
-#endif //CLIENT_COMSERVER_H
+#endif // COM_SERVER_H
