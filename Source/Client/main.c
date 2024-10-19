@@ -1,17 +1,18 @@
 #include "comunicaciones/comServer.h"
-#include "comunicaciones/socketServer.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-
-void *communicationLoop(void *arg);
+#include <malloc.h>
 
 int main() {
     pthread_t communicationThread;
 
-    // Crear hilo para manejar las comunicaciones con el servidor
-    if (pthread_create(&communicationThread, NULL, communicationLoop, NULL) != 0) {
+    // Iniciar el servidor de comunicaciones (establecer conexión de socket)
+    startComServer();  // Llama a startComServer() para iniciar la conexión de socket
+
+    // Crear el hilo para manejar las comunicaciones con el servidor
+    if (pthread_create(&communicationThread, NULL, messageListeningLoop, NULL) != 0) {
         printf("Error al crear el hilo de comunicación\n");
         return 1;
     }
@@ -22,34 +23,23 @@ int main() {
         printf("Ingrese un mensaje para enviar al servidor: ");
         fgets(message, 256, stdin);
 
-        // Remover salto de línea
+        // Remover el salto de línea (newline) del mensaje de entrada
         message[strcspn(message, "\n")] = '\0';
 
+        // Enviar el mensaje al servidor
         sendMessageToServer(message);
 
-        sleep(2);
+        // Recibir mensajes procesados desde comServer
+        char *response = getProcessedMessage();
+        if (response != NULL) {
+            printf("Respuesta procesada del servidor: %s\n", response);
+            free(response);  // Liberar memoria de la respuesta procesada
+        }
+
+        sleep(2);  // Pausa de 2 segundos antes de enviar el siguiente mensaje
     }
 
     pthread_join(communicationThread, NULL);
 
     return 0;
-}
-
-void *communicationLoop(void *arg) {
-    startComServer();
-
-    char buffer[1024];
-
-    // Loop para recibir mensajes del servidor
-    while (1) {
-        int bytesReceived = receiveFromServer(buffer);
-        if (bytesReceived > 0) {
-            processIncomingMessage(buffer);
-        } else {
-            printf("Error al recibir el mensaje del servidor\n");
-        }
-        sleep(2);
-    }
-
-    return NULL;
 }

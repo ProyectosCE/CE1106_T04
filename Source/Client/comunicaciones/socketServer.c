@@ -45,10 +45,33 @@ void sendToServer(const char *jsonMessage) {
 }
 
 /*
- * Recibir un mensaje del servidor
+ * Recibir un mensaje del servidor. Se maneja la lectura iterativa
+ * para asegurarse de que el mensaje completo es recibido.
  */
 int receiveFromServer(char *buffer) {
-    int valread = read(sock, buffer, 1024);
-    buffer[valread] = '\0';
-    return valread;
+    int totalBytesRead = 0;
+    int bytesRead = 0;
+
+    // Asegurar que el buffer esté vacío
+    memset(buffer, 0, 1024);
+
+    // Leer desde el socket mientras haya datos
+    while ((bytesRead = read(sock, buffer + totalBytesRead, 1024 - totalBytesRead)) > 0) {
+        totalBytesRead += bytesRead;
+
+        // Si ya se ha leído todo el mensaje
+        if (totalBytesRead >= 1024 || buffer[totalBytesRead - 1] == '\0') {
+            break;
+        }
+    }
+
+    if (totalBytesRead == 0) {
+        printf("Conexión cerrada por el servidor\n");
+        return -1;  // Error al recibir mensaje
+    } else if (bytesRead < 0) {
+        printf("Error al recibir el mensaje del servidor\n");
+        return -1;  // Error en la lectura
+    }
+
+    return totalBytesRead;
 }

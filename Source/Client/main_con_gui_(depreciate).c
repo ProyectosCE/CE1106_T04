@@ -1,4 +1,4 @@
-#include <stdio.h>
+/* #include <stdio.h>
 #include <unistd.h>
 #include "connection.h"
 #include "game.h"
@@ -111,3 +111,4 @@ void DrawMenu() {
 
     EndDrawing();
 }
+*/

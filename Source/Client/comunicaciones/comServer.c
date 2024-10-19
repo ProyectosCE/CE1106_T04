@@ -2,11 +2,11 @@
 #include "socketServer.h"
 #include "jsonProcessor.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
 #include <unistd.h>
 
-static char buffer[1024];  // Buffer para recibir mensajes
+char *lastProcessedMessage = NULL;  // Variable para almacenar el último mensaje procesado
 
 /*
  * Inicia el servidor de comunicaciones
@@ -28,7 +28,6 @@ void sendMessageToServer(const char *message) {
     // Liberar memoria
     free(jsonMessage);
 }
-
 /*
  * Procesar mensajes entrantes desde el servidor
  */
@@ -36,34 +35,43 @@ void processIncomingMessage(const char *message) {
     // Procesar el JSON recibido
     char *processedMessage = processFromJson(message);
 
-    // Guardar el mensaje procesado para que el main lo use
-    printf("Mensaje recibido del servidor y procesado: %s\n", processedMessage);
+    // Si ya había un mensaje procesado previo, liberarlo
+    if (lastProcessedMessage != NULL) {
+        free(lastProcessedMessage);
+    }
+
+    // Almacenar el nuevo mensaje procesado
+    lastProcessedMessage = strdup(processedMessage);
 
     // Liberar memoria
     free(processedMessage);
 }
 
+/*
+ * Obtener el último mensaje procesado para el main
+ */
+char *getProcessedMessage() {
+    // Retornar una copia del último mensaje procesado
+    if (lastProcessedMessage != NULL) {
+        return strdup(lastProcessedMessage);  // Retornar una copia para que main lo maneje
+    }
+    return NULL;  // No hay mensaje disponible
+}
 
 /*
- * Espera y procesa los mensajes entrantes desde el servidor
+ * Bucle que maneja la escucha de mensajes entrantes del servidor
  */
-void *messageListeningLoop(void *arg) {
-    // Loop para recibir mensajes del servidor
+_Noreturn void *messageListeningLoop(void *arg) {
+    char buffer[1024];
+    // Bucle infinito para recibir mensajes del servidor
     while (1) {
-        int bytesReceived = receiveFromServer(buffer);
+        int bytesReceived = receiveFromServer(buffer);  // Recibir mensaje del servidor
         if (bytesReceived > 0) {
+            // Procesar el mensaje recibido
             processIncomingMessage(buffer);
         } else {
             printf("Error al recibir el mensaje del servidor\n");
         }
-        sleep(2);
+        sleep(2);  // Pausa antes de la próxima iteración
     }
-    return NULL;
-}
-
-/*
- * Recibe un mensaje ya procesado desde el servidor
- */
-char *getProcessedMessage() {
-    return strdup(buffer);  // Retorna una copia del último mensaje procesado
 }
