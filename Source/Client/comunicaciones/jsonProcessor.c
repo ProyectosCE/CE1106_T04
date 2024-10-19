@@ -1,16 +1,37 @@
 #include "jsonProcessor.h"
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
-#include "cjson/cJSON.h"
+#include <stdio.h>
 
-// Función para convertir un mensaje de cadena a JSON
-char *processToJson(const char *message) {
-    if (message == NULL || strlen(message) == 0) {
-        printf("Error: El mensaje está vacío o es nulo\n");
+/*
+ * Constructor: Inicializa el procesador JSON
+ */
+JsonProcessor *JsonProcessor_create() {
+    JsonProcessor *processor = (JsonProcessor *)malloc(sizeof(JsonProcessor));
+    if (processor == NULL) {
+        printf("Error al asignar memoria para JsonProcessor\n");
         return NULL;
     }
 
+    // Inicializar cualquier otro campo si es necesario
+
+    return processor;
+}
+
+/*
+ * Destructor: Libera los recursos de JsonProcessor
+ */
+void JsonProcessor_destroy(JsonProcessor *processor) {
+    if (processor != NULL) {
+        // Liberar cualquier recurso adicional si es necesario
+        free(processor);
+    }
+}
+
+/*
+ * Método para crear un mensaje JSON a partir de una cadena de texto
+ */
+char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *message) {
     // Crear un objeto JSON
     cJSON *json = cJSON_CreateObject();
     if (json == NULL) {
@@ -18,49 +39,50 @@ char *processToJson(const char *message) {
         return NULL;
     }
 
-    // Agregar el mensaje como parte del JSON
+    // Añadir el mensaje al objeto JSON
     cJSON_AddStringToObject(json, "message", message);
 
-    // Convertir el objeto JSON a una cadena
-    char *jsonString = cJSON_Print(json);
+    // Convertir el objeto JSON a una cadena de texto
+    char *jsonString = cJSON_PrintUnformatted(json);
     if (jsonString == NULL) {
-        printf("Error al crear el mensaje JSON\n");
-        cJSON_Delete(json);
+        printf("Error al convertir el objeto JSON a cadena\n");
+        cJSON_Delete(json); // Liberar el objeto JSON en caso de error
         return NULL;
     }
 
-    // Limpiar el objeto JSON ya que solo necesitamos la cadena resultante
+    // Liberar el objeto JSON ya que no lo necesitamos más
     cJSON_Delete(json);
 
     return jsonString;
 }
 
-// Función para procesar un mensaje JSON entrante
-char *processFromJson(const char *jsonMessage) {
-    if (jsonMessage == NULL || strlen(jsonMessage) == 0) {
-        printf("Error: El mensaje JSON recibido está vacío o es nulo\n");
-        return NULL;
-    }
-
-    // Parsear el mensaje JSON
+/*
+ * Método para procesar un mensaje JSON recibido
+ * Este método toma una cadena JSON y devuelve un mensaje procesado como cadena de texto.
+ */
+char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jsonMessage) {
+    // Parsear el mensaje JSON recibido
     cJSON *json = cJSON_Parse(jsonMessage);
     if (json == NULL) {
         printf("Error al parsear el JSON recibido\n");
         return NULL;
     }
 
-    // Obtener el valor de "message" del JSON
+    // Extraer el campo "message" del JSON
     cJSON *message = cJSON_GetObjectItemCaseSensitive(json, "message");
     if (!cJSON_IsString(message) || (message->valuestring == NULL)) {
-        printf("Error: No se encontró un campo 'message' válido en el JSON\n");
-        cJSON_Delete(json);
+        printf("Error: El campo 'message' no es válido o está vacío\n");
+        cJSON_Delete(json); // Liberar el objeto JSON
         return NULL;
     }
 
-    // Crear una copia de la cadena de mensaje recibida
+    // Duplicar el valor del mensaje para devolverlo (ya que se debe liberar la memoria original)
     char *processedMessage = strdup(message->valuestring);
+    if (processedMessage == NULL) {
+        printf("Error al duplicar el mensaje procesado\n");
+    }
 
-    // Limpiar el objeto JSON
+    // Liberar el objeto JSON
     cJSON_Delete(json);
 
     return processedMessage;
