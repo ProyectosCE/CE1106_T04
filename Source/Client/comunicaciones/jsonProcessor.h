@@ -1,0 +1,8 @@
+//
+// Created by amv22 on 18/10/2024.
+//
+
+#ifndef CLIENT_JSONPROCESSOR_H
+#define CLIENT_JSONPROCESSOR_H
+
+#endif //CLIENT_JSONPROCESSOR_H
