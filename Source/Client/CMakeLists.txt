@@ -9,7 +9,7 @@ find_package(cJSON)
 find_package(raylib)
 
 #Executables here:
-add_executable(Client main.c
+add_executable(Client "main_con_gui_(depreciate).c"
         game.c
         game.h
         spectator.c
@@ -19,7 +19,8 @@ add_executable(Client main.c
         comunicaciones/socketServer.c
         comunicaciones/socketServer.h
         comunicaciones/jsonProcessor.c
-        comunicaciones/jsonProcessor.h)
+        comunicaciones/jsonProcessor.h
+        main.c)
 
 
 #Targets here:
