@@ -2,33 +2,59 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 12345
 
-int sock = 0;
-struct sockaddr_in serv_addr;
-char buffer[1024] = {0};
+/*
+ * Constructor: Inicializa la estructura SocketServer y prepara la conexión
+ */
+SocketServer *SocketServer_create() {
+    SocketServer *server = (SocketServer *)malloc(sizeof(SocketServer));
+    if (server == NULL) {
+        printf("Error al asignar memoria para SocketServer\n");
+        return NULL;
+    }
+
+    server->sock = 0;
+    memset(&(server->serverAddress), 0, sizeof(server->serverAddress));
+
+    return server;
+}
 
 /*
- * Inicia la conexión de socket con el servidor
+ * Destructor: Libera los recursos de SocketServer
  */
-void startSocketConnection() {
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+void SocketServer_destroy(SocketServer *server) {
+    if (server != NULL) {
+        if (server->sock > 0) {
+            close(server->sock);  // Cerrar el socket si está abierto
+        }
+        free(server);  // Liberar la memoria de la estructura
+    }
+}
+
+/*
+ * Método para iniciar la conexión del socket con el servidor
+ */
+void SocketServer_start(SocketServer *server) {
+    if ((server->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         printf("Error al crear el socket\n");
         return;
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
+    server->serverAddress.sin_family = AF_INET;
+    server->serverAddress.sin_port = htons(PORT);
 
-    if (inet_pton(AF_INET, SERVER_IP, &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, SERVER_IP, &server->serverAddress.sin_addr) <= 0) {
         printf("Dirección IP inválida\n");
         return;
     }
 
-    while (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    // Intentar conectar al servidor
+    while (connect(server->sock, (struct sockaddr *)&(server->serverAddress), sizeof(server->serverAddress)) < 0) {
         printf("Error al conectar al servidor, reintentando en 1 segundo...\n");
         sleep(1);
     }
@@ -37,41 +63,26 @@ void startSocketConnection() {
 }
 
 /*
- * Enviar un mensaje JSON al servidor
+ * Método para enviar un mensaje al servidor
  */
-void sendToServer(const char *jsonMessage) {
-    send(sock, jsonMessage, strlen(jsonMessage), 0);
-    printf("Mensaje enviado al servidor: %s\n", jsonMessage);
+void SocketServer_send(SocketServer *server, const char *message) {
+    if (send(server->sock, message, strlen(message), 0) < 0) {
+        printf("Error al enviar el mensaje\n");
+    } else {
+        printf("Mensaje enviado al servidor: %s\n", message);
+    }
 }
 
 /*
- * Recibir un mensaje del servidor. Se maneja la lectura iterativa
- * para asegurarse de que el mensaje completo es recibido.
+ * Método para recibir un mensaje del servidor
  */
-int receiveFromServer(char *buffer) {
-    int totalBytesRead = 0;
-    int bytesRead = 0;
-
-    // Asegurar que el buffer esté vacío
-    memset(buffer, 0, 1024);
-
-    // Leer desde el socket mientras haya datos
-    while ((bytesRead = read(sock, buffer + totalBytesRead, 1024 - totalBytesRead)) > 0) {
-        totalBytesRead += bytesRead;
-
-        // Si ya se ha leído todo el mensaje
-        if (totalBytesRead >= 1024 || buffer[totalBytesRead - 1] == '\0') {
-            break;
-        }
-    }
-
-    if (totalBytesRead == 0) {
-        printf("Conexión cerrada por el servidor\n");
-        return -1;  // Error al recibir mensaje
-    } else if (bytesRead < 0) {
+int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
+    int valread = read(server->sock, buffer, bufferSize - 1);
+    if (valread > 0) {
+        buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
+        printf("Mensaje recibido del servidor: %s\n", buffer);
+    } else {
         printf("Error al recibir el mensaje del servidor\n");
-        return -1;  // Error en la lectura
     }
-
-    return totalBytesRead;
+    return valread;
 }

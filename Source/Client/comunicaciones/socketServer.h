@@ -1,11 +1,20 @@
 #ifndef SOCKET_SERVER_H
 #define SOCKET_SERVER_H
 
-/*
- * Funciones para manejar la conexión de socket
- */
-void startSocketConnection(); // Inicia la conexión del socket con el servidor
-void sendToServer(const char *jsonMessage); // Envía un mensaje JSON al servidor
-int receiveFromServer(char *buffer); // Recibe un mensaje del servidor y lo almacena en el buffer
+#include <netinet/in.h>
+
+typedef struct {
+    int sock;  // Descriptor del socket
+    struct sockaddr_in serverAddress;  // Dirección del servidor
+} SocketServer;
+
+// Constructor y Destructor
+SocketServer *SocketServer_create();
+void SocketServer_destroy(SocketServer *server);
+
+// Métodos de la clase
+void SocketServer_start(SocketServer *server);
+void SocketServer_send(SocketServer *server, const char *message);
+int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize);
 
 #endif // SOCKET_SERVER_H
