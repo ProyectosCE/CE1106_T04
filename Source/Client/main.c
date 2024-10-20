@@ -3,16 +3,24 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <malloc.h>
+
+// Callback para manejar la recepción de mensajes desde ComServer
+void onMessageReceived(const char *message) {
+    printf("Respuesta procesada del servidor: %s\n", message);
+}
 
 int main() {
     pthread_t communicationThread;
 
-    // Iniciar el servidor de comunicaciones (establecer conexión de socket)
-    startComServer();  // Llama a startComServer() para iniciar la conexión de socket
+    // Crear la instancia del ComServer
+    ComServer *comServer = ComServer_create();
+
+    // Registrar el callback para recibir mensajes procesados desde el servidor
+    ComServer_registerCallback(comServer, onMessageReceived);
+
 
     // Crear el hilo para manejar las comunicaciones con el servidor
-    if (pthread_create(&communicationThread, NULL, messageListeningLoop, NULL) != 0) {
+    if (pthread_create(&communicationThread, NULL, ComServer_messageListeningLoop, (void *)comServer) != 0) {
         printf("Error al crear el hilo de comunicación\n");
         return 1;
     }
@@ -27,19 +35,18 @@ int main() {
         message[strcspn(message, "\n")] = '\0';
 
         // Enviar el mensaje al servidor
-        sendMessageToServer(message);
+        ComServer_sendMessage(comServer, message);
 
-        // Recibir mensajes procesados desde comServer
-        char *response = getProcessedMessage();
-        if (response != NULL) {
-            printf("Respuesta procesada del servidor: %s\n", response);
-            free(response);  // Liberar memoria de la respuesta procesada
-        }
+
 
         sleep(2);  // Pausa de 2 segundos antes de enviar el siguiente mensaje
     }
 
     pthread_join(communicationThread, NULL);
 
+    // Destruir el servidor de comunicaciones al final
+    ComServer_destroy(comServer);
+
     return 0;
 }
+

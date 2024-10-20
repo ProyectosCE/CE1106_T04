@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #define SERVER_IP "127.0.0.1"
 #define PORT 12345
+#define BUFFER_SIZE 1024
 
 /*
  * Constructor: Inicializa la estructura SocketServer y prepara la conexión
@@ -19,6 +22,7 @@ SocketServer *SocketServer_create() {
     }
 
     server->sock = 0;
+    server->isConnected = 0;  // El servidor comienza como desconectado
     memset(&(server->serverAddress), 0, sizeof(server->serverAddress));
 
     return server;
@@ -36,6 +40,7 @@ void SocketServer_destroy(SocketServer *server) {
     }
 }
 
+
 /*
  * Método para iniciar la conexión del socket con el servidor
  */
@@ -48,6 +53,7 @@ void SocketServer_start(SocketServer *server) {
     server->serverAddress.sin_family = AF_INET;
     server->serverAddress.sin_port = htons(PORT);
 
+
     if (inet_pton(AF_INET, SERVER_IP, &server->serverAddress.sin_addr) <= 0) {
         printf("Dirección IP inválida\n");
         return;
@@ -59,13 +65,20 @@ void SocketServer_start(SocketServer *server) {
         sleep(1);
     }
 
-    printf("Conectado al servidor\n");
+    printf("Conectado al servidor en el puerto %d\n", ntohs(server->serverAddress.sin_port));
+    server->isConnected = 1;  // Marcar como conectado
+
 }
 
 /*
  * Método para enviar un mensaje al servidor
  */
 void SocketServer_send(SocketServer *server, const char *message) {
+    if (!server->isConnected) {
+        printf("El servidor no está disponible, no se puede enviar el mensaje.\n");
+        return;  // No enviar el mensaje si el servidor está desconectado
+    }
+
     if (send(server->sock, message, strlen(message), 0) < 0) {
         printf("Error al enviar el mensaje\n");
     } else {
@@ -74,15 +87,44 @@ void SocketServer_send(SocketServer *server, const char *message) {
 }
 
 /*
- * Método para recibir un mensaje del servidor
+ * Método para recibir un mensaje del servidor con manejo de desconexión
  */
 int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
+    if (!server->isConnected) {
+        printf("El servidor no está disponible, no se puede recibir mensajes.\n");
+        return -1;  // No recibir mensajes si el servidor está desconectado
+    }
+
     int valread = read(server->sock, buffer, bufferSize - 1);
-    if (valread > 0) {
+
+    if (valread == 0) {
+        // Si read devuelve 0, significa que el servidor ha cerrado la conexión
+        printf("El servidor se ha desconectado en Receive\n");
+        server->isConnected = 0;  // Marcar como desconectado
+        return 0;  // Indicar que la conexión se ha cerrado
+    } else if (valread < 0) {
+        // Si read devuelve -1, ha ocurrido un error, pero puede no ser una desconexión
+        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+            return -1;  // Indicar que no hay datos sin error crítico
+        } else {
+            server->isConnected = 0;  // Marcar como desconectado en caso de error
+            return -1;  // Indicar error
+        }
+    } else {
+        // Se recibieron datos del servidor correctamente
         buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
         printf("Mensaje recibido del servidor: %s\n", buffer);
-    } else {
-        printf("Error al recibir el mensaje del servidor\n");
+        return valread;  // Retornar la cantidad de bytes leídos
     }
-    return valread;
+}
+
+
+/*
+ * Método para reconectar si el servidor está desconectado
+ */
+void SocketServer_reconnect(SocketServer *server) {
+    if (!server->isConnected) {
+        printf("Intentando reconectar al servidor...\n");
+        SocketServer_start(server);  // Intentar reconectar
+    }
 }

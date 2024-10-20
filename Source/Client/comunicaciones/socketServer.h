@@ -5,6 +5,7 @@
 
 typedef struct {
     int sock;  // Descriptor del socket
+    bool isConnected;  // Bool para conocer si el servidor está activado o no
     struct sockaddr_in serverAddress;  // Dirección del servidor
 } SocketServer;
 
@@ -16,5 +17,7 @@ void SocketServer_destroy(SocketServer *server);
 void SocketServer_start(SocketServer *server);
 void SocketServer_send(SocketServer *server, const char *message);
 int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize);
+void SocketServer_reconnect(SocketServer *server);
+bool SocketServer_isConnected(SocketServer *server);
 
 #endif // SOCKET_SERVER_H

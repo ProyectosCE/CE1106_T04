@@ -37,8 +37,8 @@ def start_test_server():
             print("Error al decodificar el JSON")
 
         # Cerrar la conexión con el cliente
-        client_socket.close()
-        print(f"Conexión cerrada con el cliente {addr}")
+        # client_socket.close()
+        # print(f"Conexión cerrada con el cliente {addr}")
 
 if __name__ == "__main__":
     start_test_server()

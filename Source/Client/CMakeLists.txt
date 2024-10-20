@@ -7,6 +7,7 @@ set(CMAKE_C_STANDARD 23)
 #FIND PACKEGES HERE:
 find_package(cJSON)
 find_package(raylib)
+find_package(log.c)
 
 #Executables here:
 add_executable(Client "main_con_gui_(depreciate).c"
@@ -25,3 +26,5 @@ add_executable(Client "main_con_gui_(depreciate).c"
 
 #Targets here:
 target_link_libraries(Client cjson::cjson raylib)
+target_link_libraries(Client raylib)
+target_link_libraries(Client log.c::log.c)
