@@ -1,5 +1,6 @@
 #include "socketServer.h"
 #include "../configuracion/configuracion.h"
+#include "../logs/saveLog.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -63,7 +64,7 @@ void SocketServer_start(SocketServer *server) {
 
     // Intentar conectar al servidor
     while (connect(server->sock, (struct sockaddr *)&(server->serverAddress), sizeof(server->serverAddress)) < 0) {
-        log_error("Error al conectar al servidor, reintentando en 1 segundo...\n");
+        savelog_error("Error al conectar al servidor, reintentando en 1 segundo...\n");
         sleep(1);
     }
 

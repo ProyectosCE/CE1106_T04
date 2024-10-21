@@ -1,8 +1,8 @@
 #include "configuracion.h"
 #include <stdlib.h>
 #include <string.h>
-#include <log.h>
 #include "ini.h"
+#include "../logs/saveLog.h"
 
 // Función handler para procesar los valores del archivo ini
 static int handler(void* user, const char* section, const char* name, const char* value) {
@@ -33,7 +33,7 @@ const char* leer_ip(Configuracion* config) {
     ConfiguracionData data = {"", 0};  // Inicializamos en vacío
 
     if (ini_parse(config->filename, handler, &data) < 0) {
-        log_error("No se puede abrir el archivo ini: %s\n", config->filename);
+        savelog_error("No se puede abrir el archivo ini: %s\n", config->filename);
         return NULL;
     }
 
@@ -45,7 +45,7 @@ int leer_puerto(Configuracion* config) {
     ConfiguracionData data = {"", 0};  // Inicializamos en vacío
 
     if (ini_parse(config->filename, handler, &data) < 0) {
-        log_error("No se puede abrir el archivo ini: %s\n", config->filename);
+        savelog_error("No se puede abrir el archivo ini: %s\n", config->filename);
         return -1;
     }
 
