@@ -20,6 +20,54 @@
 
 # Comment Types
 # ------------------------------------------------------------------------
+# The syntax reference is after the definitions.
+
+Comment Type: Header
+
+   Display Name: Header
+   Plural Display Name: Headers
+   Simple Identifier: Header
+
+   Scope: Start
+   Flags: Code, Class Hierarchy
+
+   Keywords:
+      Header
+
+
+Comment Type: Implementation
+
+   Display Name: Implementation
+   Plural Display Name: Implementation
+   Simple Identifier: Implementation
+
+   Scope: Start
+   Flags: Code
+
+   Keywords:
+      Implementation
+
+
+Alter Comment Type: Struct
+
+   Display Name: Struct
+   Plural Display Name: Structs
+   Simple Identifier: Struct
+
+   Scope: Normal
+   Flags: Code, Variable Type
+
+   Keywords:
+      Struct
+
+   C/C++ Keywords:
+      Importaciones
+      Structs
+      Variables
+      Functions
+      Flow Control
+      Usage
+
 
 # Each Natural Docs comment has a corresponding type which determine its
 # behavior.  You can define your own here or override the settings of the
