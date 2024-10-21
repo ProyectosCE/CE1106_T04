@@ -5,3 +5,4 @@ requirements:
   - "raylib/4.0.0"
   - "cjson/1.7.18"
   - "log.c/cci.20200620"
+  - "inih/58"

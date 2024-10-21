@@ -1,4 +1,5 @@
 #include "socketServer.h"
+#include "../configuracion/configuracion.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -6,10 +7,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
-
-#define SERVER_IP "127.0.0.1"
-#define PORT 12345
-#define BUFFER_SIZE 1024
 
 /*
  * Constructor: Inicializa la estructura SocketServer y prepara la conexión
@@ -21,9 +18,15 @@ SocketServer *SocketServer_create() {
         return NULL;
     }
 
+    Configuracion *configuracion= crear_configuracion();
+    strcpy(server->ipServidor, leer_ip(configuracion));
+    server->port= leer_puerto(configuracion);
     server->sock = 0;
     server->isConnected = 0;  // El servidor comienza como desconectado
     memset(&(server->serverAddress), 0, sizeof(server->serverAddress));
+
+
+    free(configuracion);
 
     return server;
 }
@@ -51,10 +54,10 @@ void SocketServer_start(SocketServer *server) {
     }
 
     server->serverAddress.sin_family = AF_INET;
-    server->serverAddress.sin_port = htons(PORT);
+    server->serverAddress.sin_port = htons(server->port);
 
 
-    if (inet_pton(AF_INET, SERVER_IP, &server->serverAddress.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, server->ipServidor, &server->serverAddress.sin_addr) <= 0) {
         printf("Dirección IP inválida\n");
         return;
     }

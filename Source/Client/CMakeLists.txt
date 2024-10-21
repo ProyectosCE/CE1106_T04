@@ -8,6 +8,7 @@ set(CMAKE_C_STANDARD 23)
 find_package(cJSON)
 find_package(raylib)
 find_package(log.c)
+find_package(inih)
 
 #Executables here:
 add_executable(Client "main_con_gui_(depreciate).c"
@@ -21,10 +22,16 @@ add_executable(Client "main_con_gui_(depreciate).c"
         comunicaciones/socketServer.h
         comunicaciones/jsonProcessor.c
         comunicaciones/jsonProcessor.h
-        main.c)
+        main.c
+        configuracion/configuracion.c
+        configuracion/configuracion.h)
 
+
+# Copiar el archivo settings.ini al directorio de salida
+configure_file(settings.ini ${CMAKE_CURRENT_BINARY_DIR}/settings.ini COPYONLY)
 
 #Targets here:
 target_link_libraries(Client cjson::cjson raylib)
 target_link_libraries(Client raylib)
 target_link_libraries(Client log.c::log.c)
+target_link_libraries(Client inih::inih)
