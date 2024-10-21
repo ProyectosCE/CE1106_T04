@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <log.h>
 
 /*
  * Constructor: Inicializa el servidor de comunicaciones
@@ -10,7 +11,8 @@
 ComServer *ComServer_create() {
     ComServer *server = (ComServer *)malloc(sizeof(ComServer));
     if (server == NULL) {
-        printf("Error al crear el servidor de comunicaciones.\n");
+
+        log_error("Error al crear el servidor de comunicaciones.\n");
         return NULL;
     }
 
@@ -45,14 +47,14 @@ void ComServer_destroy(ComServer *server) {
  */
 void ComServer_sendMessage(ComServer *server, const char *message) {
     if (server == NULL) {
-        printf("Servidor no inicializado.\n");
+        log_warn("Servidor no inicializado.\n");
         return;
     }
 
     // Convertir el mensaje a JSON utilizando JsonProcessor
     char *jsonMessage = JsonProcessor_createJsonMessage(server->jsonProcessor, message);
 
-    printf(jsonMessage);
+    log_info(jsonMessage);
 
 
     // Enviar el mensaje al servidor usando el SocketServer
@@ -77,7 +79,7 @@ void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callb
 void *ComServer_messageListeningLoop(void *arg) {
     ComServer *server = (ComServer *)arg;
     if (server == NULL) {
-        printf("Servidor no inicializado para la escucha de mensajes.\n");
+        log_error("Servidor no inicializado para la escucha de mensajes.\n");
         return NULL;
     }
 
@@ -99,13 +101,11 @@ void *ComServer_messageListeningLoop(void *arg) {
 
                 free(processedMessage);  // Liberar memoria del mensaje procesado
             } else {
-                printf("Error al recibir el mensaje del servidor\n");
+                log_error("Error al recibir el mensaje del servidor\n");
             }
             sleep(2);  // Pausar un poco antes de recibir el próximo mensaje
         } else{
             SocketServer_reconnect(server->socketServer);
         }
     }
-
-    return NULL;
 }

@@ -1,7 +1,7 @@
 #include "jsonProcessor.h"
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include <log.h>
 
 /*
  * Constructor: Inicializa el procesador JSON
@@ -9,7 +9,7 @@
 JsonProcessor *JsonProcessor_create() {
     JsonProcessor *processor = (JsonProcessor *)malloc(sizeof(JsonProcessor));
     if (processor == NULL) {
-        printf("Error al asignar memoria para JsonProcessor\n");
+        log_fatal("Error al asignar memoria para JsonProcessor\n");
         return NULL;
     }
 
@@ -35,7 +35,7 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
     // Crear un objeto JSON
     cJSON *json = cJSON_CreateObject();
     if (json == NULL) {
-        printf("Error al crear el objeto JSON\n");
+        log_fatal("Error al crear el objeto JSON\n");
         return NULL;
     }
 
@@ -45,7 +45,7 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
     // Convertir el objeto JSON a una cadena de texto
     char *jsonString = cJSON_PrintUnformatted(json);
     if (jsonString == NULL) {
-        printf("Error al convertir el objeto JSON a cadena\n");
+        log_error("Error al convertir el objeto JSON a cadena\n");
         cJSON_Delete(json); // Liberar el objeto JSON en caso de error
         return NULL;
     }
@@ -64,14 +64,14 @@ char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jso
     // Parsear el mensaje JSON recibido
     cJSON *json = cJSON_Parse(jsonMessage);
     if (json == NULL) {
-        printf("Error al parsear el JSON recibido\n");
+        log_error("Error al parsear el JSON recibido\n");
         return NULL;
     }
 
     // Extraer el campo "message" del JSON
     cJSON *message = cJSON_GetObjectItemCaseSensitive(json, "message");
     if (!cJSON_IsString(message) || (message->valuestring == NULL)) {
-        printf("Error: El campo 'message' no es válido o está vacío\n");
+        log_error("Error: El campo 'message' no es válido o está vacío\n");
         cJSON_Delete(json); // Liberar el objeto JSON
         return NULL;
     }
@@ -79,7 +79,7 @@ char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jso
     // Duplicar el valor del mensaje para devolverlo (ya que se debe liberar la memoria original)
     char *processedMessage = strdup(message->valuestring);
     if (processedMessage == NULL) {
-        printf("Error al duplicar el mensaje procesado\n");
+        log_error("Error al duplicar el mensaje procesado\n");
     }
 
     // Liberar el objeto JSON

@@ -2,10 +2,10 @@
 #include "../configuracion/configuracion.h"
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <log.h>
 
 /*
  * Constructor: Inicializa la estructura SocketServer y prepara la conexión
@@ -13,7 +13,7 @@
 SocketServer *SocketServer_create() {
     SocketServer *server = (SocketServer *)malloc(sizeof(SocketServer));
     if (server == NULL) {
-        printf("Error al asignar memoria para SocketServer\n");
+        log_fatal("Error al asignar memoria para SocketServer\n");
         return NULL;
     }
 
@@ -48,7 +48,7 @@ void SocketServer_destroy(SocketServer *server) {
  */
 void SocketServer_start(SocketServer *server) {
     if ((server->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("Error al crear el socket\n");
+        log_fatal("Error al crear el socket\n");
         return;
     }
 
@@ -57,17 +57,17 @@ void SocketServer_start(SocketServer *server) {
 
 
     if (inet_pton(AF_INET, server->ipServidor, &server->serverAddress.sin_addr) <= 0) {
-        printf("Dirección IP inválida\n");
+        log_fatal("Dirección IP inválida\n");
         return;
     }
 
     // Intentar conectar al servidor
     while (connect(server->sock, (struct sockaddr *)&(server->serverAddress), sizeof(server->serverAddress)) < 0) {
-        printf("Error al conectar al servidor, reintentando en 1 segundo...\n");
+        log_error("Error al conectar al servidor, reintentando en 1 segundo...\n");
         sleep(1);
     }
 
-    printf("Conectado al servidor en el puerto %d\n", ntohs(server->serverAddress.sin_port));
+    log_info("Conectado al servidor en el puerto %d\n", ntohs(server->serverAddress.sin_port));
     server->isConnected = 1;  // Marcar como conectado
 
 }
@@ -77,14 +77,14 @@ void SocketServer_start(SocketServer *server) {
  */
 void SocketServer_send(SocketServer *server, const char *message) {
     if (!server->isConnected) {
-        printf("El servidor no está disponible, no se puede enviar el mensaje.\n");
+        log_warn("El servidor no está disponible, no se puede enviar el mensaje.\n");
         return;  // No enviar el mensaje si el servidor está desconectado
     }
 
     if (send(server->sock, message, strlen(message), 0) < 0) {
-        printf("Error al enviar el mensaje\n");
+        log_error("Error al enviar el mensaje\n");
     } else {
-        printf("Mensaje enviado al servidor: %s\n", message);
+        log_info("Mensaje enviado al servidor: %s\n", message);
     }
 }
 
@@ -93,7 +93,7 @@ void SocketServer_send(SocketServer *server, const char *message) {
  */
 int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
     if (!server->isConnected) {
-        printf("El servidor no está disponible, no se puede recibir mensajes.\n");
+        log_warn("El servidor no está disponible, no se puede recibir mensajes.\n");
         return -1;  // No recibir mensajes si el servidor está desconectado
     }
 
@@ -101,7 +101,7 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
 
     if (valread == 0) {
         // Si read devuelve 0, significa que el servidor ha cerrado la conexión
-        printf("El servidor se ha desconectado en Receive\n");
+        log_warn("El servidor se ha desconectado\n");
         server->isConnected = 0;  // Marcar como desconectado
         return 0;  // Indicar que la conexión se ha cerrado
     } else if (valread < 0) {
@@ -115,7 +115,7 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
     } else {
         // Se recibieron datos del servidor correctamente
         buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
-        printf("Mensaje recibido del servidor: %s\n", buffer);
+        log_info("Mensaje recibido del servidor: %s\n", buffer);
         return valread;  // Retornar la cantidad de bytes leídos
     }
 }
@@ -126,7 +126,7 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
  */
 void SocketServer_reconnect(SocketServer *server) {
     if (!server->isConnected) {
-        printf("Intentando reconectar al servidor...\n");
+        log_warn("Intentando reconectar al servidor...\n");
         SocketServer_start(server);  // Intentar reconectar
     }
 }
