@@ -10,25 +10,30 @@ Consulta el archivo LICENSE para más detalles.
 */
 
 /*
-   Library: SaveLog
+   Implementation: SaveLog
    La estructura SaveLog está diseñada para proporcionar un sistema de logging configurable que permite almacenar
    mensajes de log en un archivo en el sistema de archivos. Facilita la configuración de diferentes niveles de log y
    callbacks personalizados para manejar eventos de logging.
 
+   Struct:
+   - <Callback>
+   - <L>
+
    Functions:
-     - create_log_directory: Crea la carpeta 'logs' en el directorio actual si no existe.
-     - open_log_file: Abre el archivo `logs/project.log` donde se almacenarán los logs.
-     - file_callback: Maneja el evento de logging escribiendo el mensaje en el archivo de log.
-     - lock: Bloquea el sistema de logging para evitar condiciones de carrera en sistemas multihilo.
-     - unlock: Desbloquea el sistema de logging.
-     - init_event: Inicializa un evento de logging con la hora actual y otros datos relevantes.
-     - savelog_log: La función principal de logging. Crea un evento de logging, maneja el archivo de log y ejecuta los callbacks.
+     - <create_log_directory>: Crea la carpeta 'logs' en el directorio actual si no existe.
+     - <open_log_file>: Abre el archivo `logs/project.log` donde se almacenarán los logs.
+     - <file_callback>: Maneja el evento de logging escribiendo el mensaje en el archivo de log.
+     - <lock>: Bloquea el sistema de logging para evitar condiciones de carrera en sistemas multihilo.
+     - <unlock>: Desbloquea el sistema de logging.
+     - <init_event>: Inicializa un evento de logging con la hora actual y otros datos relevantes.
+     - <savelog_log>: La función principal de logging. Crea un evento de logging, maneja el archivo de log y ejecuta los callbacks.
 
    Example:
-     ```c
-     // Generar un log de ejemplo
+
+       --- Code
+    // Generar un log de ejemplo
      savelog_log(SAVELOG_INFO, __FILE__, __LINE__, "Este es un mensaje de log de prueba.");
-     ```
+    ---
 
    Problems:
      Durante la implementación, uno de los problemas fue asegurarse de que la carpeta `logs`
@@ -52,9 +57,9 @@ Consulta el archivo LICENSE para más detalles.
    Estructura que representa una función de callback de logging que se ejecuta cuando ocurre un evento de logging.
 
    Members:
-     - fn: savelog_LogFn - Puntero a la función de callback que maneja un evento de logging.
-     - udata: void* - Datos de usuario que se pasan al callback. Este valor puede ser un puntero a cualquier tipo de estructura o información que el usuario necesite en el callback.
-     - level: int - Nivel mínimo de severidad para que se ejecute este callback. Solo los eventos de logging con un nivel mayor o igual a este valor activarán el callback.
+     fn: savelog_LogFn - Puntero a la función de callback que maneja un evento de logging.
+     udata: void* - Datos de usuario que se pasan al callback. Este valor puede ser un puntero a cualquier tipo de estructura o información que el usuario necesite en el callback.
+     level: int - Nivel mínimo de severidad para que se ejecute este callback. Solo los eventos de logging con un nivel mayor o igual a este valor activarán el callback.
 */
 typedef struct {
     savelog_LogFn fn;
@@ -63,17 +68,17 @@ typedef struct {
 } Callback;
 
 /*
-   Struct:L
+   Struct: L
    Estructura estática global que mantiene el estado del sistema de logging. Esta estructura centraliza toda la
    configuración y estado actual del sistema de logging.
 
    Members:
-     - udata: void* - Datos de usuario que se pasan a la función de bloqueo. Puede contener cualquier información adicional requerida para las operaciones de sincronización.
-     - lock: savelog_LockFn - Función de bloqueo para asegurar la sincronización en sistemas multihilo. Esta función bloquea y desbloquea el acceso al sistema de logging para evitar condiciones de carrera.
-     - level: int - Nivel mínimo de logging. Solo los mensajes con un nivel mayor o igual a este valor serán registrados.
-     - quiet: bool - Indica si la salida de logs a la consola está deshabilitada. Si es `true`, no se imprimirán logs en la consola.
-     - callbacks[MAX_CALLBACKS]: Callback[] - Arreglo de estructuras `Callback` que contiene los callbacks registrados. Cada callback maneja eventos de logging y puede ser configurado con un nivel mínimo de severidad.
-     - log_file: FILE* - Puntero al archivo donde se escriben los logs. Se abre cuando el sistema de logging está configurado para escribir en un archivo.
+     udata: void* - Datos de usuario que se pasan a la función de bloqueo. Puede contener cualquier información adicional requerida para las operaciones de sincronización.
+     lock: savelog_LockFn - Función de bloqueo para asegurar la sincronización en sistemas multihilo. Esta función bloquea y desbloquea el acceso al sistema de logging para evitar condiciones de carrera.
+     level: int - Nivel mínimo de logging. Solo los mensajes con un nivel mayor o igual a este valor serán registrados.
+     quiet: bool - Indica si la salida de logs a la consola está deshabilitada. Si es `true`, no se imprimirán logs en la consola.
+     callbacks[MAX_CALLBACKS]: Callback[] - Arreglo de estructuras `Callback` que contiene los callbacks registrados. Cada callback maneja eventos de logging y puede ser configurado con un nivel mínimo de severidad.
+     log_file: FILE* - Puntero al archivo donde se escriben los logs. Se abre cuando el sistema de logging está configurado para escribir en un archivo.
 */
 static struct {
     void *udata;                   // Datos de usuario para la función de bloqueo
@@ -144,9 +149,6 @@ static void create_log_directory() {
    Abre el archivo de log en modo de adición (append) dentro de la carpeta `logs`.
    Si el archivo no puede ser abierto, se imprime un mensaje de error en la salida estándar de error.
 
-   Parameters:
-     - Ninguno.
-
    Returns:
      - void
 */
@@ -213,6 +215,18 @@ static void unlock(void) {
     if (L.lock) { L.lock(false, L.udata); }
 }
 
+
+/*
+   Function: init_event
+   Inicializa un evento y almacena la udata
+
+    Parameters:
+        ev - Evento de saveLog
+        udata - data del usuario
+
+   Returns:
+     - void
+*/
 static void init_event(savelog_Event *ev, void *udata) {
     if (!ev->time) {
         time_t t = time(NULL);
@@ -226,12 +240,12 @@ static void init_event(savelog_Event *ev, void *udata) {
    Función principal de logging que registra un mensaje con su nivel de severidad, archivo y línea correspondientes.
    Ejecuta los callbacks que corresponden al nivel de logging y escribe en el archivo de log si está habilitado.
 
-   Parameters:
-     - level (int): El nivel de logging.
-     - file (const char*): El archivo fuente desde donde se genera el log.
-     - line (int): El número de línea en el archivo fuente.
-     - fmt (const char*): El formato del mensaje a registrar.
-     - ...: Lista de argumentos para el formato del mensaje.
+     Parameters:
+        level - El nivel de logging.
+        file - El archivo fuente desde donde se genera el log.
+        line  - El número de línea en el archivo fuente.
+        fmt - El formato del mensaje a registrar.
+        ... - Lista de argumentos para el formato del mensaje.
 
    Returns:
      - void

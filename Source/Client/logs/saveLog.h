@@ -9,8 +9,8 @@ Consulta el archivo LICENSE para más detalles.
 ==============================================================================================
 */
 /*
-   Header: savelog
-   Esta estructura representa un evento de logging que se usa para encapsular la información relevante sobre un
+   Header: saveLog
+   Este herader representa un evento de logging que se usa para encapsular la información relevante sobre un
    mensaje de log en el sistema SaveLog.
 
    Typedefs:
@@ -80,13 +80,11 @@ typedef struct {
 typedef void (*savelog_LogFn)(savelog_Event *ev);
 typedef void (*savelog_LockFn)(bool lock, void *udata);
 
-/*
-   Enum: Niveles de logging disponibles.
-*/
+
 enum { SAVELOG_TRACE, SAVELOG_DEBUG, SAVELOG_INFO, SAVELOG_WARN, SAVELOG_ERROR, SAVELOG_FATAL };
 
 /*
-   Macros: Generan logs con diferentes niveles de severidad.
+   Macros Generan logs con diferentes niveles de severidad.
 */
 #define savelog_trace(...) savelog_log(SAVELOG_TRACE, __FILE__, __LINE__, __VA_ARGS__)
 #define savelog_debug(...) savelog_log(SAVELOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
