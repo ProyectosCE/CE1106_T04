@@ -35,26 +35,11 @@ public class ComServer {
             Cliente nuevoCliente = socketServer.esperarCliente();
             if (nuevoCliente != null) {
                 clients.add(nuevoCliente);
-                manejarCliente(nuevoCliente);
+                // Crear un nuevo hilo para manejar la comunicación con este cliente
+                ClientHandler clientHandler = new ClientHandler(nuevoCliente);
+                Thread clientThread = new Thread(clientHandler);
+                clientThread.start();
             }
-        }
-    }
-
-    // Maneja las comunicaciones del cliente
-    private void manejarCliente(Cliente cliente) {
-        String mensajeEntrante = SocketServer.getInstance().recibirMensaje(cliente);
-
-        if (mensajeEntrante != null) {
-            JsonProcessor jsonProcessor = JsonProcessor.getInstance();
-            Command comando = jsonProcessor.procesarComando(mensajeEntrante);
-
-            if (comando != null) {
-                comando.ejecutar(cliente);
-            }
-
-            // Respuesta de salida al cliente confirmando la conexión
-            String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa");
-            SocketServer.getInstance().enviarMensaje(cliente, mensajeSalida);
         }
     }
 }
