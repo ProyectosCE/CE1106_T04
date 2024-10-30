@@ -8,27 +8,37 @@
 #include <errno.h>
 #include <log.h>
 
+// Puntero estático para almacenar la única instancia de ComServer
+static SocketServer *socketServer_instance = NULL;
+
 /*
  * Constructor: Inicializa la estructura SocketServer y prepara la conexión
  */
 SocketServer *SocketServer_create() {
-    SocketServer *server = (SocketServer *)malloc(sizeof(SocketServer));
-    if (server == NULL) {
+
+    // Verifica si ya existe una instancia
+    if (socketServer_instance != NULL) {
+        return socketServer_instance;
+    }
+
+
+    socketServer_instance = (SocketServer *)malloc(sizeof(SocketServer));
+    if (socketServer_instance == NULL) {
         log_fatal("Error al asignar memoria para SocketServer\n");
         return NULL;
     }
 
     Configuracion *configuracion= crear_configuracion();
-    strcpy(server->ipServidor, leer_ip(configuracion));
-    server->port= leer_puerto(configuracion);
-    server->sock = 0;
-    server->isConnected = 0;  // El servidor comienza como desconectado
-    memset(&(server->serverAddress), 0, sizeof(server->serverAddress));
+    strcpy(socketServer_instance->ipServidor, leer_ip(configuracion));
+    socketServer_instance->port= leer_puerto(configuracion);
+    socketServer_instance->sock = 0;
+    socketServer_instance->isConnected = 0;  // El servidor comienza como desconectado
+    memset(&(socketServer_instance->serverAddress), 0, sizeof(socketServer_instance->serverAddress));
 
 
     free(configuracion);
 
-    return server;
+    return socketServer_instance;
 }
 
 /*
@@ -40,6 +50,7 @@ void SocketServer_destroy(SocketServer *server) {
             close(server->sock);  // Cerrar el socket si está abierto
         }
         free(server);  // Liberar la memoria de la estructura
+        socketServer_instance=NULL;
     }
 }
 

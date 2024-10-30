@@ -3,19 +3,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Puntero estático para almacenar la única instancia de ComServer
+static JsonProcessor *jsonProcessor_instance = NULL;
+
 /*
  * Constructor: Inicializa el procesador JSON
  */
 JsonProcessor *JsonProcessor_create() {
-    JsonProcessor *processor = (JsonProcessor *)malloc(sizeof(JsonProcessor));
-    if (processor == NULL) {
+
+    // Verifica si ya existe una instancia
+    if (jsonProcessor_instance != NULL) {
+        return jsonProcessor_instance;
+    }
+    jsonProcessor_instance = (JsonProcessor *)malloc(sizeof(JsonProcessor));
+    if (jsonProcessor_instance == NULL) {
         savelog_fatal("Error al asignar memoria para JsonProcessor\n");
         return NULL;
     }
 
-    // Inicializar cualquier otro campo si es necesario
-
-    return processor;
+    return jsonProcessor_instance;
 }
 
 /*
@@ -23,8 +29,8 @@ JsonProcessor *JsonProcessor_create() {
  */
 void JsonProcessor_destroy(JsonProcessor *processor) {
     if (processor != NULL) {
-        // Liberar cualquier recurso adicional si es necesario
         free(processor);
+        jsonProcessor_instance=NULL;
     }
 }
 

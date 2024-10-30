@@ -100,14 +100,15 @@ int main(void) {
     if (pthread_create(&communicationThread, NULL, ComServer_messageListeningLoop, (void *) comServer) != 0) {
         printf("Error al crear el hilo de comunicación\n");
 
-        // Crear hilo para el bucle del juego
-        if (pthread_create(&gameThread, NULL, gameLoop, NULL) != 0) {
-            printf("Error al crear el hilo del juego\n");
-            return 1;
-        }
 
-        pthread_join(gameThread, NULL);
-
-        return 0;
     }
+    // Crear hilo para el bucle del juego
+    if (pthread_create(&gameThread, NULL, gameLoop, NULL) != 0) {
+        printf("Error al crear el hilo del juego\n");
+        return 1;
+    }
+
+    pthread_join(gameThread, NULL);
+
+    return 0;
 }
