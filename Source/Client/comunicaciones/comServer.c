@@ -4,31 +4,38 @@
 #include <string.h>
 #include <unistd.h>
 
+// Puntero estático para almacenar la única instancia de ComServer
+static ComServer *comserver_instance = NULL;
 
 /*
  * Constructor: Inicializa el servidor de comunicaciones
  */
 ComServer *ComServer_create() {
-    ComServer *server = (ComServer *)malloc(sizeof(ComServer));
-    if (server == NULL) {
+    // Verifica si ya existe una instancia
+    if (comserver_instance != NULL) {
+        return comserver_instance;
+    }
 
+    // Crear nueva instancia si no existe
+    comserver_instance = (ComServer *)malloc(sizeof(ComServer));
+    if (comserver_instance == NULL) {
         savelog_error("Error al crear el servidor de comunicaciones.\n");
         return NULL;
     }
 
     // Inicializar los componentes
-    server->socketServer = SocketServer_create();
-    server->jsonProcessor = JsonProcessor_create();
-    server->onMessageReceived = NULL;  // Callback inicializado a NULL
+    comserver_instance->socketServer = SocketServer_create();
+    comserver_instance->jsonProcessor = JsonProcessor_create();
+    comserver_instance->onMessageReceived = NULL;  // Callback inicializado a NULL
 
-    if (server->socketServer == NULL || server->jsonProcessor == NULL) {
-        ComServer_destroy(server);  // Liberar recursos si algo falla
+    if (comserver_instance->socketServer == NULL || comserver_instance->jsonProcessor == NULL) {
+        ComServer_destroy(comserver_instance);  // Liberar recursos si algo falla
         return NULL;
     }
 
-    SocketServer_start(server->socketServer);
+    SocketServer_start(comserver_instance->socketServer);
 
-    return server;
+    return comserver_instance;
 }
 
 /*
@@ -39,6 +46,7 @@ void ComServer_destroy(ComServer *server) {
         SocketServer_destroy(server->socketServer);
         JsonProcessor_destroy(server->jsonProcessor);
         free(server);
+        comserver_instance = NULL;
     }
 }
 
