@@ -44,6 +44,3 @@ target_link_libraries(Client cjson::cjson raylib)
 target_link_libraries(Client raylib)
 target_link_libraries(Client log.c::log.c)
 target_link_libraries(Client inih::inih)
-
-# Establecer la carpeta de salida de los ejecutables en "logs"
-set_target_properties(Client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/logs")
