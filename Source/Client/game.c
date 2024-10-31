@@ -242,7 +242,18 @@ void UpdateGame(){
         }
     }
 
-    // Enviar JSON
+    // Captura el tiempo actual
+    float currentTime = (float)clock() / CLOCKS_PER_SEC;
+
+    // Calcula el tiempo transcurrido desde la última actualización
+    deltaTime = currentTime - lastUpdateTime;
+
+    // Actualiza el juego y genera el JSON si es necesario
+    if (deltaTime >= (1.0f / 60.0f)) { // Aproximadamente 16.67 ms
+        char* jsonString = generateGameStateJSON();
+        lastUpdateTime = currentTime; // Actualiza el tiempo de la última generación.
+        free(jsonString); // Libera la memoria del JSON.
+    }
 }
 
 void DrawGame(){
@@ -423,4 +434,77 @@ void update_brick_speedDown(int i, int j){
 
 void update_player_score(int brickx, int bricky) {
     player.score += brick[brickx][bricky].points;
+}
+
+// Función que genera el estado actual del juego en formato JSON
+char* generateGameStateJSON() {
+    // Crear objeto raíz
+    cJSON *gameState = cJSON_CreateObject();
+
+    cJSON_AddStringToObject(gameState, "command", "sendGameState");
+
+    // Añadir información del jugador
+    cJSON *playerJSON = cJSON_CreateObject();
+
+    cJSON_AddNumberToObject(playerJSON, "positionX", player.position.x);
+    cJSON_AddNumberToObject(playerJSON, "positionY", player.position.y);
+    cJSON_AddNumberToObject(playerJSON, "sizeX", player.size.x);
+    cJSON_AddNumberToObject(playerJSON, "sizeY", player.size.y);
+    cJSON_AddNumberToObject(playerJSON, "life", player.life);
+    cJSON_AddNumberToObject(playerJSON, "score", player.score);
+    cJSON_AddItemToObject(gameState, "player", playerJSON);
+
+    // Añadir bolas activas
+    cJSON *ballsArray = cJSON_CreateArray();
+    for (int i = 0; i < MAX_BALLS; i++) {
+        if (balls[i].active) {
+            cJSON *ballJSON = cJSON_CreateObject();
+            cJSON_AddNumberToObject(ballJSON, "positionX", balls[i].position.x);
+            cJSON_AddNumberToObject(ballJSON, "positionY", balls[i].position.y);
+            cJSON_AddItemToArray(ballsArray, ballJSON);
+        }
+    }
+    cJSON_AddItemToObject(gameState, "balls", ballsArray);
+
+    // Añadir ladrillos activos
+    cJSON *bricksArray = cJSON_CreateArray();
+    for (int i = 0; i < LINES_OF_BRICKS; i++) {
+        for (int j = 0; j < BRICKS_PER_LINE; j++) {
+            if (brick[i][j].active) {
+                cJSON *brickJSON = cJSON_CreateObject();
+                cJSON_AddNumberToObject(brickJSON, "positionX", brick[i][j].position.x);
+                cJSON_AddNumberToObject(brickJSON, "positionY", brick[i][j].position.y);
+                cJSON_AddItemToArray(bricksArray, brickJSON);
+            }
+        }
+    }
+    cJSON_AddItemToObject(gameState, "bricks", bricksArray);
+
+    // Añadir vidas del jugador
+    cJSON_AddNumberToObject(gameState, "lives", player.life);
+
+    // Añadir puntaje actual
+    cJSON_AddNumberToObject(gameState, "score", player.score);
+
+    // Añadir niveles completados
+    cJSON_AddNumberToObject(gameState, "levelsCompleted", levelsCompleted);
+
+    // Añadir estado de juego (gameOver o no)
+    cJSON_AddBoolToObject(gameState, "gameOver", gameOver);
+
+
+
+    // Convertir el objeto JSON a cadena de caracteres
+    char *jsonString = cJSON_Print(gameState);
+
+    // Enviar el JSON al servidor
+    // FALTA DE IMPLEMENTAR
+
+    // Print
+    //printf("JSON GENERADO: %s\n", jsonString);
+
+    // Limpiar memoria de cJSON
+    cJSON_Delete(gameState);
+
+    return jsonString;  // Recuerda liberar la memoria después de usar la cadena
 }

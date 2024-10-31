@@ -42,7 +42,7 @@ typedef struct Brick {
     bool speedDown;
 } Brick;
 
-#define PLAYER_MAX_LIFE         1000
+#define PLAYER_MAX_LIFE         3
 #define MAX_BALLS              20
 #define LINES_OF_BRICKS         8
 #define BRICKS_PER_LINE        14
@@ -89,5 +89,7 @@ void speedUp();
 
 void update_brick_speedDown(int i, int j);
 void speedDown();
+
+char* generateGameStateJSON();
 
 #endif //CLIENT_GAME_H
