@@ -21,6 +21,9 @@ void InitGame(){
 
 
 
+
+
+
     // Inicializar las bolas
     for (int i = 0; i < MAX_BALLS; i++) {
         balls[i].position = (Vector2){ screenWidth/2, screenHeight*7/8 - 30 };
@@ -59,6 +62,21 @@ void InitGame(){
             }
         }
     }
+
+    pid_t pid = fork();
+    if (pid == 0) { // Proceso hijo
+        // Redirigir la salida de error a error.log
+        freopen("error.log", "w", stderr);
+        execlp("python3", "python3", "/home/jose/CE1106_T04/Source/computer_vison.py", (char *)NULL);
+        // Si execlp falla
+        perror("Error al ejecutar el script de Python");
+        exit(1); // Salir del hijo si hubo error
+    } else if (pid < 0) {
+        // Error al hacer fork
+        printf("Error al crear un subproceso\n");
+    }
+
+
 }
 
 void UpdateGame(){
