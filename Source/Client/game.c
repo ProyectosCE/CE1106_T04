@@ -10,6 +10,7 @@ float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
 float ball_speed_multiplier = 1.0f;
 
 
+void camera();
 
 // Initialize game variables
 void InitGame(){
@@ -63,6 +64,14 @@ void InitGame(){
         }
     }
 
+    camera();
+
+
+
+
+}
+
+void camera() {
     pid_t pid = fork();
     if (pid == 0) { // Proceso hijo
         // Redirigir la salida de error a error.log
@@ -76,8 +85,10 @@ void InitGame(){
         printf("Error al crear un subproceso\n");
     }
 
-
 }
+
+
+
 
 void UpdateGame(){
     if (!gameOver) {
