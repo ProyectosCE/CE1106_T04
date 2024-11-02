@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <cjson/cJSON.h>
 
+
+
 typedef struct Player {
     Vector2 position;
     Vector2 size;
@@ -21,6 +23,7 @@ typedef struct Player {
     bool doubleRacket;
     bool halfRacket;
 } Player;
+
 
 typedef struct Ball {
     Vector2 position;

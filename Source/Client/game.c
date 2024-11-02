@@ -4,9 +4,12 @@
 
 #include "game.h"
 
+
 float lastUpdateTime = 0.0f; // Último tiempo de actualización.
 float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
 float ball_speed_multiplier = 1.0f;
+
+
 
 // Initialize game variables
 void InitGame(){
@@ -15,6 +18,8 @@ void InitGame(){
     player.size = (Vector2){ screenWidth/10, 10 };
     player.life = PLAYER_MAX_LIFE;
     player.score = 0;
+
+
 
     // Inicializar las bolas
     for (int i = 0; i < MAX_BALLS; i++) {
@@ -63,15 +68,15 @@ void UpdateGame(){
 
         if (!Pause) {
             // Logica del juego
-            if (IsKeyDown(KEY_LEFT)) player.position.x -= 5;
+            if (IsKeyDown(KEY_A)) player.position.x -= 5;
             if ((player.position.x - player.size.x / 2) <= 0) player.position.x = player.size.x / 2;
-            if (IsKeyDown(KEY_RIGHT)) player.position.x += 5;
+            if (IsKeyDown(KEY_D)) player.position.x += 5;
             if ((player.position.x + player.size.x / 2) >= screenWidth)
                 player.position.x = screenWidth - player.size.x / 2;
 
             // Lanzar la bola
             if (!balls[0].active) {
-                if (IsKeyPressed(KEY_SPACE)) {
+                if (IsKeyPressed(KEY_W)) {
                     balls[0].active = true;
                     balls[0].speed = (Vector2){0, -5 * ball_speed_multiplier};
                 }
@@ -508,3 +513,4 @@ char* generateGameStateJSON() {
 
     return jsonString;  // Recuerda liberar la memoria después de usar la cadena
 }
+
