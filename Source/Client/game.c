@@ -10,7 +10,7 @@ float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
 float ball_speed_multiplier = 1.0f;
 
 
-void camera();
+
 
 // Initialize game variables
 void InitGame(){
@@ -19,8 +19,6 @@ void InitGame(){
     player.size = (Vector2){ screenWidth/10, 10 };
     player.life = PLAYER_MAX_LIFE;
     player.score = 0;
-
-
 
 
 
@@ -64,28 +62,10 @@ void InitGame(){
         }
     }
 
-    camera();
-
-
-
 
 }
 
-void camera() {
-    pid_t pid = fork();
-    if (pid == 0) { // Proceso hijo
-        // Redirigir la salida de error a error.log
-        freopen("error.log", "w", stderr);
-        execlp("python3", "python3", "/home/jose/CE1106_T04/Source/computer_vison.py", (char *)NULL);
-        // Si execlp falla
-        perror("Error al ejecutar el script de Python");
-        exit(1); // Salir del hijo si hubo error
-    } else if (pid < 0) {
-        // Error al hacer fork
-        printf("Error al crear un subproceso\n");
-    }
 
-}
 
 
 
