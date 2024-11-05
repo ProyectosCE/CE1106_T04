@@ -1,7 +1,7 @@
 package org.proyectosce.comunicaciones;
 
 import org.proyectosce.comandos.CommandHandler;
-import org.proyectosce.comandos.PowerCommand;
+import org.proyectosce.comandos.factory.products.PowerCommand;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

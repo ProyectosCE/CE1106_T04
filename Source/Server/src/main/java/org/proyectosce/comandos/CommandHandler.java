@@ -2,6 +2,7 @@ package org.proyectosce.comandos;
 
 import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.proyectosce.comandos.factory.products.PowerCommand;
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.JsonProcessor;
 import org.proyectosce.comunicaciones.SocketServer;

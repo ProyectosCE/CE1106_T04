@@ -1,4 +1,4 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,8 +1,8 @@
 package org.proyectosce.comunicaciones;
 
-import org.proyectosce.comandos.Command;
+import org.proyectosce.comandos.factory.products.Command;
 import org.proyectosce.comandos.CommandHandler;
-import org.proyectosce.comandos.PowerCommand;
+import org.proyectosce.comandos.factory.products.PowerCommand;
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;

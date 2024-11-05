@@ -1,6 +1,6 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
-import org.proyectosce.comunicaciones.Cliente;
+import java.util.Map;
 
 /*
  * Class: HolaCommand
@@ -12,5 +12,10 @@ public class HolaCommand implements Command {
     @Override
     public String getType() {
         return "";
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

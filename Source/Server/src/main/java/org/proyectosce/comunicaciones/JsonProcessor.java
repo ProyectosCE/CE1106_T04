@@ -1,8 +1,8 @@
 package org.proyectosce.comunicaciones;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.proyectosce.comandos.Command;
-import org.proyectosce.comandos.PowerCommand;
+import org.proyectosce.comandos.factory.products.Command;
+import org.proyectosce.comandos.factory.products.PowerCommand;
 
 import java.io.IOException;
 import java.util.Map;
