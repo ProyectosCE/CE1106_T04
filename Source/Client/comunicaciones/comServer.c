@@ -72,6 +72,20 @@ void ComServer_sendMessage(ComServer *server, const char *message) {
     free(jsonMessage);
 }
 
+void ComServer_sendStatus(ComServer *server, const char *message) {
+    if (server != NULL) {
+        // Enviar el mensaje al servidor usando el SocketServer
+        SocketServer_send(server->socketServer, message);
+
+        // Liberar memoria
+        free(message);
+    }
+    else {
+
+        printf("ayuda\n");
+    }
+}
+
 /*
  * Método para registrar un callback (Observer) para recibir notificaciones
  */

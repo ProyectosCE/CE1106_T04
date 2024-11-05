@@ -29,6 +29,7 @@ void ComServer_processIncomingMessage(ComServer *server, const char *message);
 void ComServer_sendMessage(ComServer *server, const char *message);
 void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback);
 void *ComServer_messageListeningLoop(void *arg);
+void ComServer_sendStatus(ComServer *server, const char *message);
 
 
 #endif // COM_SERVER_H

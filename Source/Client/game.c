@@ -4,6 +4,8 @@
 
 #include "game.h"
 
+#include "comunicaciones/comServer.h"
+
 
 float lastUpdateTime = 0.0f; // Último tiempo de actualización.
 float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
@@ -265,8 +267,10 @@ void UpdateGame(){
     // Actualiza el juego y genera el JSON si es necesario
     if (deltaTime >= (1.0f / 60.0f)) { // Aproximadamente 16.67 ms
         char* jsonString = generateGameStateJSON();
+        ComServer *comServer = ComServer_create();
+        ComServer_sendStatus(comServer, jsonString);
         lastUpdateTime = currentTime; // Actualiza el tiempo de la última generación.
-        free(jsonString); // Libera la memoria del JSON.
+        //free(jsonString); // Libera la memoria del JSON.
     }
 }
 
@@ -471,12 +475,14 @@ char* generateGameStateJSON() {
     // Añadir bolas activas
     cJSON *ballsArray = cJSON_CreateArray();
     for (int i = 0; i < MAX_BALLS; i++) {
-        if (balls[i].active) {
+
+
             cJSON *ballJSON = cJSON_CreateObject();
+            cJSON_AddBoolToObject(ballJSON, "active", balls[i].active);
             cJSON_AddNumberToObject(ballJSON, "positionX", balls[i].position.x);
             cJSON_AddNumberToObject(ballJSON, "positionY", balls[i].position.y);
             cJSON_AddItemToArray(ballsArray, ballJSON);
-        }
+
     }
     cJSON_AddItemToObject(gameState, "balls", ballsArray);
 
@@ -484,12 +490,9 @@ char* generateGameStateJSON() {
     cJSON *bricksArray = cJSON_CreateArray();
     for (int i = 0; i < LINES_OF_BRICKS; i++) {
         for (int j = 0; j < BRICKS_PER_LINE; j++) {
-            if (brick[i][j].active) {
                 cJSON *brickJSON = cJSON_CreateObject();
-                cJSON_AddNumberToObject(brickJSON, "positionX", brick[i][j].position.x);
-                cJSON_AddNumberToObject(brickJSON, "positionY", brick[i][j].position.y);
+                cJSON_AddBoolToObject(brickJSON, "active", brick[i][j].active);
                 cJSON_AddItemToArray(bricksArray, brickJSON);
-            }
         }
     }
     cJSON_AddItemToObject(gameState, "bricks", bricksArray);
@@ -509,7 +512,7 @@ char* generateGameStateJSON() {
 
 
     // Convertir el objeto JSON a cadena de caracteres
-    char *jsonString = cJSON_Print(gameState);
+    char *jsonString = cJSON_PrintUnformatted(gameState);
 
     // Enviar el JSON al servidor
     // FALTA DE IMPLEMENTAR

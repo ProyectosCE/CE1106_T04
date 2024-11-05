@@ -46,9 +46,9 @@ typedef struct Brick {
 } Brick;
 
 #define PLAYER_MAX_LIFE         3
-#define MAX_BALLS              20
+#define MAX_BALLS              5
 #define LINES_OF_BRICKS         8
-#define BRICKS_PER_LINE        14
+#define BRICKS_PER_LINE        8
 
 static const int screenWidth = 800;
 static const int screenHeight = 450;

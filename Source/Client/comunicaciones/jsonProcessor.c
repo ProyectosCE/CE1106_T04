@@ -62,6 +62,7 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
     return jsonString;
 }
 
+
 /*
  * Método para procesar un mensaje JSON recibido
  * Este método toma una cadena JSON y devuelve un mensaje procesado como cadena de texto.
