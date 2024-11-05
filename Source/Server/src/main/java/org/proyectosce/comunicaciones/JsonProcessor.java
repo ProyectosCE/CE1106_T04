@@ -3,6 +3,7 @@ package org.proyectosce.comunicaciones;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.proyectosce.comandos.Command;
 import org.proyectosce.comandos.HolaCommand;
+import org.proyectosce.comandos.SendGameStateCommand;
 
 import java.io.IOException;
 import java.util.Map;
@@ -40,10 +41,12 @@ public class JsonProcessor {
     public Command procesarComando(String mensajeJson) {
         try {
             Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
-            String commandType = (String) jsonData.get("comando");
+            String commandType = (String) jsonData.get("command"); // Cambiado a "command"
 
             if ("hola".equals(commandType)) {
                 return new HolaCommand();
+            } else if ("sendGameState".equals(commandType)) {
+                return new SendGameStateCommand(mensajeJson); // Pasa el mensaje JSON completo
             }
 
         } catch (IOException e) {

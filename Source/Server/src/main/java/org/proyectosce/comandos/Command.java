@@ -1,13 +1,6 @@
+// Command.java
 package org.proyectosce.comandos;
 
-import org.proyectosce.comunicaciones.Cliente;
-
-/*
- * Interface: Command
- *
- * Interfaz para la ejecución de comandos.
- */
-public interface Command {
-    void ejecutar(Cliente cliente);
+public interface Command<T> {
+    void ejecutar(T contexto); // contexto es genérico y flexible para cualquier tipo
 }
-

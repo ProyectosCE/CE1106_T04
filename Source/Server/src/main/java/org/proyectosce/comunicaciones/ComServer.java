@@ -3,8 +3,6 @@ package org.proyectosce.comunicaciones;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.proyectosce.comandos.Command;
-
 /*
  * Class: ComServer
  *
@@ -40,6 +38,13 @@ public class ComServer {
                 Thread clientThread = new Thread(clientHandler);
                 clientThread.start();
             }
+        }
+    }
+
+    public void enviarMensajeATodos(String mensajeJson) {
+        SocketServer socketServer = SocketServer.getInstance();
+        for (Cliente cliente : clients) {
+            socketServer.enviarMensaje(cliente, mensajeJson);
         }
     }
 }

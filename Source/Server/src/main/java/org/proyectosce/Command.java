@@ -1,13 +1,17 @@
 package org.proyectosce;
 
+import org.proyectosce.comunicaciones.Cliente;
+
 /* Interface: Command
     Esta interfaz define un comando que se puede ejecutar. La interfaz proporciona un metodo execute que debe ser implementado por las clases concretas que representan comandos específicos.
 
    Methods:
      - execute: Este metodo ejecuta el comando.
 */
-interface Command {
+public interface Command {
     void execute();
+
+    void ejecutar(Cliente cliente);
 }
 
 /* Class: PrintCommand
@@ -20,7 +24,7 @@ interface Command {
       - PrintCommand: El constructor de la clase PrintCommand.
       - execute: Este metodo imprime el mensaje cuando se ejecuta el comando.
 */
-class PrintCommand implements Command {
+abstract class PrintCommand implements Command {
     private String message;
 
     public PrintCommand(String message) {

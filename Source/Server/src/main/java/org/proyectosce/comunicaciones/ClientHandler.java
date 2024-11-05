@@ -1,8 +1,7 @@
 package org.proyectosce.comunicaciones;
+
+
 import org.proyectosce.comandos.Command;
-
-import java.io.IOException;
-
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
