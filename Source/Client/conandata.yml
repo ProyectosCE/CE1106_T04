@@ -2,6 +2,7 @@
 # To keep your changes, remove these comment lines, but the plugin won't be able to modify your requirements
 
 requirements:
+  - "opencv/4.10.0"
   - "raylib/4.0.0"
   - "cjson/1.7.18"
   - "log.c/cci.20200620"

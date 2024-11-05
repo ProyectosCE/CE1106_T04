@@ -1,44 +1,44 @@
 package org.proyectosce.comunicaciones;
-import org.proyectosce.comandos.Command;
 
-import java.io.IOException;
-
+import org.proyectosce.comandos.factory.products.Command;
+import org.proyectosce.comandos.CommandHandler;
+import org.proyectosce.comandos.factory.products.PowerCommand;
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
     private final JsonProcessor jsonProcessor;
+    private final CommandHandler commandHandler;
     private final SocketServer socketServer;
 
     public ClientHandler(Cliente cliente) {
         this.cliente = cliente;
         this.jsonProcessor = JsonProcessor.getInstance();
-        this.socketServer = SocketServer.getInstance();
+        this.commandHandler = new CommandHandler();
+        this.socketServer = SocketServer.getInstance(); // Inicializar socketServer
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                // Recibir el mensaje del cliente
-                String mensajeEntrante = socketServer.recibirMensaje(cliente);
+                String mensajeEntrante = socketServer.recibirMensaje(cliente); // Cambiar jsonProcessor a socketServer
                 if (mensajeEntrante == null) {
                     System.out.println("Cliente desconectado: " + cliente);
-                    break;  // Termina el bucle si el cliente se desconecta
+                    break;
                 }
 
-                // Procesar el mensaje recibido
                 Command comando = jsonProcessor.procesarComando(mensajeEntrante);
-                if (comando != null) {
-                    comando.ejecutar(cliente);
+                if (comando instanceof PowerCommand) {
+                    commandHandler.handleCommand((PowerCommand) comando, cliente);
+                } else {
+                    System.out.println("Comando no válido o no reconocido.");
                 }
 
-                // Enviar una respuesta al cliente
-                String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa");
-                socketServer.enviarMensaje(cliente, mensajeSalida);
+                String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa", null);
+                socketServer.enviarMensaje(cliente, mensajeSalida); // Cambiar jsonProcessor a socketServer
             }
         } finally {
-            // Limpiar y remover al cliente de la lista
-            socketServer.cerrarConexion(cliente);
+            socketServer.cerrarConexion(cliente); // Cambiar jsonProcessor a socketServer
             System.out.println("Cliente removido: " + cliente);
         }
     }

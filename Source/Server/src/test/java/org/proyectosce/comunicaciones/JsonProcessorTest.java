@@ -1,8 +1,8 @@
 package org.proyectosce.comunicaciones;
 
 import org.junit.jupiter.api.Test;
-import org.proyectosce.comandos.Command;
-import org.proyectosce.comandos.*;
+import org.proyectosce.comandos.factory.products.Command;
+import org.proyectosce.comandos.factory.products.HolaCommand;
 
 import static org.junit.jupiter.api.Assertions.*;
 
