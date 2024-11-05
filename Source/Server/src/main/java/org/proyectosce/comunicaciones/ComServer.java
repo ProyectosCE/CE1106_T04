@@ -78,17 +78,24 @@ public class ComServer {
                 return;
             }
 
-            // Crear el JSON y enviarlo a todos los clientes
+            // Crear el JSON en el formato deseado
             Map<String, Object> jsonMessage = new HashMap<>();
-            jsonMessage.put("command", "brick-pwr");
-            jsonMessage.put("position", new int[]{f, c}); // Lista en lugar de objeto
-            jsonMessage.put("power", power);
+            jsonMessage.put("command", power);
 
+            // Crear el mapa para la posición
+            Map<String, Integer> position = new HashMap<>();
+            position.put("x", c); // La columna
+            position.put("y", f); // La fila
+
+            jsonMessage.put("position", position); // Añadir la posición al mensaje JSON
+
+            // Enviar el JSON a todos los clientes
             enviarMensajeJsonATodos(jsonMessage);
         } catch (NumberFormatException e) {
             System.out.println("Las coordenadas f y c deben ser enteros.");
         }
     }
+
 
     // Método para enviar un mensaje JSON a un cliente específico
     public void enviarMensajeJson(Cliente cliente, Map<String, Object> jsonMessage) {

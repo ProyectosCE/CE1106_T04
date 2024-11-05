@@ -26,6 +26,11 @@ public class JsonProcessor {
         return instance;
     }
 
+    // Método para obtener el ObjectMapper
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
     // Método original para crear una respuesta JSON simple
     public String crearMensajeSalida(String mensaje) {
         try {
@@ -37,10 +42,9 @@ public class JsonProcessor {
     }
 
     // Método para crear un mensaje JSON complejo con state, comando y objeto
-    public String crearMensajeSalida(String estado, String comando, Map<String, Object> objeto) {
+    public String crearMensajeSalida(String comando, Map<String, Object> objeto) {
         try {
             Map<String, Object> message = Map.of(
-                    "state", estado,
                     "comando", comando,
                     "objeto", objeto
             );

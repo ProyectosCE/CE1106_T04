@@ -2,6 +2,7 @@ package org.proyectosce.comunicaciones;
 
 import org.proyectosce.comandos.Command;
 import org.proyectosce.comandos.CommandHandler;
+import org.proyectosce.comandos.PowerCommand;
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
@@ -28,7 +29,11 @@ public class ClientHandler implements Runnable {
 
                 Command comando = jsonProcessor.procesarComando(mensajeEntrante);
                 if (comando != null) {
-                    commandHandler.handleCommand(comando, cliente);
+                    if (comando instanceof PowerCommand) {
+                        commandHandler.handleCommand((PowerCommand) comando, cliente); // Casting seguro
+                    } else {
+                        System.out.println("Comando no válido: " + comando.getType());
+                    }
                 }
 
                 String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa");

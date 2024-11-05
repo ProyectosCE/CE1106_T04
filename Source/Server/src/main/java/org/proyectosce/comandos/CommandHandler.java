@@ -2,6 +2,8 @@ package org.proyectosce.comandos;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.JsonProcessor;
 import org.proyectosce.comunicaciones.SocketServer;
@@ -16,41 +18,31 @@ public class CommandHandler {
     }
 
     // Método para manejar un comando específico y enviar el poder al cliente
-    public void handleCommand(Command comando, Cliente cliente) {
-        Map<String, Object> powerData = new HashMap<>();
-
-        // Crear JSON basado en el tipo de comando
-        switch (comando.getType()) {
-            case "add_life":
-                powerData.put("addLife", true);
-                break;
-            case "add_ball":
-                powerData.put("addBall", true);
-                break;
-            case "double_racket_size":
-                powerData.put("doubleRacket", true);
-                break;
-            case "half_racket_size":
-                powerData.put("halfRacket", true);
-                break;
-            case "add_speed":
-                powerData.put("speedUp", true);
-                break;
-            case "reduce_speed":
-                powerData.put("speedDown", true);
-                break;
-            default:
-                System.out.println("Comando desconocido: " + comando.getType());
-                return;
-        }
-
+    // Método para manejar un comando específico y enviar el poder al cliente
+    public void handleCommand(PowerCommand comando, Cliente cliente) {
         // Crear el mensaje JSON
-        String mensajeSalida = jsonProcessor.crearMensajeSalida("OK", comando.getType(), powerData);
+        Map<String, Object> jsonMessage = new HashMap<>();
+        jsonMessage.put("command", comando.getType()); // El tipo de poder como comando
+
+        // Crear el mapa para la posición
+        Map<String, Integer> position = new HashMap<>();
+        position.put("i", comando.getC()); // Columna
+        position.put("j", comando.getF()); // Fila
+
+        jsonMessage.put("position", position); // Añadir la posición al mensaje JSON
 
         // Enviar el mensaje JSON al cliente
-        socketServer.enviarMensaje(cliente, mensajeSalida);
-        System.out.println("Comando enviado correctamente.");
+        try {
+            String mensajeSalida = jsonProcessor.getObjectMapper().writeValueAsString(jsonMessage);
+            socketServer.enviarMensaje(cliente, mensajeSalida);
+            System.out.println("Comando enviado correctamente: " + jsonMessage);
+        } catch (JsonProcessingException e) {
+            System.err.println("Error al procesar el JSON: " + e.getMessage());
+            e.printStackTrace(); // O maneja la excepción de acuerdo a tu lógica de error
+        }
     }
+
+
 
     // Método para procesar comandos desde la terminal
     public void processInputCommand(String input, Cliente cliente) {

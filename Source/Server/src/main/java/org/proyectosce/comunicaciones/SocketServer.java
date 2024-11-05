@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SocketServer {
     private static SocketServer instance;
-    private static final int PORT = 4321;
+    private static final int PORT = 8321;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
     private final ObjectMapper objectMapper = new ObjectMapper();
