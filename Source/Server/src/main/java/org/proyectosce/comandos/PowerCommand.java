@@ -1,11 +1,16 @@
 package org.proyectosce.comandos;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PowerCommand implements Command {
     private final String type;
-    private int f; // posición x
-    private int c; // posición y
+    private final int f; // posición x
+    private final int c; // posición y
 
-    public PowerCommand(String type) {
+    public PowerCommand(int f, int c, String type) {
+        this.f = f;
+        this.c = c;
         this.type = type;
     }
 
@@ -14,20 +19,23 @@ public class PowerCommand implements Command {
         return type;
     }
 
-    @Override
-    public void setParams(Object params) {
-        if (params instanceof int[]) {
-            int[] coordinates = (int[]) params;
-            this.f = coordinates[0];
-            this.c = coordinates[1];
-        }
-    }
-
     public int getF() {
         return f;
     }
 
     public int getC() {
         return c;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> jsonMessage = new HashMap<>();
+        jsonMessage.put("command", type);
+
+        Map<String, Integer> position = new HashMap<>();
+        position.put("x", c);
+        position.put("y", f);
+
+        jsonMessage.put("position", position);
+        return jsonMessage;
     }
 }

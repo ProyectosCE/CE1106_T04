@@ -7,42 +7,39 @@ import org.proyectosce.comandos.PowerCommand;
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
     private final JsonProcessor jsonProcessor;
-    private final SocketServer socketServer;
     private final CommandHandler commandHandler;
+    private final SocketServer socketServer;
 
     public ClientHandler(Cliente cliente) {
         this.cliente = cliente;
         this.jsonProcessor = JsonProcessor.getInstance();
-        this.socketServer = SocketServer.getInstance();
         this.commandHandler = new CommandHandler();
+        this.socketServer = SocketServer.getInstance(); // Inicializar socketServer
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                String mensajeEntrante = socketServer.recibirMensaje(cliente);
+                String mensajeEntrante = socketServer.recibirMensaje(cliente); // Cambiar jsonProcessor a socketServer
                 if (mensajeEntrante == null) {
                     System.out.println("Cliente desconectado: " + cliente);
                     break;
                 }
 
                 Command comando = jsonProcessor.procesarComando(mensajeEntrante);
-                if (comando != null) {
-                    if (comando instanceof PowerCommand) {
-                        commandHandler.handleCommand((PowerCommand) comando, cliente); // Casting seguro
-                    } else {
-                        System.out.println("Comando no válido: " + comando.getType());
-                    }
+                if (comando instanceof PowerCommand) {
+                    commandHandler.handleCommand((PowerCommand) comando, cliente);
+                } else {
+                    System.out.println("Comando no válido o no reconocido.");
                 }
 
-                String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa");
-                socketServer.enviarMensaje(cliente, mensajeSalida);
+                String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa", null);
+                socketServer.enviarMensaje(cliente, mensajeSalida); // Cambiar jsonProcessor a socketServer
             }
         } finally {
-            socketServer.cerrarConexion(cliente);
+            socketServer.cerrarConexion(cliente); // Cambiar jsonProcessor a socketServer
             System.out.println("Cliente removido: " + cliente);
         }
     }
 }
-

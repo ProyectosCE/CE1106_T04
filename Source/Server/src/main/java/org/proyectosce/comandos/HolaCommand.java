@@ -13,9 +13,4 @@ public class HolaCommand implements Command {
     public String getType() {
         return "";
     }
-
-    @Override
-    public void setParams(Object params) {
-
-    }
 }
