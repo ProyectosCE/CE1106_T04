@@ -1,16 +1,12 @@
 package org.proyectosce;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
-import java.util.*;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -172,7 +168,7 @@ public class Server {
     /* Method: sendMessageToClient
         Este metodo envía un mensaje JSON a un cliente específico. El metodo convierte el mensaje JSON en bytes y lo envía al cliente a través del SocketChannel.
     */
-    static void sendMessageToClient(SocketChannel clientChannel, String jsonMessage) {
+    public static void sendMessageToClient(SocketChannel clientChannel, String jsonMessage) {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(1024);
             buffer.put(jsonMessage.getBytes());
@@ -211,7 +207,7 @@ public class Server {
     /* Method: sendMessagetoSpectators
         Este metodo envía un mensaje JSON a todos los espectadores conectados. El metodo itera sobre la lista de espectadores y envía el mensaje JSON a cada espectador.
     */
-    private static void sendMessagetoSpectators(String jsonMessage) {
+    public static void sendMessagetoSpectators(String jsonMessage) {
         executorService.submit(() -> {
             for (SocketChannel spectator : spectators) {
                 sendMessageToClient(spectator, jsonMessage);

@@ -1,45 +1,43 @@
 package org.proyectosce.comunicaciones;
+
 import org.proyectosce.comandos.Command;
-
-import java.io.IOException;
-
+import org.proyectosce.comandos.CommandHandler;
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
     private final JsonProcessor jsonProcessor;
     private final SocketServer socketServer;
+    private final CommandHandler commandHandler;
 
     public ClientHandler(Cliente cliente) {
         this.cliente = cliente;
         this.jsonProcessor = JsonProcessor.getInstance();
         this.socketServer = SocketServer.getInstance();
+        this.commandHandler = new CommandHandler();
     }
 
     @Override
     public void run() {
         try {
             while (true) {
-                // Recibir el mensaje del cliente
                 String mensajeEntrante = socketServer.recibirMensaje(cliente);
                 if (mensajeEntrante == null) {
                     System.out.println("Cliente desconectado: " + cliente);
-                    break;  // Termina el bucle si el cliente se desconecta
+                    break;
                 }
 
-                // Procesar el mensaje recibido
                 Command comando = jsonProcessor.procesarComando(mensajeEntrante);
                 if (comando != null) {
-                    comando.ejecutar(cliente);
+                    commandHandler.handleCommand(comando, cliente);
                 }
 
-                // Enviar una respuesta al cliente
                 String mensajeSalida = jsonProcessor.crearMensajeSalida("Conexión exitosa");
                 socketServer.enviarMensaje(cliente, mensajeSalida);
             }
         } finally {
-            // Limpiar y remover al cliente de la lista
             socketServer.cerrarConexion(cliente);
             System.out.println("Cliente removido: " + cliente);
         }
     }
 }
+

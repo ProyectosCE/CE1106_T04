@@ -26,13 +26,28 @@ public class JsonProcessor {
         return instance;
     }
 
-    // Método para convertir un objeto Java a JSON
+    // Método original para crear una respuesta JSON simple
     public String crearMensajeSalida(String mensaje) {
         try {
             return objectMapper.writeValueAsString(Map.of("respuesta", mensaje));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Método para crear un mensaje JSON complejo con state, comando y objeto
+    public String crearMensajeSalida(String estado, String comando, Map<String, Object> objeto) {
+        try {
+            Map<String, Object> message = Map.of(
+                    "state", estado,
+                    "comando", comando,
+                    "objeto", objeto
+            );
+            return objectMapper.writeValueAsString(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "{}";
         }
     }
 
@@ -45,7 +60,7 @@ public class JsonProcessor {
             if ("hola".equals(commandType)) {
                 return new HolaCommand();
             }
-
+            // Aquí puedes añadir más comandos si es necesario
         } catch (IOException e) {
             e.printStackTrace();
         }

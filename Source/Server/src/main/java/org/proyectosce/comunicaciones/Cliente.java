@@ -2,24 +2,27 @@ package org.proyectosce.comunicaciones;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.nio.ByteBuffer;
 
-/*
- * Class: Cliente
- *
- * Almacena la información relacionada con los clientes conectados.
- */
 public class Cliente {
-    private final SocketChannel channel;
+    private final SocketChannel clientChannel;
 
-    public Cliente(SocketChannel channel) {
-        this.channel = channel;
+    public Cliente(SocketChannel clientChannel) {
+        this.clientChannel = clientChannel;
     }
 
     public SocketChannel getChannel() {
-        return channel;
+        return clientChannel;
     }
 
-    public String getDireccion() throws IOException {
-        return channel.getRemoteAddress().toString();
+    // Método para enviar un mensaje al cliente
+    public void enviarMensaje(String mensaje) {
+        try {
+            ByteBuffer buffer = ByteBuffer.wrap(mensaje.getBytes());
+            clientChannel.write(buffer);
+            System.out.println("Mensaje enviado al cliente: " + mensaje);
+        } catch (IOException e) {
+            System.out.println("Error al enviar mensaje al cliente: " + e.getMessage());
+        }
     }
 }
