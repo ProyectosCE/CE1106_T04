@@ -83,8 +83,6 @@ public class Server {
                 // Agregar el cliente a la lista
                 clients.add(clientChannel);
 
-                sendSetNumberMessage(42);
-
                 // Manejar la conexión del cliente en un nuevo hilo
                 executorService.submit(() -> handleClient(clientChannel));
             }
@@ -136,13 +134,6 @@ public class Server {
                     System.out.println("Comando no reconocido.");
                 }
 
-                // Responder al cliente
-                buffer.clear();
-                String jsonResponse = objectMapper.writeValueAsString(Map.of("respuesta", "Comando ejecutado"));
-                buffer.put(jsonResponse.getBytes());
-                buffer.flip();
-                clientChannel.write(buffer);
-                buffer.clear();
             }
         } catch (IOException e) {
             System.out.println("Error manejando el cliente: " + e.getMessage());

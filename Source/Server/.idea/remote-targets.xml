@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <option name="projectDefaultTargetUuid" value="b1945f69-dbd0-4d7b-923c-dd4dd15a7acd" />
+    <targets>
+      <target name="WSL - Ubuntu-24.04" type="wsl" uuid="b1945f69-dbd0-4d7b-923c-dd4dd15a7acd">
+        <config>
+          <option name="distributionMsId" value="Ubuntu-24.04" />
+          <option name="projectRootOnTarget" value="{exitCode=0, timeout=false, cancelled=false, stdout=/tmp/tmp.LbILZ2iI7y&#10;, stderr=}/Server" />
+        </config>
+        <ContributedStateBase type="JavaLanguageRuntime">
+          <config>
+            <option name="homePath" value="/usr/lib/jvm/temurin-21-jdk-amd64/" />
+          </config>
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>
