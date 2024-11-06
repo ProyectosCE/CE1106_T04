@@ -1,8 +1,7 @@
 package org.proyectosce.comunicaciones;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.proyectosce.comandos.*;
-
+import org.proyectosce.comandos.factory.products.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,7 @@ import java.util.Map;
 public class JsonProcessor {
     private static JsonProcessor instance;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final JsonProcessor jsonInstance = new JsonProcessor();
 
     // Singleton
     private JsonProcessor() {}
@@ -26,13 +26,17 @@ public class JsonProcessor {
         return instance;
     }
 
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
     // Método para convertir un objeto Java a JSON
-    public String crearMensajeSalida(String mensaje) {
+    public String crearMensajeSalida(String comando, Map<String, Object> objeto) {
         try {
-            return objectMapper.writeValueAsString(Map.of("respuesta", mensaje));
+            return objectMapper.writeValueAsString(Map.of("comando", comando, "objeto", objeto));
         } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            System.err.println("Error al crear mensaje JSON: " + e.getMessage());
+            return "{}";
         }
     }
 
@@ -50,13 +54,21 @@ public class JsonProcessor {
         }
     }
 
+    public void enviarMensaje(Cliente cliente, String mensaje) {
+        cliente.enviarMensaje(mensaje);
+    }
+
+    public void cerrarConexion(Cliente cliente) {
+        cliente.cerrarConexion();
+    }
+
+    //IMPLEMENTAR FACTORY A PARTIR DE AQUÍ
     public Command procesarComando(String mensajeJson, Cliente emisor) {
         try {
             Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
             String commandType = (String) jsonData.get("command");
             System.out.println(commandType);
-
-
+            
             if ("hola".equals(commandType)) {
                 return new HolaCommand();
 
@@ -77,6 +89,19 @@ public class JsonProcessor {
                 }
                 else{
                     System.out.println("NO HAY JUGADOR PARA OBSERVAR :(");
+                }
+            } else if ("brick_pwr".equals(commandType)) {
+                try {
+                    Map<String, Object> map = objectMapper.readValue(mensajeJson, Map.class);
+                    String type = (String) map.get("command");
+                    Map<String, Integer> position = (Map<String, Integer>) map.get("position");
+                    int f = position.get("y");
+                    int c = position.get("x");
+
+                    return new PowerCommand(f, c, type); //CUIDADO
+                } catch (IOException | ClassCastException e) {
+                    System.err.println("Error al procesar comando JSON: " + e.getMessage());
+                    return null;
                 }
             }
 

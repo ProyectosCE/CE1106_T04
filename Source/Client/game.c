@@ -3,16 +3,11 @@
 //
 
 #include "game.h"
-
 #include "comunicaciones/comServer.h"
-
 
 float lastUpdateTime = 0.0f; // Último tiempo de actualización.
 float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
 float ball_speed_multiplier = 1.0f;
-
-
-
 
 // Initialize game variables
 void InitGame(){

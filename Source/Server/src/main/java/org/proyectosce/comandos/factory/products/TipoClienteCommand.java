@@ -1,9 +1,11 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
 
-public class TipoClienteCommand implements Command{
+import java.util.Map;
+
+public class TipoClienteCommand implements Command {
     private final String tipoCliente;
     private  Cliente cliente;
 
@@ -25,5 +27,15 @@ public class TipoClienteCommand implements Command{
             comServer.enviarListaDeJugadores(cliente);
             System.out.println("Cliente registrado como espectador: " + cliente);
         }
+    }
+
+    @Override
+    public String getType() {
+        return "";
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

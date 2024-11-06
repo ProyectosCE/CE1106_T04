@@ -1,9 +1,10 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
 import org.proyectosce.comunicaciones.SocketServer;
 
+import java.util.Map;
 import java.util.Set;
 
 public class SendGameStateCommand implements Command {
@@ -27,5 +28,15 @@ public class SendGameStateCommand implements Command {
 
         }
         System.out.println("Update enviado");
+    }
+
+    @Override
+    public String getType() {
+        return "";
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

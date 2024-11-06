@@ -1,7 +1,9 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
+
+import java.util.Map;
 
 public class GameSpectatorCommand implements Command {
     private final Cliente jugadorAObservar;
@@ -16,5 +18,15 @@ public class GameSpectatorCommand implements Command {
     public void ejecutar() {
         ComServer.getInstance().registrarObservador(jugadorAObservar, espectador);
         System.out.println("Espectador registrado para observar al jugador: " + jugadorAObservar);
+    }
+
+    @Override
+    public String getType() {
+        return "";
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

@@ -1,10 +1,7 @@
 package org.proyectosce.comunicaciones;
 
-import org.proyectosce.comandos.Command;
-import org.proyectosce.comunicaciones.JsonProcessor;
-import org.proyectosce.comandos.TipoClienteCommand;
-import org.proyectosce.comandos.GameSpectatorCommand;
-import org.proyectosce.comandos.SendGameStateCommand;
+import org.proyectosce.comandos.factory.products.Command;
+import org.proyectosce.comandos.factory.products.TipoClienteCommand;
 
 public class ClientHandler implements Runnable {
     private final Cliente cliente;
@@ -38,7 +35,6 @@ public class ClientHandler implements Runnable {
                             clienteIdentificado = true;  // Marcar cliente como identificado
                         } else {
                             System.out.println("Comando inesperado; se esperaba identificación de tipo de cliente.");
-                            continue;  // Ignorar otros comandos hasta que el cliente esté identificado
                         }
                     } else {
                         // Procesar mensajes después de la identificación
