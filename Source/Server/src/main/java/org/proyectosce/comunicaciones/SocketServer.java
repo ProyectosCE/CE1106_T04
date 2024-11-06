@@ -65,29 +65,31 @@ public class SocketServer {
     public String recibirMensaje(Cliente cliente) {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+            // Leer datos en un ciclo para asegurarse de recibir el mensaje completo
             int bytesRead = cliente.getChannel().read(buffer);
 
             // Verificar si el cliente se ha desconectado
             if (bytesRead == -1) {
                 System.out.println("El cliente se ha desconectado: " + cliente);
                 this.cerrarConexion(cliente); // Cerrar la conexión con el cliente
-                return null;  // Retornar null para indicar que el cliente se desconectó
-            }
-
-            // Si no hay datos en el buffer, retornar null también
-            if (bytesRead == 0) {
-                System.out.println("Buffer vacío, sin datos disponibles del cliente: " + cliente);
                 return null;
             }
+
+            // Limpiar el buffer antes de cada lectura para evitar residuos
+            buffer.flip();
 
             // Convertir el buffer en cadena de texto y retornar el mensaje
             return new String(buffer.array(), 0, bytesRead).trim();
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
+            this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
             return null;
         }
     }
+
 
 
     /*

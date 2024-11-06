@@ -24,6 +24,8 @@ public class SendGameStateCommand implements Command {
 
         for (Cliente espectador : observadores) {
             socketServer.enviarMensaje(espectador, gameStateJson);
+
         }
+        System.out.println("Update enviado");
     }
 }

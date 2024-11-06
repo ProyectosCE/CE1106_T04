@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Se encarga de iniciar el servidor de escucha, manejar clientes y ejecutar comandos.
  */
 public class ComServer {
+    private volatile boolean servidorActivo = true;
     private static ComServer instance;
     private final Set<Cliente> clients = ConcurrentHashMap.newKeySet();
     private final Set<Cliente> jugadores = ConcurrentHashMap.newKeySet();  // Lista de jugadores
@@ -25,23 +26,28 @@ public class ComServer {
         return instance;
     }
 
-    // Método que inicia el servidor de comunicaciones
+
+
     public void iniciarServidor() {
         SocketServer socketServer = SocketServer.getInstance();
         socketServer.abrirPuerto();
 
-        while (true) {
-            // Esperar comunicaciones del socket
+        while (servidorActivo) {
             Cliente nuevoCliente = socketServer.esperarCliente();
             if (nuevoCliente != null) {
                 clients.add(nuevoCliente);
-                // Crear un nuevo hilo para manejar la comunicación con este cliente
                 ClientHandler clientHandler = new ClientHandler(nuevoCliente);
                 Thread clientThread = new Thread(clientHandler);
                 clientThread.start();
             }
         }
     }
+
+    public void detenerServidor() {
+        servidorActivo = false;
+        // Otras acciones para cerrar conexiones y liberar recursos
+    }
+
 
     public Cliente obtenerClientePorId(String id) {
         for (Cliente cliente : jugadores) {
@@ -77,7 +83,7 @@ public class ComServer {
         List<String> listaDeJugadores = new ArrayList<>();
 
         for (Cliente jugador : jugadores) {
-            listaDeJugadores.add(jugador.toString()); // Asume que `toString()` devuelve el ID o nombre del jugador
+            listaDeJugadores.add(jugador.getId()); // Asume que `toString()` devuelve el ID o nombre del jugador
         }
 
         // Convertir la lista de jugadores a JSON

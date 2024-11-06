@@ -54,6 +54,7 @@ public class JsonProcessor {
         try {
             Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
             String commandType = (String) jsonData.get("command");
+            System.out.println(commandType);
 
 
             if ("hola".equals(commandType)) {
@@ -64,18 +65,24 @@ public class JsonProcessor {
 
             } else if ("tipoCliente".equals(commandType)) {
                 String tipoCliente = (String) jsonData.get("tipoCliente");
-                return new TipoClienteCommand(tipoCliente);
+                return new TipoClienteCommand(tipoCliente, emisor);
 
             } else if ("GameSpectator".equals(commandType)) {
+                System.out.println("entramos a comando GameSpectator");
                 String jugadorId = (String) jsonData.get("jugadorId");
+                System.out.println("jugador id enviado desde espectador:"+jugadorId);
                 Cliente jugadorAObservar = ComServer.getInstance().obtenerClientePorId(jugadorId);
                 if (jugadorAObservar != null) {
-                    return new GameSpectatorCommand(jugadorAObservar);
+                    return new GameSpectatorCommand(jugadorAObservar, emisor);
+                }
+                else{
+                    System.out.println("NO HAY JUGADOR PARA OBSERVAR :(");
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("tuvimos un error");
         }
         return null;
     }
