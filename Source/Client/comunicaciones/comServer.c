@@ -1,4 +1,7 @@
 #include "comServer.h"
+
+#include <log.h>
+
 #include "../logs/saveLog.h"
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +76,29 @@ void ComServer_sendPlayerName(ComServer *server, const char *name) {
     free(jsonMessage);
 }
 
+void ComServer_observerGetlist(ComServer *server) {
+    if (server == NULL) {
+        savelog_warn("Servidor no inicializado.\n");
+        return;
+    }
+
+    char *jsonMessage = JsonProcessor_createJsonGetListPlayers(server->jsonProcessor);
+    SocketServer_send(server->socketServer, jsonMessage);
+    free(jsonMessage);
+}
+
+void comServer_sendChoosenPlayer(ComServer *server,const char *playerId) {
+        if (server == NULL) {
+            savelog_warn("Servidor no inicializado.\n");
+            return;
+        }
+
+        char *jsonMessage = JsonProcessor_createJsonChoosenPlayer(server->jsonProcessor,playerId);
+        SocketServer_send(server->socketServer, jsonMessage);
+        free(jsonMessage);
+
+}
+
 void ComServer_sendStatus(const char *message) {
     if (comserver_instance == NULL) {
         savelog_warn("Servidor no inicializado.\n");
@@ -87,7 +113,11 @@ void ComServer_sendStatus(const char *message) {
  */
 void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback) {
     if (server != NULL) {
+        printf("Se registro el callback corectamente");
         server->onMessageReceived = callback;
+    }
+    else {
+        printf("UPS, no se puedo registrar el callback");
     }
 }
 
@@ -101,18 +131,17 @@ void *ComServer_messageListeningLoop(void *arg) {
         return NULL;
     }
 
-    char buffer[1024];
+    char buffer[4096];
     while (1) {
         if (server->socketServer->isConnected) {
             int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
             if (bytesReceived > 0) {
-                char *processedMessage = JsonProcessor_processJsonMessage(server->jsonProcessor, buffer);
                 if (server->onMessageReceived != NULL) {
-                    //server->onMessageReceived(processedMessage);  // Notificar al observer
+                    server->onMessageReceived(buffer);  // Notificar al observer
                 }
-                free(processedMessage);
+                //free(processedMessage);
             } else {
-                savelog_error("Error al recibir el mensaje del servidor\n");
+                log_error("Error al recibir el mensaje del servidor\n");
             }
             sleep(2);
         } else {

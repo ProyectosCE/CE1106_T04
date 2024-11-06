@@ -17,6 +17,7 @@
 
 
 pthread_t sendStateThread;
+pthread_t askForUserThread;
 
 void init_game_server() {
 
@@ -66,6 +67,16 @@ void *send_game_state_thread(void *arg) {
     return NULL;
 }
 
+void *askForPlayerList(void *arg) {
+    GameState *gameState = (GameState *)arg;
+    ComServer *comServer=ComServer_create();
+    while (gameState->currentScreen==OBSERVER_SELECT) {
+        ComServer_observerGetlist(comServer);
+        sleep(5);
+    }  // Send the current game state
+    return NULL;
+}
+
 void DrawMenuInput(GameState *gameState) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
@@ -93,6 +104,12 @@ void updateMenuInput(GameState *game_state) {
     }
 }
 
+
+void gameServerCallback(const char *recibido) {
+    printf(recibido);
+}
+
+
 void start_game() {
     GameState *gameState = getGameState();
 
@@ -114,7 +131,7 @@ void start_game() {
                 fprintf(stderr, "Error al crear ComServer\n");
                 gameState->running = false;
             }
-
+            ComServer_registerCallback(gameState->comServer,gameServerCallback);
             // Crear el hilo de comunicaciones
             if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
                 fprintf(stderr, "Error al crear el hilo de comunicación\n");
@@ -138,7 +155,41 @@ void start_game() {
         if (gameState->restart) {
             init_game_server();
         }
-    } else if (getCurrentScreen() == SPECTATOR) {
+    }
+    else if (getCurrentScreen() == OBSERVER_SELECT) {
+
+        // Crear el hilo de comunicaciones
+        ComServer *comServer = ComServer_create();
+        // Print the boolean value
+        if (!gameState->running) {
+            // Print the boolean value
+
+            printf("Game is %s\n", gameState->running ? "running" : "not running");
+            gameState->running = true;
+
+            ComServer_registerCallback(comServer,espectadorGetList);
+            gameState->comServer=comServer;
+
+            if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
+                fprintf(stderr, "Error al crear el hilo de comunicación\n");
+                ComServer_destroy(gameState->comServer);
+                gameState->running = false;
+            }
+
+            if (pthread_create(&gameState->askForUsersThread, NULL, askForPlayerList, (void *)gameState) != 0) {
+                fprintf(stderr, "Error al crear el hilo de comunicación\n");
+                ComServer_destroy(gameState->comServer);
+                gameState->running = false;
+            }
+        }
+        PlayerList *playerLista = GetPlayerListInstance();
+        DrawPlayerList(playerLista);
+        UpdatePlayerList(playerLista);
+
+    }
+
+    else if (getCurrentScreen() == SPECTATOR) {
+        init_game_server();
         draw_game(gameState);
     }
 

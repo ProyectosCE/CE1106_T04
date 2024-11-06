@@ -16,5 +16,7 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
 char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jsonMessage);
 
 char *JsonProcessor_createJsonPlayerName(JsonProcessor *processor, const char *playerName);
+char *JsonProcessor_createJsonGetListPlayers(JsonProcessor *processor);
+char *JsonProcessor_createJsonChoosenPlayer(JsonProcessor *processor, const char *playerId);
 
 #endif // JSON_PROCESSOR_H

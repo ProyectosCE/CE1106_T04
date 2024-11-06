@@ -9,6 +9,7 @@
 typedef enum {
     MENU,
     NAME_INPUT,
+    OBSERVER_SELECT,
     GAME,
     SPECTATOR,
     EXIT
@@ -71,7 +72,7 @@ typedef struct {
     ComServer *comServer;
     pthread_t communicationThread;
     pthread_t sendStatusThread;
-    pthread_t gameUpdateThread;
+    pthread_t askForUsersThread;
 } GameState;
 
 

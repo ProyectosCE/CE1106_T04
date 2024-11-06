@@ -1,0 +1,13 @@
+#ifndef SCREEN_HANDLER_H
+#define SCREEN_HANDLER_H
+#include <stdbool.h>
+
+#include "game_status.h"
+
+
+// Prototipos de funciones
+void initScreenHandler();
+void updateScreenHandler(GameState *game_state);
+void drawScreenHandler(GameState *game_state);
+
+#endif // SCREEN_HANDLER_H

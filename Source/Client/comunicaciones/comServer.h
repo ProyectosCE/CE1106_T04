@@ -31,6 +31,8 @@ void ComServer_sendStatus(const char *message);
 void ComServer_sendPlayerName(ComServer *server, const char *message);
 void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback);
 void *ComServer_messageListeningLoop(void *arg);
+void ComServer_observerGetlist(ComServer *server);
+void comServer_sendChoosenPlayer(ComServer *server,const char *player);
 
 
 #endif // COM_SERVER_H

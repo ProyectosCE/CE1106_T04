@@ -26,7 +26,7 @@ void UpdateMenu() {
             } else {
             }
         } else {
-            setCurrentScreen(SPECTATOR);
+            setCurrentScreen(OBSERVER_SELECT);
         }
     }
 }
