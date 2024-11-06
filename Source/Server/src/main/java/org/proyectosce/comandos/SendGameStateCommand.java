@@ -1,19 +1,29 @@
-// SendGameStateCommand.java
 package org.proyectosce.comandos;
 
+import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
+import org.proyectosce.comunicaciones.SocketServer;
 
-public class SendGameStateCommand implements Command<Void> {
+import java.util.Set;
+
+public class SendGameStateCommand implements Command {
     private final String gameStateJson;
+    private final Cliente jugador;
 
-    public SendGameStateCommand(String gameStateJson) {
+    public SendGameStateCommand(String gameStateJson, Cliente jugador) {
         this.gameStateJson = gameStateJson;
+        this.jugador = jugador;
     }
 
     @Override
-    public void ejecutar(Void contexto) {
-        // Difunde el mensaje de estado del juego a todos los clientes conectados
-        ComServer.getInstance().enviarMensajeATodos(gameStateJson);
+    public void ejecutar() {
+        ComServer comServer = ComServer.getInstance();
+        SocketServer socketServer = SocketServer.getInstance();
+
+        Set<Cliente> observadores = comServer.obtenerObservadores(jugador);
+
+        for (Cliente espectador : observadores) {
+            socketServer.enviarMensaje(espectador, gameStateJson);
+        }
     }
 }
-
