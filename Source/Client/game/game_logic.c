@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <cjson/cJSON.h>
 
@@ -12,6 +13,7 @@
 #include "../comunicaciones/comServer.h"
 
 #include "collision_handler.h"
+#include "powerHandler.h"
 
 void update_game(GameState *gameState) {
     if (IsKeyPressed(KEY_P)) gameState->pause = !gameState->pause;
@@ -129,7 +131,80 @@ void sendGameState(GameState *gameState) {
 
     const char *json = generate_GameState_json(gameState);
     if (json != NULL) {
-        printf("GAME STATUS ENVIADO\n");
+        //printf("GAME STATUS ENVIADO\n");
         ComServer_sendStatus(json);
     }
+}
+
+
+PowerType get_power_type(const char* power_str) {
+    if (strcmp(power_str, "ADD_LIFE") == 0) return ADD_LIFE;
+    if (strcmp(power_str, "ADD_BALL") == 0) return ADD_BALL;
+    if (strcmp(power_str, "DOUBLE_RACKET") == 0) return DOUBLE_RACKET;
+    if (strcmp(power_str, "HALF_RACKET") == 0) return HALF_RACKET;
+    if (strcmp(power_str, "SPEED_UP") == 0) return SPEED_UP;
+    if (strcmp(power_str, "SPEED_DOWN") == 0) return SPEED_DOWN;
+    return NONE;
+}
+
+void process_brick_update(const char* json_command) {
+    // Parsear el JSON
+    cJSON* root = cJSON_Parse(json_command);
+    if (root == NULL) {
+        printf("Error parsing JSON\n");
+        return;
+    }
+
+    // Extraer valores del JSON
+    cJSON* row_item = cJSON_GetObjectItem(root, "row");
+    cJSON* column_item = cJSON_GetObjectItem(root, "column");
+    cJSON* power_item = cJSON_GetObjectItem(root, "power");
+
+    if (!cJSON_IsNumber(row_item) || !cJSON_IsNumber(column_item) || !cJSON_IsString(power_item)) {
+        printf("Invalid JSON format\n");
+        cJSON_Delete(root);
+        return;
+    }
+
+    int row = row_item->valueint-1;
+    int column = column_item->valueint-1;
+    const char* power_str = power_item->valuestring;
+
+    // Validar límites de row y column
+    if (row < 0 || row >= LINES_OF_BRICKS || column < 0 || column >= BRICKS_PER_LINE) {
+        printf("Row (%d) or Column (%d) out of bounds. Max Row: %d, Max Columns: %d\n", row, column, LINES_OF_BRICKS - 1, BRICKS_PER_LINE - 1);
+        cJSON_Delete(root);
+        return;
+    }
+
+    // Obtener el tipo de poder
+    PowerType power = get_power_type(power_str);
+
+    // Llamar a la función correspondiente
+    switch (power) {
+        case ADD_LIFE:
+            update_brick_life(row, column);
+            break;
+        case ADD_BALL:
+            update_brick_ball(row, column);
+            break;
+        case DOUBLE_RACKET:
+            update_brick_doubleRacket(row, column);
+            break;
+        case HALF_RACKET:
+            update_brick_halfRacket(row, column);
+            break;
+        case SPEED_UP:
+            update_brick_speedUp(row, column);
+            break;
+        case SPEED_DOWN:
+            update_brick_speedDown(row, column);
+            break;
+        default:
+            printf("No action for power: %s\n", power_str);
+            break;
+    }
+
+    // Liberar memoria
+    cJSON_Delete(root);
 }

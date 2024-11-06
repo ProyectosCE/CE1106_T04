@@ -4,7 +4,7 @@
 
 void initPowerHandler();
 // Funciones de manejo de ladrillos y puntuación
-void check_brick(int i, int j);
+void check_brick(int brickx, int bricky);
 void update_brick_score(int level, int new_points);
 
 // Funciones de manejo de bolas

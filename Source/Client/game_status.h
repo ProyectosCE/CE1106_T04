@@ -24,17 +24,24 @@ typedef struct Ball {
 
 #define MAX_BALLS 5
 
+// Enumeración para los poderes
+typedef enum PowerType {
+    NONE,           // Sin poder
+    ADD_LIFE,       // Añadir vida
+    ADD_BALL,       // Añadir bola
+    DOUBLE_RACKET,  // Raqueta doble
+    HALF_RACKET,    // Raqueta a la mitad
+    SPEED_UP,       // Aumentar velocidad
+    SPEED_DOWN      // Reducir velocidad
+} PowerType;
+
+// Estructura Brick
 typedef struct Brick {
-    Vector2 position;
-    bool active;
-    int points;
-    Color color;
-    bool add_life;
-    bool add_ball;
-    bool add_doubleRacket;
-    bool add_halfRacket;
-    bool speedUp;
-    bool speedDown;
+    Vector2 position;  // Posición del ladrillo
+    bool active;       // Si el ladrillo está activo
+    int points;        // Puntos al destruirlo
+    Color color;       // Color del ladrillo
+    PowerType power;   // Tipo de poder asociado al ladrillo
 } Brick;
 
 #define LINES_OF_BRICKS         8

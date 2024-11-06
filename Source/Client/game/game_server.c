@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "../logs/saveLog.h"
+#include <errno.h>
+
+
 #include "game_logic.h"
 #include "../gui/main_menu.h"
 #include "spectator.h"
@@ -42,7 +46,7 @@ void init_game_server() {
 
 
 void gameServerCallback(const char *recibido) {
-    printf(recibido);
+    process_brick_update(recibido);
 }
 
 void updateNameInput(GameState *game_state) {
@@ -100,6 +104,10 @@ void update_game_state(GameState *gameState) {
             if (!gameState->comunicationRunning) {
 
                 gameState->comunicationRunning=true;
+
+                printf("COMUNICACIONES INICIADAS EN GAMEE!");
+
+                gameState->comServer=NULL;
 
                 // Inicializar comunicación del juego
                 initialize_game_communication(gameState, gameServerCallback);

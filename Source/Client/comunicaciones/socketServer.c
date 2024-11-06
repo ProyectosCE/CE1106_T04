@@ -111,7 +111,7 @@ void SocketServer_send(SocketServer *server, const char *message) {
         totalBytesSent += bytesSent;
     }
 
-    log_info("Mensaje enviado al servidor: %s\n", message);
+    //log_info("Mensaje enviado al servidor: %s\n", message);
 }
 
 /*
@@ -138,7 +138,7 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
         }
     } else {
         buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
-        log_info("Mensaje recibido del servidor: %s\n", buffer);
+        //log_info("Mensaje recibido del servidor: %s\n", buffer);
         return valread;  // Retornar la cantidad de bytes leídos
     }
 }

@@ -8,21 +8,7 @@ void initPowerHandler() {
     gameStateHandler = getGameState();
 }
 
-void check_brick(int i, int j){
-    if (gameStateHandler->bricks[i][j].add_ball) {
-        add_ball(gameStateHandler->bricks[i][j].position.x, gameStateHandler->bricks[i][j].position.y);
-    } else if (gameStateHandler->bricks[i][j].add_life) {
-        add_life(&gameStateHandler->player);
-    } else if (gameStateHandler->bricks[i][j].add_doubleRacket) {
-        double_racket(&gameStateHandler->player);
-    } else if (gameStateHandler->bricks[i][j].add_halfRacket) {
-        half_racket(&gameStateHandler->player);
-    } else if (gameStateHandler->bricks[i][j].speedUp) {
-        speedUp();
-    } else if (gameStateHandler->bricks[i][j].speedDown) {
-        speedDown();
-    }
-}
+
 
 void update_brick_score(int level, int new_points) {
     for (int i = 0; i < LINES_OF_BRICKS; i++) {
@@ -55,10 +41,17 @@ void add_ball(int posX, int posY) {
 }
 
 void doubleRacket(){
-    gameStateHandler->player.size = (Vector2){ screenWidth/5, 10 };
+    gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x*2, 10 };
 }
 void halfRacket(){
-    gameStateHandler->player.size = (Vector2){ screenWidth/20, 10 };
+    gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x/2, 10 };
+}
+
+void addLife() {
+    if (gameStateHandler->player.life < PLAYER_MAX_LIFE ) {
+        gameStateHandler->player.life ++;
+    }
+
 }
 void speedUp(){
     for (int i = 0; i < MAX_BALLS; i++) {
@@ -79,29 +72,46 @@ void speedDown(){
 
 
 void update_brick_ball(int i, int j){
-    gameStateHandler->bricks[i][j].add_ball = true;
+    gameStateHandler->bricks[i][j].power = ADD_BALL;
 }
 
 void update_brick_life(int i, int j){
-    gameStateHandler->bricks[i][j].add_life = true;
+    gameStateHandler->bricks[i][j].power = ADD_LIFE;
 }
 
 void update_brick_doubleRacket(int i, int j){
-    gameStateHandler->bricks[i][j].add_doubleRacket = true;
+    gameStateHandler->bricks[i][j].power = DOUBLE_RACKET;
 }
 
 void update_brick_halfRacket(int i, int j){
-    gameStateHandler->bricks[i][j].add_halfRacket = true;
+    gameStateHandler->bricks[i][j].power = HALF_RACKET;
 }
 
 void update_brick_speedUp(int i, int j){
-    gameStateHandler->bricks[i][j].speedUp = true;
+    gameStateHandler->bricks[i][j].power = SPEED_UP;
 }
 
 void update_brick_speedDown(int i, int j){
-    gameStateHandler->bricks[i][j].speedDown = true;
+    gameStateHandler->bricks[i][j].power = SPEED_DOWN;
 }
 
 void update_player_score(int brickx, int bricky) {
     updatePlayerScore(&gameStateHandler->player, gameStateHandler->bricks[brickx][bricky].points);
+}
+
+void check_brick(int i, int j){
+    if (gameStateHandler->bricks[i][j].power == ADD_BALL) {
+        add_ball(gameStateHandler->bricks[i][j].position.x, gameStateHandler->bricks[i][j].position.y);
+    } else if (gameStateHandler->bricks[i][j].power == DOUBLE_RACKET) {
+        doubleRacket();
+    }
+    else if (gameStateHandler->bricks[i][j].power == ADD_LIFE) {
+        addLife();
+    } else if (gameStateHandler->bricks[i][j].power == HALF_RACKET) {
+        halfRacket();
+    } else if (gameStateHandler->bricks[i][j].power == SPEED_UP) {
+        speedUp();
+    } else if (gameStateHandler->bricks[i][j].power == SPEED_DOWN) {
+        speedDown();
+    }
 }

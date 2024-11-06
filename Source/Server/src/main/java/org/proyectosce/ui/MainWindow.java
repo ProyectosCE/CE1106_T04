@@ -12,7 +12,14 @@ public class MainWindow extends JFrame {
     private CommandHandler commandHandler;
 
     // Lista de comandos válidos
-    private final List<String> validCommands = List.of("add_life", "add_ball", "double_racket_size", "half_racket_size", "add_speed", "reduce_speed");
+    private final List<String> validCommands = List.of(
+            "ADD_LIFE",
+            "ADD_BALL",
+            "DOUBLE_RACKET",
+            "HALF_RACKET",
+            "SPEED_UP",
+            "SPEED_DOWN"
+    );
 
     public MainWindow() {
         setTitle("Servidor de Juego");
