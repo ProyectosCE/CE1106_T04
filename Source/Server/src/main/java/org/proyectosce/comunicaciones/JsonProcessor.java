@@ -1,55 +1,54 @@
 package org.proyectosce.comunicaciones;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.proyectosce.comandos.factory.products.Command;
-import org.proyectosce.comandos.factory.products.PowerCommand;
+import org.proyectosce.comandos.Command;
+import org.proyectosce.comandos.HolaCommand;
 
 import java.io.IOException;
 import java.util.Map;
 
+/*
+ * Class: JsonProcessor
+ *
+ * Procesa los mensajes en formato JSON, convirtiendo objetos Java a JSON y viceversa.
+ */
 public class JsonProcessor {
-    private static final JsonProcessor instance = new JsonProcessor();
+    private static JsonProcessor instance;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // Singleton
     private JsonProcessor() {}
 
-    public static JsonProcessor getInstance() {
+    public static synchronized JsonProcessor getInstance() {
+        if (instance == null) {
+            instance = new JsonProcessor();
+        }
         return instance;
     }
 
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
-    }
-
-    public String crearMensajeSalida(String comando, Map<String, Object> objeto) {
+    // Método para convertir un objeto Java a JSON
+    public String crearMensajeSalida(String mensaje) {
         try {
-            return objectMapper.writeValueAsString(Map.of("comando", comando, "objeto", objeto));
+            return objectMapper.writeValueAsString(Map.of("respuesta", mensaje));
         } catch (IOException e) {
-            System.err.println("Error al crear mensaje JSON: " + e.getMessage());
-            return "{}";
-        }
-    }
-
-    public Command procesarComando(String mensaje) {
-        try {
-            Map<String, Object> map = objectMapper.readValue(mensaje, Map.class);
-            String type = (String) map.get("command");
-            Map<String, Integer> position = (Map<String, Integer>) map.get("position");
-            int f = position.get("y");
-            int c = position.get("x");
-
-            return new PowerCommand(f, c, type);
-        } catch (IOException | ClassCastException e) {
-            System.err.println("Error al procesar comando JSON: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
-    public void enviarMensaje(Cliente cliente, String mensaje) {
-        cliente.enviarMensaje(mensaje);
-    }
+    // Método para procesar el JSON recibido y devolver un comando
+    public Command procesarComando(String mensajeJson) {
+        try {
+            Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
+            String commandType = (String) jsonData.get("comando");
 
-    public void cerrarConexion(Cliente cliente) {
-        cliente.cerrarConexion();
+            if ("hola".equals(commandType)) {
+                return new HolaCommand();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

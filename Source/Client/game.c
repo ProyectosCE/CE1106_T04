@@ -4,14 +4,6 @@
 
 #include "game.h"
 
-
-float lastUpdateTime = 0.0f; // Último tiempo de actualización.
-float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización.
-float ball_speed_multiplier = 1.0f;
-
-
-
-
 // Initialize game variables
 void InitGame(){
     // Inicializar el jugador
@@ -19,9 +11,6 @@ void InitGame(){
     player.size = (Vector2){ screenWidth/10, 10 };
     player.life = PLAYER_MAX_LIFE;
     player.score = 0;
-
-
-
 
     // Inicializar las bolas
     for (int i = 0; i < MAX_BALLS; i++) {
@@ -44,31 +33,7 @@ void InitGame(){
             brick[i][j].active = true;
         }
     }
-
-    // Inicializar los puntos de los ladrillos
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
-            if (brick[i][j].active) {
-                if (i < 2) {
-                    brick[i][j].points = 400;
-                } else if (i < 4) {
-                    brick[i][j].points = 300;
-                } else if (i < 6) {
-                    brick[i][j].points = 200;
-                } else {
-                    brick[i][j].points = 100;
-                }
-            }
-        }
-    }
-
-
 }
-
-
-
-
-
 
 void UpdateGame(){
     if (!gameOver) {
@@ -77,17 +42,18 @@ void UpdateGame(){
 
         if (!Pause) {
             // Logica del juego
-            if (IsKeyDown(KEY_A)) player.position.x -= 5;
-            if ((player.position.x - player.size.x / 2) <= 0) player.position.x = player.size.x / 2;
-            if (IsKeyDown(KEY_D)) player.position.x += 5;
-            if ((player.position.x + player.size.x / 2) >= screenWidth)
-                player.position.x = screenWidth - player.size.x / 2;
+            if (IsKeyDown(KEY_LEFT)) player.position.x -= 5;
+            if ((player.position.x - player.size.x/2) <= 0) player.position.x = player.size.x/2;
+            if (IsKeyDown(KEY_RIGHT)) player.position.x += 5;
+            if ((player.position.x + player.size.x/2) >= screenWidth) player.position.x = screenWidth - player.size.x/2;
 
             // Lanzar la bola
-            if (!balls[0].active) {
-                if (IsKeyPressed(KEY_W)) {
+            if (!balls[0].active)
+            {
+                if (IsKeyPressed(KEY_SPACE))
+                {
                     balls[0].active = true;
-                    balls[0].speed = (Vector2){0, -5 * ball_speed_multiplier};
+                    balls[0].speed = (Vector2) {0, -5};
                 }
             }
 
@@ -138,135 +104,18 @@ void UpdateGame(){
                 }
             }
 
-            // Collision logic: ball vs bricks
-            for (int i = 0; i < LINES_OF_BRICKS; i++) {
-                for (int j = 0; j < BRICKS_PER_LINE; j++) {
-                    if (brick[i][j].active) {
-                        for (int b = 0; b < MAX_BALLS; b++) {
-                            // Hit below
-                            if (((balls[b].position.y - balls[b].radius) <=
-                                 (brick[i][j].position.y + brickSize.y / 2)) &&
-                                ((balls[b].position.y - balls[b].radius) >
-                                 (brick[i][j].position.y + brickSize.y / 2 + balls[b].speed.y)) &&
-                                ((fabs(balls[b].position.x - brick[i][j].position.x)) <
-                                 (brickSize.x / 2 + balls[b].radius * 2 / 3)) && (balls[b].speed.y < 0)) {
-                                brick[i][j].active = false;
-                                balls[b].speed.y *= -1;
-
-                                update_player_score(i, j);
-                                check_brick(i, j);
-
-
-                            }
-                                // Hit above
-                            else if (((balls[b].position.y + balls[b].radius) >=
-                                      (brick[i][j].position.y - brickSize.y / 2)) &&
-                                     ((balls[b].position.y + balls[b].radius) <
-                                      (brick[i][j].position.y - brickSize.y / 2 + balls[b].speed.y)) &&
-                                     ((fabs(balls[b].position.x - brick[i][j].position.x)) <
-                                      (brickSize.x / 2 + balls[b].radius * 2 / 3)) && (balls[b].speed.y > 0)) {
-                                brick[i][j].active = false;
-                                balls[b].speed.y *= -1;
-
-                                update_player_score(i, j);
-                                check_brick(i, j);
-                            }
-                                // Hit left
-                            else if (((balls[b].position.x + balls[b].radius) >=
-                                      (brick[i][j].position.x - brickSize.x / 2)) &&
-                                     ((balls[b].position.x + balls[b].radius) <
-                                      (brick[i][j].position.x - brickSize.x / 2 + balls[b].speed.x)) &&
-                                     ((fabs(balls[b].position.y - brick[i][j].position.y)) <
-                                      (brickSize.y / 2 + balls[b].radius * 2 / 3)) && (balls[b].speed.x > 0)) {
-                                brick[i][j].active = false;
-                                balls[b].speed.x *= -1;
-
-                                update_player_score(i, j);
-                                check_brick(i, j);
-                            }
-                                // Hit right
-                            else if (((balls[b].position.x - balls[b].radius) <=
-                                      (brick[i][j].position.x + brickSize.x / 2)) &&
-                                     ((balls[b].position.x - balls[b].radius) >
-                                      (brick[i][j].position.x + brickSize.x / 2 + balls[b].speed.x)) &&
-                                     ((fabs(balls[b].position.y - brick[i][j].position.y)) <
-                                      (brickSize.y / 2 + balls[b].radius * 2 / 3)) && (balls[b].speed.x < 0)) {
-                                brick[i][j].active = false;
-                                balls[b].speed.x *= -1;
-
-                                update_player_score(i, j);
-                                check_brick(i, j);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            // Comprobar si los ladrillos de cada nivel específico fueron destruidos
-            for (int level = 0; level < LINES_OF_BRICKS / 2; level++) {
-                bool allBricksDestroyedInLevel = true;
-
-                for (int i = level * 2; i < (level + 1) * 2; i++) {
-                    for (int j = 0; j < BRICKS_PER_LINE; j++) {
-                        if (brick[i][j].active) {
-                            allBricksDestroyedInLevel = false;
-                            break;
-                        }
-                    }
-                    if (!allBricksDestroyedInLevel) break;
-                }
-
-                // Si los ladrillos de este nivel fueron destruidos y la velocidad no ha cambiado aún
-                if (allBricksDestroyedInLevel && !levelSpeedChanged[level]) {
-                    ball_speed_multiplier *= 1.2f;
-                    for (int i = 0; i < MAX_BALLS; i++) {
-                        if (balls[i].active) {
-                            // Incrementa la velocidad de la bola en un 30%
-                            balls[i].speed.y *= ball_speed_multiplier;
-                            balls[i].speed.x *= ball_speed_multiplier;
-                            levelsCompleted++;
-                        }
-                    }
-                    levelSpeedChanged[level] = true; // Marca que la velocidad ya cambió para este nivel
-                }
-            }
-
-            if (player.life <= 0) gameOver = true;
-            else
-            {
+            // Logica de Game Over
+            if (player.life <= 0) {
                 gameOver = true;
-
-                for (int i = 0; i < LINES_OF_BRICKS; i++)
-                {
-                    for (int j = 0; j < BRICKS_PER_LINE; j++)
-                    {
-                        if (brick[i][j].active) gameOver = false;
-                    }
-                }
             }
         }
-    }
-    else {
+
+    } else {
         if (IsKeyPressed(KEY_ENTER))
         {
             InitGame();
             gameOver = false;
-            ball_speed_multiplier = 1.0f;
         }
-    }
-
-    // Captura el tiempo actual
-    float currentTime = (float)clock() / CLOCKS_PER_SEC;
-
-    // Calcula el tiempo transcurrido desde la última actualización
-    deltaTime = currentTime - lastUpdateTime;
-
-    // Actualiza el juego y genera el JSON si es necesario
-    if (deltaTime >= (1.0f / 60.0f)) { // Aproximadamente 16.67 ms
-        char* jsonString = generateGameStateJSON();
-        lastUpdateTime = currentTime; // Actualiza el tiempo de la última generación.
-        free(jsonString); // Libera la memoria del JSON.
     }
 }
 
@@ -287,13 +136,6 @@ void DrawGame(){
         // Dibujar la bola en la posición inicial
         DrawCircleV(balls[0].position, balls[0].radius, MAROON);
 
-        // Dibujar la puntuación
-        DrawText(TextFormat("SCORE: %04i", player.score), 20, 10, 20, DARKGRAY);
-
-        // Dibujar niveles completados
-        DrawText(TextFormat("LEVEL: %01i/%01i", levelsCompleted, LINES_OF_BRICKS/2), screenWidth - 120, 10, 20, DARKGRAY);
-
-
         // Dibujar todas las bolas activas
         for (int i = 0; i < MAX_BALLS; i++) {
             if (balls[i].active) {
@@ -313,17 +155,21 @@ void DrawGame(){
                     Color brickColor;
 
                     if (i < 2) {
-                        brickColor = RED;  // Nivel 4 (líneas 0 y 1)
+                        brickColor = RED;  // Nivel 4 (líneas 6 y 7)
                         brick[i][j].color = RED;
+                        brick[i][j].points = 400;
                     } else if (i < 4) {
-                        brickColor = ORANGE; // Nivel 3 (líneas 2 y 3)
+                        brickColor = ORANGE; // Nivel 3 (líneas 4 y 5)
                         brick[i][j].color = ORANGE;
+                        brick[i][j].points = 300;
                     } else if (i < 6) {
-                        brickColor = YELLOW; // Nivel 2 (líneas 4 y 5)
+                        brickColor = YELLOW; // Nivel 2 (líneas 2 y 3)
                         brick[i][j].color = YELLOW;
+                        brick[i][j].points = 200;
                     } else {
-                        brickColor = GREEN;  // Nivel 1 (líneas 6 y 7)
+                        brickColor = GREEN;  // Nivel 1 (líneas 0 y 1)
                         brick[i][j].color = GREEN;
+                        brick[i][j].points = 100;
                     }
 
                     // Dibuja el ladrillo con el color correspondiente
@@ -348,178 +194,3 @@ void UpdateDrawFrame(){
     UpdateGame();
     DrawGame();
 }
-
-void check_brick(int i, int j){
-    if (brick[i][j].add_ball) {
-        add_ball(brick[i][j].position.x, brick[i][j].position.y);
-    } else if (brick[i][j].add_life) {
-        add_life();
-    } else if (brick[i][j].add_doubleRacket) {
-        doubleRacket();
-    } else if (brick[i][j].add_halfRacket) {
-        halfRacket();
-    } else if (brick[i][j].speedUp) {
-        speedUp();
-    } else if (brick[i][j].speedDown) {
-        speedDown();
-    }
-}
-
-void update_brick_score(int level, int new_points) {
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
-            if (brick[i][j].active) {
-                // Actualizar puntos únicamente en el nivel especificado
-                if ((level == 4 && i < 2) ||
-                    (level == 3 && i >= 2 && i < 4) ||
-                    (level == 2 && i >= 4 && i < 6) ||
-                    (level == 1 && i >= 6)) {
-
-                    brick[i][j].points = new_points;
-                }
-            }
-        }
-    }
-}
-
-
-
-void add_ball(int posX, int posY) {
-    for (int i = 0; i < MAX_BALLS; i++) {
-        if (!balls[i].active) {
-            balls[i].active = true;
-            balls[i].position = (Vector2){ posX, posY };  // Posición del ladrillo destruido
-            balls[i].speed = (Vector2){0, -5};
-            break;  // Salir del bucle una vez que activamos una nueva bola
-        }
-    }
-}
-
-void add_life(){
-    player.life++;
-}
-void doubleRacket(){
-    player.size = (Vector2){ screenWidth/5, 10 };
-}
-void halfRacket(){
-    player.size = (Vector2){ screenWidth/20, 10 };
-}
-void speedUp(){
-    for (int i = 0; i < MAX_BALLS; i++) {
-        if (balls[i].active) {
-            balls[i].speed.y *= 2;
-            balls[i].speed.x *= 2;
-        }
-    }
-}
-void speedDown(){
-    for (int i = 0; i < MAX_BALLS; i++) {
-        if (balls[i].active) {
-            balls[i].speed.y /= 2;
-            balls[i].speed.x /= 2;
-        }
-    }
-}
-
-
-void update_brick_ball(int i, int j){
-    brick[i][j].add_ball = true;
-}
-
-void update_brick_life(int i, int j){
-    brick[i][j].add_life = true;
-}
-
-void update_brick_doubleRacket(int i, int j){
-    brick[i][j].add_doubleRacket = true;
-}
-
-void update_brick_halfRacket(int i, int j){
-    brick[i][j].add_halfRacket = true;
-}
-
-void update_brick_speedUp(int i, int j){
-    brick[i][j].speedUp = true;
-}
-
-void update_brick_speedDown(int i, int j){
-    brick[i][j].speedDown = true;
-}
-
-void update_player_score(int brickx, int bricky) {
-    player.score += brick[brickx][bricky].points;
-}
-
-// Función que genera el estado actual del juego en formato JSON
-char* generateGameStateJSON() {
-    // Crear objeto raíz
-    cJSON *gameState = cJSON_CreateObject();
-
-    cJSON_AddStringToObject(gameState, "command", "sendGameState");
-
-    // Añadir información del jugador
-    cJSON *playerJSON = cJSON_CreateObject();
-
-    cJSON_AddNumberToObject(playerJSON, "positionX", player.position.x);
-    cJSON_AddNumberToObject(playerJSON, "positionY", player.position.y);
-    cJSON_AddNumberToObject(playerJSON, "sizeX", player.size.x);
-    cJSON_AddNumberToObject(playerJSON, "sizeY", player.size.y);
-    cJSON_AddNumberToObject(playerJSON, "life", player.life);
-    cJSON_AddNumberToObject(playerJSON, "score", player.score);
-    cJSON_AddItemToObject(gameState, "player", playerJSON);
-
-    // Añadir bolas activas
-    cJSON *ballsArray = cJSON_CreateArray();
-    for (int i = 0; i < MAX_BALLS; i++) {
-        if (balls[i].active) {
-            cJSON *ballJSON = cJSON_CreateObject();
-            cJSON_AddNumberToObject(ballJSON, "positionX", balls[i].position.x);
-            cJSON_AddNumberToObject(ballJSON, "positionY", balls[i].position.y);
-            cJSON_AddItemToArray(ballsArray, ballJSON);
-        }
-    }
-    cJSON_AddItemToObject(gameState, "balls", ballsArray);
-
-    // Añadir ladrillos activos
-    cJSON *bricksArray = cJSON_CreateArray();
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
-            if (brick[i][j].active) {
-                cJSON *brickJSON = cJSON_CreateObject();
-                cJSON_AddNumberToObject(brickJSON, "positionX", brick[i][j].position.x);
-                cJSON_AddNumberToObject(brickJSON, "positionY", brick[i][j].position.y);
-                cJSON_AddItemToArray(bricksArray, brickJSON);
-            }
-        }
-    }
-    cJSON_AddItemToObject(gameState, "bricks", bricksArray);
-
-    // Añadir vidas del jugador
-    cJSON_AddNumberToObject(gameState, "lives", player.life);
-
-    // Añadir puntaje actual
-    cJSON_AddNumberToObject(gameState, "score", player.score);
-
-    // Añadir niveles completados
-    cJSON_AddNumberToObject(gameState, "levelsCompleted", levelsCompleted);
-
-    // Añadir estado de juego (gameOver o no)
-    cJSON_AddBoolToObject(gameState, "gameOver", gameOver);
-
-
-
-    // Convertir el objeto JSON a cadena de caracteres
-    char *jsonString = cJSON_Print(gameState);
-
-    // Enviar el JSON al servidor
-    // FALTA DE IMPLEMENTAR
-
-    // Print
-    //printf("JSON GENERADO: %s\n", jsonString);
-
-    // Limpiar memoria de cJSON
-    cJSON_Delete(gameState);
-
-    return jsonString;  // Recuerda liberar la memoria después de usar la cadena
-}
-

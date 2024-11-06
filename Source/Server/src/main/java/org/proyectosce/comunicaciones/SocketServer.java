@@ -2,18 +2,24 @@ package org.proyectosce.comunicaciones;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
+import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/*
+ * Class: SocketServer
+ *
+ * Clase que maneja el servidor de socket, enviar y recibir mensajes.
+ */
 public class SocketServer {
-    private static final int PORT = 1234;
     private static SocketServer instance;
+    private static final int PORT = 12345;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
+    // Singleton
     private SocketServer() {}
 
     public static synchronized SocketServer getInstance() {
@@ -23,60 +29,88 @@ public class SocketServer {
         return instance;
     }
 
+    // Método para abrir el puerto de escucha
     public void abrirPuerto() {
         try {
             serverSocketChannel = ServerSocketChannel.open();
-            serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
             serverSocketChannel.bind(new InetSocketAddress(PORT));
-            serverSocketChannel.configureBlocking(true);
             System.out.println("Servidor escuchando en el puerto " + PORT);
         } catch (IOException e) {
-            throw new RuntimeException("No se pudo abrir el puerto del servidor: " + e.getMessage(), e);
+            e.printStackTrace();
         }
     }
 
+    // Método para esperar a que un cliente se conecte
     public Cliente esperarCliente() {
         try {
             SocketChannel clientChannel = serverSocketChannel.accept();
-            Cliente nuevoCliente = new Cliente(clientChannel);
-            clientesActivos.add(nuevoCliente);
-            System.out.println("Cliente conectado desde: " + clientChannel.getRemoteAddress());
-            return nuevoCliente;
+            return new Cliente(clientChannel);
         } catch (IOException e) {
-            System.err.println("Error al aceptar cliente: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
+    // Método para enviar un mensaje a un cliente
     public void enviarMensaje(Cliente cliente, String mensaje) {
-        cliente.enviarMensaje(mensaje);
-    }
-
-    public String recibirMensaje(Cliente cliente) {
-        // Delegar la recepción de mensajes al método de la clase Cliente
-        return cliente.recibirMensaje();
-    }
-
-    public void cerrarConexion(Cliente cliente) {
-        cliente.cerrarConexion();
-        clientesActivos.remove(cliente);
-        System.out.println("Cliente desconectado: " + cliente);
-    }
-
-    public void cerrarServidor() {
         try {
-            for (Cliente cliente : clientesActivos) {
-                cerrarConexion(cliente);
-            }
-            if (serverSocketChannel != null && serverSocketChannel.isOpen()) {
-                serverSocketChannel.close();
-            }
+            ByteBuffer buffer = ByteBuffer.wrap(mensaje.getBytes());
+            cliente.getChannel().write(buffer);
         } catch (IOException e) {
-            System.err.println("Error al cerrar el servidor: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public Cliente getClienteConectado() {
-        return clientesActivos.stream().findFirst().orElse(null);
+    // Método para recibir un mensaje de un cliente
+    public String recibirMensaje(Cliente cliente) {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            int bytesRead = cliente.getChannel().read(buffer);
+
+            // Verificar si el cliente se ha desconectado
+            if (bytesRead == -1) {
+                System.out.println("El cliente se ha desconectado: " + cliente);
+                this.cerrarConexion(cliente); // Cerrar la conexión con el cliente
+                return null;  // Retornar null para indicar que el cliente se desconectó
+            }
+
+            // Si no hay datos en el buffer, retornar null también
+            if (bytesRead == 0) {
+                System.out.println("Buffer vacío, sin datos disponibles del cliente: " + cliente);
+                return null;
+            }
+
+            // Convertir el buffer en cadena de texto y retornar el mensaje
+            return new String(buffer.array(), 0, bytesRead).trim();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    /*
+     * Método para cerrar la conexión de un cliente
+     */
+    public void cerrarConexion(Cliente cliente) {
+        try {
+            if (cliente != null && !cliente.getChannel().isOpen()) {
+                // Remover el cliente de la lista de clientes activos
+                System.out.println("El cliente cerró la conexion");
+                clientesActivos.remove(cliente);
+
+            }
+            else if (cliente != null && cliente.getChannel().isOpen()) {
+                // Cerrar el canal del socket del cliente
+                cliente.getChannel().close();
+                System.out.println("Conexión cerrada con el cliente: " + cliente.getChannel().getRemoteAddress());
+
+                // Remover el cliente de la lista de clientes activos
+                clientesActivos.remove(cliente);
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cerrar la conexión del cliente: " + e.getMessage());
+        }
     }
 }
