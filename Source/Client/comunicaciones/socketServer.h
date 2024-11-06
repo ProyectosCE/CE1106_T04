@@ -2,7 +2,6 @@
 #define SOCKET_SERVER_H
 
 #include <netinet/in.h>
-#include <stdbool.h>
 
 typedef struct {
     char ipServidor[16];
