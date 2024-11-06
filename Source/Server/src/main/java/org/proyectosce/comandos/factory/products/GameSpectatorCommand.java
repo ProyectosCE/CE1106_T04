@@ -18,7 +18,6 @@ public class GameSpectatorCommand implements Command {
     public void ejecutar() {
         ComServer.getInstance().registrarObservador(jugadorAObservar, espectador);
         System.out.println("Espectador registrado para observar al jugador: " + jugadorAObservar);
-        ComServer.getInstance().actualizarListas();
     }
 
     @Override

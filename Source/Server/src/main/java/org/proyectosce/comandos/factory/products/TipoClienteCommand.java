@@ -21,7 +21,6 @@ public class TipoClienteCommand implements Command {
         if ("player".equals(tipoCliente)) {
             comServer.registrarJugador(cliente);
             System.out.println("Cliente registrado como jugador: " + cliente);
-            ComServer.getInstance().actualizarListas();
 
         } else if ("spectador".equals(tipoCliente)) {
             comServer.registrarEspectadorTemporal(cliente);

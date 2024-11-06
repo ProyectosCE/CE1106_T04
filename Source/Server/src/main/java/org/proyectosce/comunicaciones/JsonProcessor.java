@@ -1,8 +1,9 @@
 package org.proyectosce.comunicaciones;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.proyectosce.comandos.factory.CommandFactory;
-import org.proyectosce.comandos.factory.products.*;
+import org.proyectosce.comandos.factory.products.Command;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,6 @@ import java.util.Map;
 public class JsonProcessor {
     private static JsonProcessor instance;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private static final JsonProcessor jsonInstance = new JsonProcessor();
 
     // Singleton
     private JsonProcessor() {}
@@ -34,8 +34,8 @@ public class JsonProcessor {
     // Método para convertir un objeto Java a JSON
     public String crearMensajeSalida(String comando, Map<String, Object> objeto) {
         try {
-            return objectMapper.writeValueAsString(Map.of("comando", comando, "objeto", objeto));
-        } catch (IOException e) {
+            return objectMapper.writeValueAsString(Map.of("command", comando, "data", objeto));
+        } catch (JsonProcessingException e) {
             System.err.println("Error al crear mensaje JSON: " + e.getMessage());
             return "{}";
         }
@@ -49,38 +49,31 @@ public class JsonProcessor {
                     "data", listaDeClientes
             );
             return objectMapper.writeValueAsString(mensaje);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            System.err.println("Error al crear JSON para lista de clientes: " + e.getMessage());
             return null;
         }
     }
 
-    public void enviarMensaje(Cliente cliente, String mensaje) {
-        cliente.enviarMensaje(mensaje);
-    }
-
-    public void cerrarConexion(Cliente cliente) {
-        cliente.cerrarConexion();
-    }
-
-    //IMPLEMENTAR FACTORY A PARTIR DE AQUÍ
+    // Método para procesar comandos con JSON y delegación a CommandFactory
     public Command procesarComando(String mensajeJson, Cliente emisor) {
         try {
             Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
             String commandType = (String) jsonData.get("command");
-            System.out.println(commandType);
+
+            if (commandType == null || commandType.isEmpty()) {
+                throw new IllegalArgumentException("El tipo de comando es nulo o vacío en el JSON recibido.");
+            }
 
             // Delegamos la creación del comando a la fábrica
-            CommandFactory commandFactory = new CommandFactory();
+            CommandFactory commandFactory = CommandFactory.getInstance();
             return commandFactory.crearComando(commandType, mensajeJson, emisor, jsonData);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error al procesar el comando JSON.");
+        } catch (JsonProcessingException e) {
+            System.err.println("Error al procesar JSON del comando: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error en el comando JSON recibido: " + e.getMessage());
         }
         return null;
     }
-
 }

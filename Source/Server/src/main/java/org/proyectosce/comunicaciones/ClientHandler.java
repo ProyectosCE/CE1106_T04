@@ -1,5 +1,4 @@
 package org.proyectosce.comunicaciones;
-import org.proyectosce.comandos.Command;
 import org.proyectosce.comandos.factory.products.Command;
 import org.proyectosce.comandos.factory.products.TipoClienteCommand;
 import java.io.IOException;
@@ -56,7 +55,6 @@ public class ClientHandler implements Runnable {
             // Limpiar y remover al cliente de la lista
             socketServer.cerrarConexion(cliente);
             System.out.println("Cliente removido: " + cliente);
-            ComServer.getInstance().actualizarListas();
         }
     }
 }

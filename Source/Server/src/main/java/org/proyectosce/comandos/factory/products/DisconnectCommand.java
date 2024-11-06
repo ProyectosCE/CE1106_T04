@@ -39,7 +39,6 @@ public class DisconnectCommand implements Command {
 
         // Eliminar de la lista general de clientes
         comServer.eliminarCliente(cliente);
-        comServer.actualizarListas();
     }
 
     @Override

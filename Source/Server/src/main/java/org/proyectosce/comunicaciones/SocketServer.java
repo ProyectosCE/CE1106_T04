@@ -1,8 +1,6 @@
 package org.proyectosce.comunicaciones;
 
-import org.proyectosce.comandos.factory.products.*;
 import org.proyectosce.comandos.factory.products.DisconnectCommand;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
@@ -12,10 +10,8 @@ import java.nio.channels.SocketChannel;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
- * Class: SocketServer
- *
- * Clase que maneja el servidor de socket, enviar y recibir mensajes.
+/**
+ * Singleton SocketServer: maneja la conexión de clientes y la comunicación mediante mensajes.
  */
 public class SocketServer {
     private static SocketServer instance;
@@ -23,7 +19,7 @@ public class SocketServer {
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
-    // Singleton
+    // Constructor privado para Singleton
     private SocketServer() {}
 
     public static synchronized SocketServer getInstance() {
@@ -33,7 +29,9 @@ public class SocketServer {
         return instance;
     }
 
-    // Método para abrir el puerto de escucha
+    /**
+     * Abre el puerto del servidor para escuchar nuevas conexiones.
+     */
     public void abrirPuerto() {
         try {
             serverSocketChannel = ServerSocketChannel.open();
@@ -42,11 +40,14 @@ public class SocketServer {
             serverSocketChannel.configureBlocking(true);
             System.out.println("Servidor escuchando en el puerto " + PORT);
         } catch (IOException e) {
-            throw new RuntimeException("No se pudo abrir el puerto del servidor: " + e.getMessage(), e);
+            manejarExcepcion("No se pudo abrir el puerto del servidor", e);
         }
     }
 
-    // Método para esperar a que un cliente se conecte
+    /**
+     * Espera la conexión de un cliente y lo añade a la lista de clientes activos.
+     * @return Cliente conectado o null si hubo error
+     */
     public Cliente esperarCliente() {
         try {
             SocketChannel clientChannel = serverSocketChannel.accept();
@@ -55,76 +56,87 @@ public class SocketServer {
             System.out.println("Cliente conectado desde: " + clientChannel.getRemoteAddress());
             return nuevoCliente;
         } catch (IOException e) {
-            System.err.println("Error al aceptar cliente: " + e.getMessage());
+            manejarExcepcion("Error al aceptar cliente", e);
             return null;
         }
     }
 
-    // Método para enviar un mensaje a un cliente
+    /**
+     * Envía un mensaje a un cliente específico.
+     * @param cliente Cliente al que se envía el mensaje
+     * @param mensaje Mensaje a enviar
+     */
     public void enviarMensaje(Cliente cliente, String mensaje) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(mensaje.getBytes());
             cliente.getChannel().write(buffer);
         } catch (IOException e) {
-            e.printStackTrace();
+            manejarExcepcion("Fallo al enviar mensaje", e);
         }
     }
 
-    // Método para recibir un mensaje de un cliente
+    /**
+     * Recibe un mensaje de un cliente.
+     * @param cliente Cliente del cual se recibe el mensaje
+     * @return Mensaje recibido o null si hubo error o desconexión
+     */
     public String recibirMensaje(Cliente cliente) {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(1024);
-
-            // Leer datos en un ciclo para asegurarse de recibir el mensaje completo
             int bytesRead = cliente.getChannel().read(buffer);
 
             // Verificar si el cliente se ha desconectado
             if (bytesRead == -1) {
-                System.out.println("El cliente se ha desconectado: " + cliente);
-                this.cerrarConexion(cliente); // Cerrar la conexión con el cliente
-                DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
-                DisconnectCommand.ejecutar();
+                notificarDesconexion(cliente);
                 return null;
             }
 
-            // Limpiar el buffer antes de cada lectura para evitar residuos
             buffer.flip();
-
-            // Convertir el buffer en cadena de texto y retornar el mensaje
             return new String(buffer.array(), 0, bytesRead).trim();
 
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
-            this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
+            manejarExcepcion("Fallo al recibir mensaje", e);
+            notificarDesconexion(cliente);
             return null;
         }
     }
 
-
-    /*
-     * Método para cerrar la conexión de un cliente
+    /**
+     * Cierra la conexión de un cliente.
+     * @param cliente Cliente a desconectar
      */
     public void cerrarConexion(Cliente cliente) {
         try {
-            if (cliente != null && !cliente.getChannel().isOpen()) {
-                // Remover el cliente de la lista de clientes activos
-                System.out.println("El cliente cerró la conexion");
-                DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
-                DisconnectCommand.ejecutar();
-                clientesActivos.remove(cliente);
-
-            }
-            else if (cliente != null && cliente.getChannel().isOpen()) {
-                // Cerrar el canal del socket del cliente
+            if (cliente != null && cliente.getChannel().isOpen()) {
                 cliente.getChannel().close();
                 System.out.println("Conexión cerrada con el cliente: " + cliente.getChannel().getRemoteAddress());
-
-                // Remover el cliente de la lista de clientes activos
-                clientesActivos.remove(cliente);
             }
+            notificarDesconexion(cliente);
         } catch (IOException e) {
-            System.out.println("Error al cerrar la conexión del cliente: " + e.getMessage());
+            manejarExcepcion("Error al cerrar la conexión del cliente", e);
         }
+    }
+
+    /**
+     * Notifica y maneja la desconexión de un cliente.
+     * @param cliente Cliente desconectado
+     */
+    private void notificarDesconexion(Cliente cliente) {
+        if (cliente != null) {
+            clientesActivos.remove(cliente);
+            DisconnectCommand disconnectCommand = new DisconnectCommand(cliente);
+            disconnectCommand.ejecutar();
+            System.out.println("Cliente desconectado: " + cliente);
+        }
+    }
+
+    /**
+     * Maneja excepciones centralizadamente.
+     * @param mensaje Mensaje de error
+     * @param e Excepción lanzada
+     */
+    private void manejarExcepcion(String mensaje, Exception e) {
+        System.err.println(mensaje + ": " + e.getMessage());
+        e.printStackTrace();
     }
 }
