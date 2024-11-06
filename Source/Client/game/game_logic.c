@@ -93,10 +93,12 @@ char* generate_GameState_json(GameState *gameState) {
 }
 
 void sendGameState(GameState *gameState) {
+
+    sleep(2);  // Usa sleep(2) para retrasar por 2 segundos
+
     const char *json = generate_GameState_json(gameState);
-    if (json!=NULL) {
+    if (json != NULL) {
         printf("GAME STATUS ENVIADO\n");
         ComServer_sendStatus(json);
     }
-
 }

@@ -17,9 +17,10 @@
 #include "powerHandler.h"
 
 
-
+pthread_t sendStateThread;
 
 void init_game_server() {
+
     GameState *gameStatus = getGameState();
     init_player(&gameStatus->player);
     init_balls(gameStatus->balls);
@@ -42,16 +43,42 @@ void unload_game_server() {
 
 }
 
+
+void *update_game_thread(void *arg) {
+    GameState *gameState = (GameState *)arg;
+    update_game(gameState);
+    return NULL;
+}
+
+void *draw_game_thread(void *arg) {
+    GameState *gameState = (GameState *)arg;
+    draw_game(gameState);
+    return NULL;
+}
+
+void *send_game_state_thread(void *arg) {
+    GameState *gameState = (GameState *)arg;
+    sendGameState(gameState);  // Send the current game state
+    return NULL;
+}
+
 void start_game() {
     GameState *gameState = getGameState();
+
     if (getCurrentScreen() == MENU) {
         UpdateMenu();
         DrawMenu();
-    }else if (getCurrentScreen() == GAME) {
+    } else if (getCurrentScreen() == GAME) {
+
+
+        // Crear los hilos para manejar las tareas de actualización, dibujo y envío
         update_game(gameState);
         draw_game(gameState);
-        // Start the sendGameState thread if it hasn't been started yet
-        sendGameState(gameState); // Send the current game state
+        pthread_create(&sendStateThread, NULL, send_game_state_thread, (void *)gameState);
+
+        pthread_detach(sendStateThread);
+
+        // Manejar la condición de reinicio del juego
         if (gameState->restart) {
             init_game_server();
         }
