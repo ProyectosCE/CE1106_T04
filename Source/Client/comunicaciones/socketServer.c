@@ -28,8 +28,10 @@ SocketServer *SocketServer_create() {
         return NULL;
     }
 
+    const char* address = get_config_string("socket.address");
 
-    strcpy(socketServer_instance->ipServidor, get_config_string("socket.address"));
+    socketServer_instance->ipServidor = address;  // Apuntando directamente
+    log_debug("IP del servidor: %s\n", socketServer_instance->ipServidor);
     socketServer_instance->port= get_config_int("socket.port");
     socketServer_instance->sock = 0;
     socketServer_instance->isConnected = 0;  // El servidor comienza como desconectado

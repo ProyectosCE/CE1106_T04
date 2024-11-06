@@ -2,6 +2,8 @@ package org.proyectosce.comunicaciones;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.nio.ByteBuffer;
+import java.util.UUID;
 
 /*
  * Class: Cliente
@@ -10,9 +12,11 @@ import java.nio.channels.SocketChannel;
  */
 public class Cliente {
     private final SocketChannel channel;
+    private final String id;  // Nuevo identificador único
 
     public Cliente(SocketChannel channel) {
         this.channel = channel;
+        this.id = UUID.randomUUID().toString(); // Genera un ID único
     }
 
     public SocketChannel getChannel() {

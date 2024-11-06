@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 
 typedef struct {
-    char* ipServidor;  // Apunta al string de la dirección IP
+    const char* ipServidor;  // Apunta al string de la dirección IP
     int port;               // Cambiar a un puntero para el puerto
     int sock;               // Descriptor del socket
     bool isConnected;       // Bool para conocer si el servidor está activado o no
