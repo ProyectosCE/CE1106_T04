@@ -34,7 +34,7 @@ public class DisconnectCommand implements Command {
 
         } else {
             // Si es un espectador, eliminarlo de las listas de observadores
-            comServer.eliminarEspectador(cliente);
+            comServer.eliminarEspectadorPorId(cliente.getId());
         }
 
         // Eliminar de la lista general de clientes

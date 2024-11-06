@@ -98,8 +98,10 @@ public class SocketServer {
             return new String(buffer.array(), 0, bytesRead).trim();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
+            DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
+            DisconnectCommand.ejecutar();
             this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
             return null;
         }

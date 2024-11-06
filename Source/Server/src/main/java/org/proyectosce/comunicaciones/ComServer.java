@@ -142,7 +142,7 @@ public class ComServer {
     }
 
     public void registrarObservador(Cliente jugador, Cliente espectador) {
-        observadores.getOrDefault(jugador, ConcurrentHashMap.newKeySet()).add(espectador);
+        observadores.computeIfAbsent(jugador, k -> ConcurrentHashMap.newKeySet()).add(espectador);
         actualizarListas();
     }
 
@@ -212,6 +212,21 @@ public class ComServer {
     // Eliminar un espectador de la lista de espectadores
     public void eliminarEspectador(Cliente cliente) {
         observadores.remove(cliente);
+    }
+
+    public void eliminarEspectadorPorId(String idObservador) {
+        for (Map.Entry<Cliente, Set<Cliente>> entry : observadores.entrySet()) {
+            Cliente jugador = entry.getKey();
+            Set<Cliente> observadoresDelJugador = entry.getValue();
+
+            // Buscar el observador en el conjunto de observadores de este jugador
+            observadoresDelJugador.removeIf(observador -> observador.getId().equals(idObservador));
+
+            // Si después de eliminar el observador el conjunto queda vacío, puedes decidir si quieres eliminar la entrada
+            if (observadoresDelJugador.isEmpty()) {
+                observadores.remove(jugador);
+            }
+        }
     }
 
 
