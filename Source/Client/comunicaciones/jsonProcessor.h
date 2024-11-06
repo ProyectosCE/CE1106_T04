@@ -15,4 +15,6 @@ void JsonProcessor_destroy(JsonProcessor *processor);
 char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *message);
 char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jsonMessage);
 
+char *JsonProcessor_createJsonPlayerName(JsonProcessor *processor, const char *playerName);
+
 #endif // JSON_PROCESSOR_H

@@ -1,12 +1,17 @@
 #ifndef GAME_STATUS_H
 #define GAME_STATUS_H
 #include <raylib.h>
+#include <pthread.h>
+
+#include "comunicaciones/comServer.h"
 
 
 typedef enum {
     MENU,
+    NAME_INPUT,
     GAME,
-    SPECTATOR
+    SPECTATOR,
+    EXIT
 } GameScreen;
 
 typedef struct Ball {
@@ -61,6 +66,12 @@ typedef struct {
     bool isPlayer;
     bool pause;
     bool restart;
+    char playerName[50];
+    bool running;  // Flag para el estado del juego
+    ComServer *comServer;
+    pthread_t communicationThread;
+    pthread_t sendStatusThread;
+    pthread_t gameUpdateThread;
 } GameState;
 
 

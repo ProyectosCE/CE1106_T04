@@ -1,6 +1,5 @@
 #include "game_server.h"
 
-#include <pthread.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,19 +46,51 @@ void unload_game_server() {
 void *update_game_thread(void *arg) {
     GameState *gameState = (GameState *)arg;
     update_game(gameState);
+
     return NULL;
 }
 
 void *draw_game_thread(void *arg) {
     GameState *gameState = (GameState *)arg;
-    draw_game(gameState);
+    while (gameState->running) {
+        draw_game(gameState);
+    }
     return NULL;
 }
 
 void *send_game_state_thread(void *arg) {
     GameState *gameState = (GameState *)arg;
-    sendGameState(gameState);  // Send the current game state
+    while (gameState->running) {
+        sendGameState(gameState);
+    }  // Send the current game state
     return NULL;
+}
+
+void DrawMenuInput(GameState *gameState) {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+    DrawText("Enter your name:", 100, 100, 20, DARKGRAY);
+    DrawText(gameState->playerName, 100, 130, 20, BLACK);
+    DrawText("Press Enter to Play", 100, 160, 20, DARKGRAY);
+    EndDrawing();
+}
+
+void updateMenuInput(GameState *game_state) {
+    if (IsKeyPressed(KEY_ENTER)) {
+        game_state->comServer = ComServer_create();
+        ComServer_sendPlayerName(game_state->comServer, game_state->playerName);
+        init_game_server();
+        setCurrentScreen(GAME);
+    } else if (IsKeyPressed(KEY_BACKSPACE) && strlen(game_state->playerName) > 0) {
+        game_state->playerName[strlen(game_state->playerName) - 1] = '\0'; // Elimina el último carácter
+    } else {
+        for (int key = KEY_A; key <= KEY_Z; key++) {
+            if (IsKeyPressed(key) && strlen(game_state->playerName) < sizeof(game_state->playerName) - 1) {
+                game_state->playerName[strlen(game_state->playerName)] = (char)(key + 'A' - KEY_A); // Agrega letra
+                game_state->playerName[strlen(game_state->playerName) + 1] = '\0'; // Termina la cadena
+            }
+        }
+    }
 }
 
 void start_game() {
@@ -68,15 +99,40 @@ void start_game() {
     if (getCurrentScreen() == MENU) {
         UpdateMenu();
         DrawMenu();
-    } else if (getCurrentScreen() == GAME) {
+}
+    else if (getCurrentScreen() == NAME_INPUT) {
+        updateMenuInput(gameState);
+        DrawMenuInput(gameState);
 
+    } else if (getCurrentScreen() == GAME) {
+        if (!gameState->running) {
+            gameState->running = true;
+
+            // Crear instancia del servidor de comunicaciones
+
+            if (gameState->comServer == NULL) {
+                fprintf(stderr, "Error al crear ComServer\n");
+                gameState->running = false;
+            }
+
+            // Crear el hilo de comunicaciones
+            if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
+                fprintf(stderr, "Error al crear el hilo de comunicación\n");
+                ComServer_destroy(gameState->comServer);
+                gameState->running = false;
+            }
+
+            // Crear el hilo de comunicaciones
+            if (pthread_create(&gameState->sendStatusThread, NULL, send_game_state_thread, (void *)gameState) != 0) {
+                fprintf(stderr, "Error al crear el hilo de comunicación\n");
+                ComServer_destroy(gameState->comServer);
+                gameState->running = false;
+            }
+        }
 
         // Crear los hilos para manejar las tareas de actualización, dibujo y envío
         update_game(gameState);
         draw_game(gameState);
-        pthread_create(&sendStateThread, NULL, send_game_state_thread, (void *)gameState);
-
-        pthread_detach(sendStateThread);
 
         // Manejar la condición de reinicio del juego
         if (gameState->restart) {

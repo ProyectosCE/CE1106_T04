@@ -62,6 +62,17 @@ void ComServer_sendMessage(ComServer *server, const char *message) {
     free(jsonMessage);
 }
 
+void ComServer_sendPlayerName(ComServer *server, const char *name) {
+    if (server == NULL) {
+        savelog_warn("Servidor no inicializado.\n");
+        return;
+    }
+
+    char *jsonMessage = JsonProcessor_createJsonPlayerName(server->jsonProcessor, name);
+    SocketServer_send(server->socketServer, jsonMessage);
+    free(jsonMessage);
+}
+
 void ComServer_sendStatus(const char *message) {
     if (comserver_instance == NULL) {
         savelog_warn("Servidor no inicializado.\n");

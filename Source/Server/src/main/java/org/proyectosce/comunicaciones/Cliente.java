@@ -43,7 +43,7 @@ public class Cliente {
 
     public String recibirMensaje() {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(1024); // Tamaño del buffer para recibir datos
+            ByteBuffer buffer = ByteBuffer.allocate(4096); // Tamaño del buffer para recibir datos
             int bytesRead = channel.read(buffer); // Lee datos del canal
             if (bytesRead == -1) {
                 cerrarConexion(); // Cierra la conexión si no hay más datos

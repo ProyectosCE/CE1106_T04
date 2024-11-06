@@ -6,7 +6,6 @@
 #include "../game_status.h"
 
 void UpdateMenu() {
-    ComServer *comServer = ComServer_create();
     // Cambia el modo de juego (jugador/espectador)
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
         setPlayer(!isPlayer());
@@ -21,20 +20,13 @@ void UpdateMenu() {
     if (IsKeyPressed(KEY_ENTER)) {
         if (isPlayer()) {
             // Inicializar el servidor de juego y el juego en sí
-            ComServer_sendMessage(comServer, "player");
-            init_game_server();
-            setCurrentScreen(GAME);
-
-
+            setCurrentScreen(NAME_INPUT);
             if (isCameraEnabled()) {
-                ComServer_sendMessage(comServer, "camera_enabled");
                 start_camera();
             } else {
-                ComServer_sendMessage(comServer, "camera_disabled");
             }
         } else {
             setCurrentScreen(SPECTATOR);
-            ComServer_sendMessage(comServer, "spectator");
         }
     }
 }

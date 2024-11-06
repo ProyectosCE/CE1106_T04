@@ -67,6 +67,38 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
     return jsonString;
 }
 
+char *JsonProcessor_createJsonPlayerName(JsonProcessor *processor, const char *playerName) {
+    if (processor == NULL) {
+        savelog_error("JsonProcessor no inicializado\n");
+        return NULL;
+    }
+
+    // Crear un objeto JSON
+    cJSON *json = cJSON_CreateObject();
+    if (json == NULL) {
+        savelog_fatal("Error al crear el objeto JSON\n");
+        return NULL;
+    }
+
+    // Añadir los campos al objeto JSON
+    cJSON_AddStringToObject(json, "command", "tipoCliente");
+    cJSON_AddStringToObject(json, "tipoCliente", "player");
+    cJSON_AddStringToObject(json, "playerName", playerName);
+
+    // Convertir el objeto JSON a una cadena de texto
+    char *jsonString = cJSON_PrintUnformatted(json);
+    if (jsonString == NULL) {
+        savelog_error("Error al convertir el objeto JSON a cadena\n");
+        cJSON_Delete(json); // Liberar el objeto JSON en caso de error
+        return NULL;
+    }
+
+    // Liberar el objeto JSON ya que no lo necesitamos más
+    cJSON_Delete(json);
+
+    return jsonString;
+}
+
 /*
  * Método para procesar un mensaje JSON recibido
  * Este método toma una cadena JSON y devuelve un mensaje procesado como cadena de texto.
