@@ -4,18 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 import org.proyectosce.comunicaciones.ComServer;
-import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comandos.CommandHandler;
 
 public class MainWindow extends JFrame {
     private ClientListPanel clientListPanel;
-    private JTextArea commandOutputArea;
     private ComServer comServer;
     private CommandHandler commandHandler;
 
     public MainWindow() {
         setTitle("Servidor de Juego");
-        setSize(600, 500);
+        setSize(600, 500);  // Ajustar el tamaño de la ventana
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -26,25 +24,21 @@ public class MainWindow extends JFrame {
         clientListPanel = new ClientListPanel();
         add(clientListPanel, BorderLayout.CENTER);
 
-        commandOutputArea = new JTextArea();
-        commandOutputArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(commandOutputArea);
-        add(scrollPane, BorderLayout.SOUTH);
-
+        // Configurar el botón de enviar comando
         clientListPanel.getSendCommandButton().addActionListener(e -> {
             String inputCommand = clientListPanel.getCommandInputField().getText().trim();
             if (!inputCommand.isEmpty()) {
                 processCommand(inputCommand);
             } else {
-                commandOutputArea.append("Por favor ingrese un comando válido.\n");
+                JOptionPane.showMessageDialog(this, "Por favor ingrese un comando válido.", "Error", JOptionPane.WARNING_MESSAGE);
             }
             clientListPanel.getCommandInputField().setText("");
         });
     }
 
     private void processCommand(String inputCommand) {
-        // Lógica para procesar el comando
-        commandOutputArea.append("Comando procesado: " + inputCommand + "\n");
+        // Lógica para procesar el comando (puedes agregar la implementación específica aquí)
+        System.out.println("Comando procesado: " + inputCommand);
     }
 
     // Método para actualizar las listas de JComboBox de forma segura en el hilo de la GUI

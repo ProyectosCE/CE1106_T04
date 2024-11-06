@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
-
 public class ClientListPanel extends JPanel {
 
     private JComboBox<String> playersComboBox;
@@ -13,34 +12,37 @@ public class ClientListPanel extends JPanel {
     private JButton sendCommandButton;     // Botón para enviar el comando
 
     public ClientListPanel() {
-        // Configurar el panel
+        // Configurar el panel con un layout de BorderLayout
         setLayout(new BorderLayout());
 
-        // Crear JComboBox para jugadores y espectadores
-        playersComboBox = new JComboBox<>();
-        spectatorsComboBox = new JComboBox<>();
-
-        // Crear el panel superior con los ComboBox
+        // Crear JPanel para los ComboBox y sus etiquetas
         JPanel comboPanel = new JPanel();
-        comboPanel.setLayout(new GridLayout(2, 1));  // Dos filas: una para jugadores, otra para espectadores
+        comboPanel.setLayout(new GridLayout(4, 1));  // Cuatro filas: dos etiquetas y dos JComboBox
+
+        // Crear y agregar componentes al panel de ComboBox
         comboPanel.add(new JLabel("Jugadores"));
+        playersComboBox = new JComboBox<>();
         comboPanel.add(playersComboBox);
         comboPanel.add(new JLabel("Espectadores"));
+        spectatorsComboBox = new JComboBox<>();
         comboPanel.add(spectatorsComboBox);
-        add(comboPanel, BorderLayout.NORTH);
 
-        // Crear panel de comandos
+        // Agregar el panel de ComboBox a la parte central
+        add(comboPanel, BorderLayout.CENTER);
+
+        // Crear un panel inferior para el campo de texto y el botón
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BorderLayout());
 
         // Crear campo para ingresar el comando
         commandInputField = new JTextField();
-        commandPanel.add(commandInputField, BorderLayout.NORTH);
+        commandPanel.add(commandInputField, BorderLayout.CENTER);
 
         // Crear botón para enviar el comando
         sendCommandButton = new JButton("Enviar Comando");
-        commandPanel.add(sendCommandButton, BorderLayout.SOUTH);
+        commandPanel.add(sendCommandButton, BorderLayout.EAST);
 
+        // Agregar el panel de comandos en la parte inferior
         add(commandPanel, BorderLayout.SOUTH);
     }
 
@@ -55,7 +57,6 @@ public class ClientListPanel extends JPanel {
 
     // Métodos para actualizar las listas de jugadores y espectadores
     public void updatePlayersComboBox(List<String> jugadores) {
-        System.out.println("actualizando lista de jugadores en ListPanel");
         playersComboBox.removeAllItems();
         for (String jugador : jugadores) {
             playersComboBox.addItem(jugador);
