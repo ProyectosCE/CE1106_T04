@@ -6,7 +6,7 @@
 // Función para manejar las colisiones de las bolas con las paredes
 void handle_ball_wall_collision(GameState *gameState, float screenWidth, float screenHeight) {
 
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameState->maxBalls; i++) {
         Ball *ball = &gameState->balls[i]; // Access the ball directly from gameState
         if (ball->active) {
             // Check for wall collisions
@@ -19,8 +19,6 @@ void handle_ball_wall_collision(GameState *gameState, float screenWidth, float s
             if ((ball->position.y + ball->radius) >= screenHeight) {
                 ball->speed = (Vector2) {0, 0}; // Stop the ball
                 ball->active = false; // Deactivate the ball
-                // Reduce player's life since the ball has fallen off the screen
-                gameState->player.life--;
             }
 
         }
@@ -31,7 +29,7 @@ void handle_ball_wall_collision(GameState *gameState, float screenWidth, float s
 
 // Función para manejar la colisión de una bola con el jugador
 void handle_ball_player_collision(GameState *gameStatus) {
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameStatus->maxBalls; i++) {
         // Lógica de Colisión: bola vs jugador
         if (CheckCollisionCircleRec(gameStatus->balls[i].position, gameStatus->balls[i].radius,
                                     (Rectangle) {gameStatus->player.position.x - gameStatus->player.size.x / 2,
@@ -49,10 +47,10 @@ void handle_ball_player_collision(GameState *gameStatus) {
 // Función para manejar la colisión de una bola con los ladrillos
 void handle_ball_brick_collision(GameState *gameState) {
     // Collision logic: ball vs bricks
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
+    for (int i = 0; i < gameState->linesOfBricks; i++) {
+        for (int j = 0; j < gameState->bricksPerLine; j++) {
             if (gameState->bricks[i][j].active) {
-                for (int b = 0; b < MAX_BALLS; b++) {
+                for (int b = 0; b < gameState->maxBalls; b++) {
                     Ball *ball = &gameState->balls[b];
 
                     if (ball->active) {
@@ -121,4 +119,15 @@ void handle_collisions(GameState *gameState) {
     handle_ball_brick_collision(gameState);
 }
 
+
+bool bloquesEliminados(GameState* gameState) {
+    for (int i = 0; i < gameState->linesOfBricks; i++) {
+        for (int j = 0; j < gameState->bricksPerLine; j++) {
+            if (gameState->bricks[i][j].active) {
+                return false; // Hay al menos un ladrillo activo
+            }
+        }
+    }
+    return true; // Todos los ladrillos están inactivos
+}
 

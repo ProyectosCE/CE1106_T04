@@ -80,22 +80,35 @@ public class JsonProcessor {
     // Método para procesar comandos con JSON y delegación a CommandFactory
     public Command procesarComando(String mensajeJson, Cliente emisor) {
         try {
+
+
+            // Convertir el mensaje JSON en un mapa para extraer el comando
             Map<String, Object> jsonData = objectMapper.readValue(mensajeJson, Map.class);
+
+            // Validar que el comando esté presente en el JSON
             String commandType = (String) jsonData.get("command");
 
-            if (commandType == null || commandType.isEmpty()) {
-                throw new IllegalArgumentException("El tipo de comando es nulo o vacío en el JSON recibido.");
-            }
+            // Crear un nuevo mapa con el emisor y el JSON completo
+            Map<String, Object> params = Map.of(
+                    "emisor", emisor,
+                    "jsonCompleto", mensajeJson // JSON original como una cadena
+            );
 
-            // Delegamos la creación del comando a la fábrica
+            // Obtener la instancia de CommandFactory y delegar la creación del comando
             CommandFactory commandFactory = CommandFactory.getInstance();
-            return commandFactory.crearComando(commandType, mensajeJson, emisor, jsonData);
+
+            return commandFactory.crearComando(commandType, params);
 
         } catch (JsonProcessingException e) {
             System.err.println("Error al procesar JSON del comando: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            System.err.println("Error en el comando JSON recibido: " + e.getMessage());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.err.println("Error al procesar el comando: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error inesperado al procesar el comando: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        // Si ocurre algún error, retornar nulo
         return null;
     }
 }

@@ -193,7 +193,7 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
         if (ballsJson != NULL && cJSON_IsArray(ballsJson)) {
 
-            for (int i = 0; i < cJSON_GetArraySize(ballsJson) && i < MAX_BALLS; i++) {
+            for (int i = 0; i < cJSON_GetArraySize(ballsJson) && i < gameState->maxBalls; i++) {
 
                 cJSON *ballJson = cJSON_GetArrayItem(ballsJson, i);
 
@@ -220,8 +220,8 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
                 cJSON *brickJson = cJSON_GetArrayItem(bricksJson, i);
 
-                int row = i / BRICKS_PER_LINE;
-                int col = i % BRICKS_PER_LINE;
+                int row = i / gameState->bricksPerLine;
+                int col = i % gameState->bricksPerLine;
 
                 gameState->bricks[row][col].active = cJSON_GetObjectItem(brickJson, "active")->valueint;
 
@@ -237,6 +237,8 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
         gameState->gameOver = cJSON_GetObjectItem(json, "gameOver")->valueint;
 
         gameState->pause = cJSON_GetObjectItem(json, "paused")->valueint;
+
+        gameState->winner = cJSON_GetObjectItem(json, "winner")->valueint;
 
         gameState->levelsCompleted = cJSON_GetObjectItem(json, "levelsCompleted")->valueint;
 

@@ -27,8 +27,6 @@ public class ComServer {
     private final Set<Cliente> espectadoresTemporales = ConcurrentHashMap.newKeySet();  // Espectadores temporales
 
     private final SocketServer socketServer = SocketServer.getInstance();
-    private final CommandHandler commandHandler = new CommandHandler();
-    private final CommandFactory commandFactory = CommandFactory.getInstance();
     private final Set<String> powersAllowed = Set.of("add_life", "add_ball", "double_racket_size", "half_racket_size", "add_speed", "reduce_speed");
 
 
@@ -55,7 +53,6 @@ public class ComServer {
 
     public void iniciarServidor() {
         socketServer.abrirPuerto();
-        new Thread(this::iniciarConsola).start();
 
         while (servidorActivo) {
             Cliente nuevoCliente = socketServer.esperarCliente();
@@ -66,53 +63,6 @@ public class ComServer {
         }
     }
 
-    private void iniciarConsola() {
-        Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNextLine()) {
-            String input = scanner.nextLine();
-            if (input.startsWith("brick_pwr")) {
-                procesarComandoConsola(input);
-            } else {
-                System.out.println("Comando no reconocido. Intente con: brick_pwr (f,c,power)");
-            }
-        }
-    }
-
-    private void procesarComandoConsola(String input) {
-        try {
-            String[] partes = input.replace("brick_pwr", "").replace("(", "").replace(")", "").split(",");
-            if (partes.length != 3) {
-                System.out.println("Formato de comando incorrecto. Use: brick_pwr (f,c,power)");
-                return;
-            }
-
-            String fStr = partes[0].trim();
-            String cStr = partes[1].trim();
-            String power = partes[2].trim();
-
-            if (!powersAllowed.contains(power)) {
-                System.out.println("Poder inválido. Poderes permitidos: " + powersAllowed);
-                return;
-            }
-
-            Map<String, Object> jsonData = Map.of(
-                    "x", Integer.parseInt(cStr),
-                    "y", Integer.parseInt(fStr),
-                    "power", power
-            );
-
-            Command comando = commandFactory.crearComando("brick_pwr", "", null, jsonData);
-
-            Cliente primerCliente = clients.stream().findFirst().orElse(null);
-            if (primerCliente != null) {
-                commandHandler.handleCommand((PowerCommand) comando, primerCliente);
-            } else {
-                System.out.println("No hay clientes conectados para enviar el comando.");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Las coordenadas f y c deben ser enteros.");
-        }
-    }
 
     public void eliminarCliente(Cliente cliente) {
         clients.remove(cliente);
@@ -230,5 +180,7 @@ public class ComServer {
     }
 
 
-
+    public Object getSocketServer() {
+        return this.socketServer;
+    }
 }

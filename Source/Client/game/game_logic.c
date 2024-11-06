@@ -24,12 +24,23 @@ void update_game(GameState *gameState) {
         update_ball_positions(&gameState->player, gameState->balls);
         handle_collisions(gameState);
 
+        if (noBallsActive(gameState->balls, gameState->maxBalls) && gameState->bolaLanzada) {
+            gameState->player.life --;
+            gameState->bolaLanzada=false;
+        }
+
         // Verificar si el jugador pierde todas las vidas
         if (gameState->player.life <= 0) {
             gameState->gameOver = true;  // Cambiar al menú principal en caso de Game Over
         }
+
+        // Verificar si ya no hay bloques activos
+        if (bloquesEliminados(gameState)) {
+            gameState->winner=true;
+        }
+
     }
-    if (gameState->gameOver) {
+    if (gameState->gameOver || gameState->winner) {
         if (IsKeyPressed(KEY_ENTER)) gameState->restart=true;
     }
 
@@ -89,7 +100,7 @@ char* generate_GameState_json(GameState *gameState) {
 
     // Add active balls
     cJSON *ballsArray = cJSON_CreateArray();
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameState->maxBalls; i++) {
         cJSON *ballJSON = cJSON_CreateObject();
         cJSON_AddBoolToObject(ballJSON, "active", gameState->balls[i].active);
         cJSON_AddNumberToObject(ballJSON, "positionX", gameState->balls[i].position.x);
@@ -100,8 +111,8 @@ char* generate_GameState_json(GameState *gameState) {
 
     // Add active bricks
     cJSON *bricksArray = cJSON_CreateArray();
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
+    for (int i = 0; i < gameState->linesOfBricks; i++) {
+        for (int j = 0; j < gameState->bricksPerLine; j++) {
             cJSON *brickJSON = cJSON_CreateObject();
             cJSON_AddBoolToObject(brickJSON, "active", gameState->bricks[i][j].active);
             cJSON_AddItemToArray(bricksArray, brickJSON);
@@ -114,6 +125,8 @@ char* generate_GameState_json(GameState *gameState) {
 
     // Add pause state (paused or not)
     cJSON_AddBoolToObject(gameStateJSON, "paused", gameState->pause);
+
+    cJSON_AddBoolToObject(gameStateJSON, "winner", gameState->winner);
 
     // Add completed levels
     cJSON_AddNumberToObject(gameStateJSON, "levelsCompleted", gameState->levelsCompleted);
@@ -144,10 +157,13 @@ PowerType get_power_type(const char* power_str) {
     if (strcmp(power_str, "HALF_RACKET") == 0) return HALF_RACKET;
     if (strcmp(power_str, "SPEED_UP") == 0) return SPEED_UP;
     if (strcmp(power_str, "SPEED_DOWN") == 0) return SPEED_DOWN;
+    if (strcmp(power_str, "UPDATE_POINTS") == 0) return UPDATE_POINTS;
     return NONE;
 }
 
 void process_brick_update(const char* json_command) {
+
+    GameState *gameState = getGameState();
     // Parsear el JSON
     cJSON* root = cJSON_Parse(json_command);
     if (root == NULL) {
@@ -170,16 +186,21 @@ void process_brick_update(const char* json_command) {
     int column = column_item->valueint-1;
     const char* power_str = power_item->valuestring;
 
-    // Validar límites de row y column
-    if (row < 0 || row >= LINES_OF_BRICKS || column < 0 || column >= BRICKS_PER_LINE) {
-        printf("Row (%d) or Column (%d) out of bounds. Max Row: %d, Max Columns: %d\n", row, column, LINES_OF_BRICKS - 1, BRICKS_PER_LINE - 1);
-        cJSON_Delete(root);
-        return;
-    }
+
 
     // Obtener el tipo de poder
     PowerType power = get_power_type(power_str);
 
+    // Validar límites de row y column
+    if ((row < 0 || row >= gameState->linesOfBricks || column < 0 || column >= gameState->bricksPerLine) && power!=UPDATE_POINTS) {
+        printf("Row (%d) or Column (%d) out of bounds. Max Row: %d, Max Columns: %d\n", row, column, gameState->linesOfBricks - 1, gameState->linesOfBricks - 1);
+        cJSON_Delete(root);
+        return;
+    }
+    if ((row < 0 || row >= gameState->linesOfBricks) && power==UPDATE_POINTS) {
+        cJSON_Delete(root);
+        return;
+    }
     // Llamar a la función correspondiente
     switch (power) {
         case ADD_LIFE:
@@ -199,6 +220,9 @@ void process_brick_update(const char* json_command) {
             break;
         case SPEED_DOWN:
             update_brick_speedDown(row, column);
+            break;
+        case UPDATE_POINTS:
+            update_brick_score(row,column);
             break;
         default:
             printf("No action for power: %s\n", power_str);

@@ -28,11 +28,11 @@ pthread_t askForUserThread;
 void init_game_server() {
 
     GameState *gameStatus = getGameState();
-    init_player(&gameStatus->player);
+    init_player(&gameStatus->player, gameStatus->playerMaxLife);
     init_balls(gameStatus->balls);
 
     // Inicializar los ladrillos
-    brickSize = (Vector2){ screenWidth/BRICKS_PER_LINE, screenHeight/(LINES_OF_BRICKS*2) };
+    brickSize = (Vector2){ screenWidth/gameStatus->bricksPerLine, screenHeight/(gameStatus->linesOfBricks*2) };
     gameStatus->brickSize = brickSize;
     init_bricks(gameStatus,gameStatus->brickSize);
 
@@ -40,7 +40,9 @@ void init_game_server() {
 
     gameStatus->restart=false;
     gameStatus->pause=false;
+    gameStatus->winner=false;
     gameStatus->gameOver = false;
+    gameStatus->levelsCompleted=0;
 
 }
 

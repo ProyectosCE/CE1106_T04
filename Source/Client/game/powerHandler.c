@@ -11,8 +11,10 @@ void initPowerHandler() {
 
 
 void update_brick_score(int level, int new_points) {
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
+    level++;
+    new_points++;
+    for (int i = 0; i < gameStateHandler->linesOfBricks; i++) {
+        for (int j = 0; j < gameStateHandler->bricksPerLine; j++) {
             if (gameStateHandler->bricks[i][j].active) {
                 // Actualizar puntos únicamente en el nivel especificado
                 if ((level == 4 && i < 2) ||
@@ -30,31 +32,35 @@ void update_brick_score(int level, int new_points) {
 
 
 void add_ball(int posX, int posY) {
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameStateHandler->maxBalls; i++) {
         if (!gameStateHandler->balls[i].active) {
             gameStateHandler->balls[i].active = true;
             gameStateHandler->balls[i].position = (Vector2){ posX, posY };  // Posición del ladrillo destruido
-            gameStateHandler->balls[i].speed = (Vector2){0, -5};
+            gameStateHandler->balls[i].speed = (Vector2){0, 5};
             break;  // Salir del bucle una vez que activamos una nueva bola
         }
     }
 }
 
 void doubleRacket(){
-    gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x*2, 10 };
+    if (! (gameStateHandler->player.size.x >= 4*(screenWidth/10))) {
+        gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x*2, 10 };
+    }
 }
 void halfRacket(){
-    gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x/2, 10 };
+    if (!(gameStateHandler->player.size.x <= screenWidth/(10*4))){
+        gameStateHandler->player.size = (Vector2){ gameStateHandler->player.size.x/2, 10 };
+    }
 }
 
 void addLife() {
-    if (gameStateHandler->player.life < PLAYER_MAX_LIFE ) {
+    if (gameStateHandler->player.life < gameStateHandler->playerMaxLife ) {
         gameStateHandler->player.life ++;
     }
 
 }
 void speedUp(){
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameStateHandler->maxBalls; i++) {
         if (gameStateHandler->balls[i].active) {
             gameStateHandler->balls[i].speed.y *= 2;
             gameStateHandler->balls[i].speed.x *= 2;
@@ -62,7 +68,7 @@ void speedUp(){
     }
 }
 void speedDown(){
-    for (int i = 0; i < MAX_BALLS; i++) {
+    for (int i = 0; i < gameStateHandler->maxBalls; i++) {
         if (gameStateHandler->balls[i].active) {
             gameStateHandler->balls[i].speed.y /= 2;
             gameStateHandler->balls[i].speed.x /= 2;

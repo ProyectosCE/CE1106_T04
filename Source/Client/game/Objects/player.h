@@ -6,7 +6,7 @@
 
 
 
-void init_player(Player* player);
+void init_player(Player* player, int maxLife);
 void updatePlayerScore(Player* player, int points);
 void add_life(Player* player);
 void double_racket(Player* player);

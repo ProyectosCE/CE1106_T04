@@ -220,8 +220,8 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
                 cJSON *brickJson = cJSON_GetArrayItem(bricksJson, i);
 
-                int row = i / BRICKS_PER_LINE;
-                int col = i % BRICKS_PER_LINE;
+                int row = i / gameState->bricksPerLine;
+                int col = i % gameState->bricksPerLine;
 
                 gameState->bricks[row][col].active = cJSON_GetObjectItem(brickJson, "active")->valueint;
 
@@ -238,6 +238,8 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
         gameState->pause = cJSON_GetObjectItem(json, "paused")->valueint;
 
+        gameState->winner = cJSON_GetObjectItem(json, "winner")->valueint;
+
         gameState->levelsCompleted = cJSON_GetObjectItem(json, "levelsCompleted")->valueint;
 
     }
@@ -248,10 +250,22 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 }
 
 void espectadorUpdateGame(const char *recibido) {
-    GameState *gameState = getGameState();
-    updateGameStateFromJson(recibido,gameState);
+    if (recibido == NULL) {
+        fprintf(stderr, "Error: Datos recibidos son NULL\n");
+        return;
+    }
 
+    GameState *gameState = getGameState();
+    if (gameState == NULL) {
+        fprintf(stderr, "Error: No se pudo obtener gameState\n");
+        return;
+    }
+
+    pthread_mutex_lock(&gameStateMutex); // Bloquear el mutex antes de modificar gameState
+    updateGameStateFromJson(recibido, gameState);
+    pthread_mutex_unlock(&gameStateMutex); // Desbloquear el mutex después de la modificación
 }
+
 
 void DrawPlayerList() {
 

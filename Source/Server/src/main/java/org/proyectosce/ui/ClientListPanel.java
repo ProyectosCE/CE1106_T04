@@ -28,8 +28,6 @@ public class ClientListPanel extends JPanel {
         JPanel commandPanel = new JPanel();
         commandPanel.setLayout(new BorderLayout());
 
-        commandInputField = new JTextField();
-        commandPanel.add(commandInputField, BorderLayout.CENTER);
 
         sendCommandButton = new JButton("Enviar Comando");
         commandPanel.add(sendCommandButton, BorderLayout.EAST);

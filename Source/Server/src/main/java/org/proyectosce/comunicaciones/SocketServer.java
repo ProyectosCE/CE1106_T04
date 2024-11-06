@@ -1,5 +1,7 @@
 package org.proyectosce.comunicaciones;
 
+import org.proyectosce.comandos.factory.CommandFactory;
+import org.proyectosce.comandos.factory.products.Command;
 import org.proyectosce.comandos.factory.products.DisconnectCommand;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -7,6 +9,7 @@ import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -86,8 +89,15 @@ public class SocketServer {
             // Verificar si el cliente se ha desconectado
             if (bytesRead == -1) {
                 System.out.println("El cliente se ha desconectado: " + cliente);
-                DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
-                DisconnectCommand.ejecutar();
+                // Crear y ejecutar DisconnectCommand usando CommandFactory
+                CommandFactory commandFactory = CommandFactory.getInstance();
+                Map<String, Object> params = Map.of(
+                        "cliente", cliente, // Cliente desconectado
+                        "comServer", ComServer.getInstance(), // Instancia del ComServer
+                        "socketServer", SocketServer.getInstance() // Instancia del SocketServer
+                );
+                Command disconnectCommand = commandFactory.crearComando("disconnect", params);
+                disconnectCommand.ejecutar();
                 return null;
             }
 
@@ -100,8 +110,15 @@ public class SocketServer {
         } catch (IOException e) {
             //e.printStackTrace();
             System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
-            DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
-            DisconnectCommand.ejecutar();
+            // Crear y ejecutar DisconnectCommand usando CommandFactory
+            CommandFactory commandFactory = CommandFactory.getInstance();
+            Map<String, Object> params = Map.of(
+                    "cliente", cliente, // Cliente desconectado
+                    "comServer", ComServer.getInstance(), // Instancia del ComServer
+                    "socketServer", SocketServer.getInstance() // Instancia del SocketServer
+            );
+            Command disconnectCommand = commandFactory.crearComando("disconnect", params);
+            disconnectCommand.ejecutar();
             this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
             return null;
         }
@@ -131,7 +148,14 @@ public class SocketServer {
     private void notificarDesconexion(Cliente cliente) {
         if (cliente != null) {
             clientesActivos.remove(cliente);
-            DisconnectCommand disconnectCommand = new DisconnectCommand(cliente);
+            // Crear y ejecutar DisconnectCommand usando CommandFactory
+            CommandFactory commandFactory = CommandFactory.getInstance();
+            Map<String, Object> params = Map.of(
+                    "cliente", cliente, // Cliente desconectado
+                    "comServer", ComServer.getInstance(), // Instancia del ComServer
+                    "socketServer", SocketServer.getInstance() // Instancia del SocketServer
+            );
+            Command disconnectCommand = commandFactory.crearComando("disconnect", params);
             disconnectCommand.ejecutar();
             System.out.println("Cliente desconectado: " + cliente);
         }

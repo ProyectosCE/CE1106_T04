@@ -22,7 +22,6 @@ typedef struct Ball {
     bool active;
 } Ball;
 
-#define MAX_BALLS 5
 
 // Enumeración para los poderes
 typedef enum PowerType {
@@ -32,7 +31,8 @@ typedef enum PowerType {
     DOUBLE_RACKET,  // Raqueta doble
     HALF_RACKET,    // Raqueta a la mitad
     SPEED_UP,       // Aumentar velocidad
-    SPEED_DOWN      // Reducir velocidad
+    SPEED_DOWN,      // Reducir velocidad
+    UPDATE_POINTS
 } PowerType;
 
 // Estructura Brick
@@ -44,8 +44,6 @@ typedef struct Brick {
     PowerType power;   // Tipo de poder asociado al ladrillo
 } Brick;
 
-#define LINES_OF_BRICKS         8
-#define BRICKS_PER_LINE        8
 
 typedef struct Player {
     Vector2 position;
@@ -56,13 +54,13 @@ typedef struct Player {
     bool halfRacket;
 } Player;
 
-#define PLAYER_MAX_LIFE         3
-
-
 typedef struct {
     Player player;
     Ball *balls;
-    Brick bricks[LINES_OF_BRICKS][BRICKS_PER_LINE];  // Ahora es una matriz bidimensional
+    Brick **bricks;
+    int linesOfBricks;
+    int maxBalls;
+    int bricksPerLine;
     int lives;
     int score;
     int levelsCompleted;
@@ -81,6 +79,11 @@ typedef struct {
     pthread_t communicationThread;
     pthread_t sendStatusThread;
     pthread_t askForUsersThread;
+    int playerMaxLife;
+    bool *levelSpeedChanged;
+    int levels;
+    bool winner;
+    bool bolaLanzada;
 } GameState;
 
 
@@ -91,8 +94,6 @@ extern float brickSpacing;
 // Mutex para sincronizar el acceso a gameState
 extern pthread_mutex_t gameStateMutex;
 
-
-static bool levelSpeedChanged[LINES_OF_BRICKS / 2] = {false};  // Hay dos líneas por nivel
 static int levelsCompleted = 0;
 
 

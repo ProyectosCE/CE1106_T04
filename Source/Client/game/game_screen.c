@@ -1,12 +1,13 @@
 #include "game_screen.h"
 #include "raylib.h"
+#include "Objects/ball.h"
 
 void draw_game(const GameState *gameState) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
 
-    if (!gameState->gameOver) {
+    if (!gameState->gameOver && !gameState->winner) {
         if (!gameState->pause){
 
 
@@ -27,21 +28,23 @@ void draw_game(const GameState *gameState) {
         // Dibujar los niveles completados
         DrawText(TextFormat("LEVEL: %01i", gameState->levelsCompleted), GetScreenWidth() - 120, 10, 20, DARKGRAY);
 
-        if (gameState->pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2,screenHeight/2 -10,40,RED);
-
         //Dibujar bola inicial
-        DrawCircleV(gameState->balls[0].position, gameState->balls[0].radius, MAROON);
+        if (noBallsActive(gameState->balls, gameState->maxBalls) &&
+            !gameState->bolaLanzada) {
+            DrawCircleV(gameState->balls[0].position, gameState->balls[0].radius, MAROON);
+        }
+
 
         // Dibujar todas las bolas activas desde el arreglo dinámico
-        for (int i = 0; i < MAX_BALLS; i++) {
+        for (int i = 0; i < gameState->maxBalls; i++) {
             if (gameState->balls[i].active) {
                 DrawCircleV(gameState->balls[i].position, gameState->balls[i].radius, MAROON);
             }
         }
 
         // Dibujar los ladrillos activos con color según la línea
-        for (int i = 0; i < LINES_OF_BRICKS; i++) {
-            for (int j = 0; j < BRICKS_PER_LINE; j++) {
+        for (int i = 0; i < gameState->linesOfBricks; i++) {
+            for (int j = 0; j < gameState->bricksPerLine; j++) {
                 // Verificar si el ladrillo está activo
                 if (gameState->bricks[i][j].active) {
                     // Calcular las posiciones y tamaños de los ladrillos
@@ -59,9 +62,35 @@ void draw_game(const GameState *gameState) {
         else {
             DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2, screenHeight/2 - 10, 40, GRAY);
         }
-    } else {
-        // Pantalla de "Game Over"
-        DrawText("PRESS [ENTER] TO PLAY AGAIN", screenWidth / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, screenHeight / 2 - 50, 20, GRAY);
+    } else if (gameState->gameOver && !gameState->winner){
+        // Primera línea: "YOU LOOSE"
+        DrawText("YOU LOOSE",
+                 screenWidth / 2 - MeasureText("YOU WIN", 30) / 2, // Centrar el texto
+                 screenHeight / 2 - 70,                           // Ajustar posición vertical
+                 30,                                              // Tamaño de fuente
+                 RED);                                            // Color de texto
+
+        // Segunda línea: "PRESS [ENTER] TO PLAY AGAIN"
+        DrawText("PRESS [ENTER] TO PLAY AGAIN",
+                 screenWidth / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, // Centrar el texto
+                 screenHeight / 2 - 30,                                                // Ajustar posición vertical
+                 20,                                                                   // Tamaño de fuente
+                 GRAY);
+    }
+    else {
+        // Primera línea: "YOU WIN"
+        DrawText("YOU WIN",
+                 screenWidth / 2 - MeasureText("YOU WIN", 30) / 2, // Centrar el texto
+                 screenHeight / 2 - 70,                           // Ajustar posición vertical
+                 30,                                              // Tamaño de fuente
+                 BLUE);                                            // Color de texto
+
+        // Segunda línea: "PRESS [ENTER] TO PLAY AGAIN"
+        DrawText("PRESS [ENTER] TO PLAY AGAIN",
+                 screenWidth / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, // Centrar el texto
+                 screenHeight / 2 - 30,                                                // Ajustar posición vertical
+                 20,                                                                   // Tamaño de fuente
+                 GRAY);
     }
 
     EndDrawing();

@@ -9,10 +9,12 @@
 
 
 
-#define MAX_BALLS              5
+
 
 void init_balls(Ball* ball);
 void activate_ball(Ball* ball, Vector2 position, Vector2 speed);
 void update_ball_positions(Player *player, Ball *balls);
+
+bool noBallsActive(Ball *balls, int maxBalls);
 
 #endif // BALL_H

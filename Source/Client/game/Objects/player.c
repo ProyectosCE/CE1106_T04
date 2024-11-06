@@ -2,11 +2,11 @@
 
 #include <stdio.h>
 
-void init_player(Player* player) {
+void init_player(Player* player, int maxLife) {
 
     player->size = (Vector2){ screenWidth/10, 10 };
     player->position = (Vector2){ screenWidth/2, screenHeight-player->size.y};
-    player->life = PLAYER_MAX_LIFE;
+    player->life = maxLife;
     player->score = 0;
     player->doubleRacket = false;
     player->halfRacket = false;
@@ -15,10 +15,6 @@ void init_player(Player* player) {
 void updatePlayerScore(Player* player, const int points) {
     player->score += points;
     //printf("Score: %d\n", player->score);
-}
-
-void add_life(Player* player) {
-    if (player->life < PLAYER_MAX_LIFE) player->life++;
 }
 
 void double_racket(Player* player) {

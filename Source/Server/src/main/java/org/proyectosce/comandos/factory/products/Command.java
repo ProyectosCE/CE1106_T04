@@ -3,11 +3,15 @@ package org.proyectosce.comandos.factory.products;
 import java.util.Map;
 
 public interface Command {
+    // Ejecuta el comando
     void ejecutar();
 
-    // Método para obtener el tipo de comando
+    // Devuelve el tipo de comando
     String getType();
 
-    // Método para convertir el comando en un mapa (ideal para serialización, por ejemplo, a JSON)
+    // Convierte el comando en un mapa (para serialización, por ejemplo, JSON)
     Map<String, Object> toMap();
+
+    // Método para inyectar dependencias o configurar datos adicionales, si es necesario
+    void configure(Map<String, Object> params);
 }

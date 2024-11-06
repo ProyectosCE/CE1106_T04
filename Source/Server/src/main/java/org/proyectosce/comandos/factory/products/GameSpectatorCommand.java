@@ -6,27 +6,41 @@ import org.proyectosce.comunicaciones.ComServer;
 import java.util.Map;
 
 public class GameSpectatorCommand implements Command {
-    private final Cliente jugadorAObservar;
-    private final Cliente espectador;
+    private Cliente jugadorAObservar;
+    private Cliente espectador;
+    private ComServer comServer;
 
-    public GameSpectatorCommand(Cliente jugadorAObservar, Cliente espectador) {
-        this.jugadorAObservar = jugadorAObservar;
-        this.espectador = espectador;
-    }
+    // Constructor vacío para permitir configuración dinámica
+    public GameSpectatorCommand() {}
 
     @Override
     public void ejecutar() {
-        ComServer.getInstance().registrarObservador(jugadorAObservar, espectador);
-        System.out.println("Espectador registrado para observar al jugador: " + jugadorAObservar);
+        if (jugadorAObservar == null || espectador == null || comServer == null) {
+            throw new IllegalStateException("GameSpectatorCommand no está configurado correctamente.");
+        }
+
+        comServer.registrarObservador(jugadorAObservar, espectador);
+        System.out.println("Espectador registrado para observar al jugador: " + jugadorAObservar.getId());
     }
 
     @Override
     public String getType() {
-        return "";
+        return "GameSpectator";
     }
 
     @Override
     public Map<String, Object> toMap() {
-        return Map.of();
+        return Map.of(
+                "type", getType(),
+                "jugadorId", jugadorAObservar != null ? jugadorAObservar.getId() : null,
+                "espectadorId", espectador != null ? espectador.getId() : null
+        );
+    }
+
+    @Override
+    public void configure(Map<String, Object> params) {
+        this.jugadorAObservar = (Cliente) params.get("jugadorAObservar");
+        this.espectador = (Cliente) params.get("espectador");
+        this.comServer = (ComServer) params.get("comServer");
     }
 }
