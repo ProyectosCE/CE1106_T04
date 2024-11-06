@@ -31,7 +31,7 @@ add_executable(Client "main_con_gui_(depreciate).c"
 
 
 # Copiar el archivo settings.ini al directorio de salida
-configure_file(settings.ini ${CMAKE_CURRENT_BINARY_DIR}/settings.ini COPYONLY)
+file(COPY ${CMAKE_SOURCE_DIR}/settings.ini DESTINATION ${CMAKE_BINARY_DIR})
 
 # Crear la carpeta logs en tiempo de compilación
 add_custom_command(

@@ -8,6 +8,7 @@
 #include "comunicaciones/comServer.h"
 #include "game.h"
 #include "spectator.h"
+#include "configuracion/configuracion.h"
 
 
 typedef enum {
@@ -91,6 +92,7 @@ void DrawMenu() {
 }
 
 int main(void) {
+    inicializar_configuracion();
     pthread_t communicationThread, gameThread;
 
     // Crear la instancia del ComServer

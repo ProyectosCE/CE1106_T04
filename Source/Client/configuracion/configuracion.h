@@ -1,27 +1,36 @@
 #ifndef CONFIGURACION_H
 #define CONFIGURACION_H
 
+#define MAX_HASH_SIZE 1024
+
+typedef enum {
+    CONFIG_TYPE_INT,
+    CONFIG_TYPE_FLOAT,
+    CONFIG_TYPE_STRING
+} ConfigType;
+
+
+typedef struct ConfigEntry {
+    char* key;
+    union {
+        int int_val;
+        float float_val;
+        char* str_val;
+    } value;
+    ConfigType type;
+    struct ConfigEntry* next;
+} ConfigEntry;
+
 typedef struct {
-    const char* filename;
+    ConfigEntry* entries[MAX_HASH_SIZE];
+    int cargado;
 } Configuracion;
 
-typedef struct {
-    char ip[16];
-    int puerto;
-} ConfiguracionData;
+// Funciones de configuración
+void inicializar_configuracion();
+int get_config_int(const char* key);
+float get_config_float(const char* key);
+const char* get_config_string(const char* key);
+void destruir_configuracion();
 
-// Crea una nueva configuración con el nombre del archivo .ini
-Configuracion* crear_configuracion_file(const char* filename);
-
-Configuracion* crear_configuracion();
-
-// Lee el valor de la IP del archivo .ini
-const char* leer_ip(Configuracion* config);
-
-// Lee el valor del puerto del archivo .ini
-int leer_puerto(Configuracion* config);
-
-// Libera la memoria asociada a la configuración
-void destruir_configuracion(Configuracion* config);
-
-#endif // CONFIGURACION_H
+#endif

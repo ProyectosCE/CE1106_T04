@@ -4,10 +4,10 @@
 #include <netinet/in.h>
 
 typedef struct {
-    char ipServidor[16];
-    int port;
-    int sock;  // Descriptor del socket
-    bool isConnected;  // Bool para conocer si el servidor está activado o no
+    char* ipServidor;  // Apunta al string de la dirección IP
+    int port;               // Cambiar a un puntero para el puerto
+    int sock;               // Descriptor del socket
+    bool isConnected;       // Bool para conocer si el servidor está activado o no
     struct sockaddr_in serverAddress;  // Dirección del servidor
 } SocketServer;
 

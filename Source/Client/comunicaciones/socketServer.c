@@ -28,15 +28,12 @@ SocketServer *SocketServer_create() {
         return NULL;
     }
 
-    Configuracion *configuracion= crear_configuracion();
-    strcpy(socketServer_instance->ipServidor, leer_ip(configuracion));
-    socketServer_instance->port= leer_puerto(configuracion);
+
+    strcpy(socketServer_instance->ipServidor, get_config_string("socket.address"));
+    socketServer_instance->port= get_config_int("socket.port");
     socketServer_instance->sock = 0;
     socketServer_instance->isConnected = 0;  // El servidor comienza como desconectado
     memset(&(socketServer_instance->serverAddress), 0, sizeof(socketServer_instance->serverAddress));
-
-
-    free(configuracion);
 
     return socketServer_instance;
 }
