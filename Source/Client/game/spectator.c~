@@ -248,22 +248,10 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 }
 
 void espectadorUpdateGame(const char *recibido) {
-    if (recibido == NULL) {
-        fprintf(stderr, "Error: Datos recibidos son NULL\n");
-        return;
-    }
-
     GameState *gameState = getGameState();
-    if (gameState == NULL) {
-        fprintf(stderr, "Error: No se pudo obtener gameState\n");
-        return;
-    }
+    updateGameStateFromJson(recibido,gameState);
 
-    pthread_mutex_lock(&gameStateMutex); // Bloquear el mutex antes de modificar gameState
-    updateGameStateFromJson(recibido, gameState);
-    pthread_mutex_unlock(&gameStateMutex); // Desbloquear el mutex después de la modificación
 }
-
 
 void DrawPlayerList() {
 

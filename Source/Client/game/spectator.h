@@ -13,7 +13,8 @@ typedef struct {
 
 } PlayerList;
 
-void DrawPlayerList(const PlayerList *players);
+void DrawPlayerList();
+void *askForPlayerList(void *arg);
 void UpdatePlayerList(const PlayerList *players);
 void espectadorGetList(const char* recibido);
 void espectadorUpdateGame(const char *recibido);

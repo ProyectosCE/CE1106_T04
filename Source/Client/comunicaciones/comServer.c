@@ -113,7 +113,7 @@ void ComServer_sendStatus(const char *message) {
  */
 void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback) {
     if (server != NULL) {
-        printf("Se registro el callback corectamente");
+        printf("Se registro el callback corectamente\n");
         server->onMessageReceived = callback;
     }
     else {
@@ -143,7 +143,6 @@ void *ComServer_messageListeningLoop(void *arg) {
             } else {
                 log_error("Error al recibir el mensaje del servidor\n");
             }
-            sleep(0.5);
         } else {
             SocketServer_reconnect(server->socketServer);
         }

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SocketServer {
     private static SocketServer instance;
-    private static final int PORT = 12345;
+    private static final int PORT = 12346;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 

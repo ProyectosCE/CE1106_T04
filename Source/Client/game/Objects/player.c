@@ -14,7 +14,7 @@ void init_player(Player* player) {
 
 void updatePlayerScore(Player* player, const int points) {
     player->score += points;
-    printf("Score: %d\n", player->score);
+    //printf("Score: %d\n", player->score);
 }
 
 void add_life(Player* player) {

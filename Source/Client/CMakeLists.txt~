@@ -49,7 +49,6 @@ add_executable(Client
         game/powerHandler.h
         gui/nameInput.c
         gui/nameInput.h
-        gui/screenHandler.c
 
 )
 

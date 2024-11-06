@@ -69,6 +69,7 @@ typedef struct {
     bool restart;
     char playerName[50];
     bool running;  // Flag para el estado del juego
+    bool comunicationRunning;
     ComServer *comServer;
     pthread_t communicationThread;
     pthread_t sendStatusThread;
@@ -80,7 +81,8 @@ static const int screenWidth = 800;
 static const int screenHeight = 450;
 extern float brickSpacing;
 
-
+// Mutex para sincronizar el acceso a gameState
+extern pthread_mutex_t gameStateMutex;
 
 
 static bool levelSpeedChanged[LINES_OF_BRICKS / 2] = {false};  // Hay dos líneas por nivel

@@ -6,8 +6,6 @@
 #include <unistd.h>
 
 #include "game_logic.h"
-#include "game_screen.h"
-#include "../game_status.h"
 #include "../gui/main_menu.h"
 #include "spectator.h"
 #include "Objects/ball.h"
@@ -15,9 +13,13 @@
 #include "Objects/player.h"
 #include "powerHandler.h"
 
+#include "../gui/screenHandler.h"
 
-pthread_t sendStateThread;
+
+
+
 pthread_t askForUserThread;
+// Declarar el mutex global
 
 void init_game_server() {
 
@@ -36,57 +38,14 @@ void init_game_server() {
     gameStatus->pause=false;
     gameStatus->gameOver = false;
 
-
-}
-
-void unload_game_server() {
-
 }
 
 
-void *update_game_thread(void *arg) {
-    GameState *gameState = (GameState *)arg;
-    update_game(gameState);
-
-    return NULL;
+void gameServerCallback(const char *recibido) {
+    printf(recibido);
 }
 
-void *draw_game_thread(void *arg) {
-    GameState *gameState = (GameState *)arg;
-    while (gameState->running) {
-        draw_game(gameState);
-    }
-    return NULL;
-}
-
-void *send_game_state_thread(void *arg) {
-    GameState *gameState = (GameState *)arg;
-    while (gameState->running) {
-        sendGameState(gameState);
-    }  // Send the current game state
-    return NULL;
-}
-
-void *askForPlayerList(void *arg) {
-    GameState *gameState = (GameState *)arg;
-    ComServer *comServer=ComServer_create();
-    while (gameState->currentScreen==OBSERVER_SELECT) {
-        ComServer_observerGetlist(comServer);
-        sleep(5);
-    }  // Send the current game state
-    return NULL;
-}
-
-void DrawMenuInput(GameState *gameState) {
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    DrawText("Enter your name:", 100, 100, 20, DARKGRAY);
-    DrawText(gameState->playerName, 100, 130, 20, BLACK);
-    DrawText("Press Enter to Play", 100, 160, 20, DARKGRAY);
-    EndDrawing();
-}
-
-void updateMenuInput(GameState *game_state) {
+void updateNameInput(GameState *game_state) {
     if (IsKeyPressed(KEY_ENTER)) {
         game_state->comServer = ComServer_create();
         ComServer_sendPlayerName(game_state->comServer, game_state->playerName);
@@ -105,105 +64,179 @@ void updateMenuInput(GameState *game_state) {
 }
 
 
-void gameServerCallback(const char *recibido) {
-    printf(recibido);
+// ================================================================================================================= //
+// COMUNICACION THREAD
+void initialize_game_communication(GameState *gameState, void (*callback)(void *)) {
+    if (gameState->comServer == NULL) {
+        gameState->comServer = ComServer_create();
+        if (gameState->comServer == NULL) {
+            fprintf(stderr, "Error al crear ComServer\n");
+            gameState->running = false;
+            return;
+        }
+        ComServer_registerCallback(gameState->comServer, callback);
+    }
+
+    if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
+        fprintf(stderr, "Error al crear el hilo de comunicación\n");
+        ComServer_destroy(gameState->comServer);
+        gameState->running = false;
+    }
 }
 
+// ============================================================================================================== //
+// UPDATE GAME STATE
+void update_game_state(GameState *gameState) {
+    switch (getCurrentScreen()) {
+        case MENU:
+            UpdateMenu();
+            break;
 
-void start_game() {
-    GameState *gameState = getGameState();
+        case NAME_INPUT:
+            updateNameInput(gameState);
+            break;
 
-    if (getCurrentScreen() == MENU) {
-        UpdateMenu();
-        DrawMenu();
-}
-    else if (getCurrentScreen() == NAME_INPUT) {
-        updateMenuInput(gameState);
-        DrawMenuInput(gameState);
+        case GAME:
+            if (!gameState->comunicationRunning) {
 
-    } else if (getCurrentScreen() == GAME) {
-        if (!gameState->running) {
-            gameState->running = true;
+                gameState->comunicationRunning=true;
 
-            // Crear instancia del servidor de comunicaciones
+                // Inicializar comunicación del juego
+                initialize_game_communication(gameState, gameServerCallback);
 
-            if (gameState->comServer == NULL) {
-                fprintf(stderr, "Error al crear ComServer\n");
-                gameState->running = false;
+                // Crear el hilo para enviar estados del juego
+                if (pthread_create(&gameState->sendStatusThread, NULL, send_game_state_thread, (void *)gameState) != 0) {
+                    fprintf(stderr, "Error al crear el hilo de envío de estado\n");
+                    ComServer_destroy(gameState->comServer);
+                    gameState->running = false;
+                    gameState->comunicationRunning=false;
+                    return;
+                }
             }
-            ComServer_registerCallback(gameState->comServer,gameServerCallback);
-            // Crear el hilo de comunicaciones
-            if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
-                fprintf(stderr, "Error al crear el hilo de comunicación\n");
-                ComServer_destroy(gameState->comServer);
-                gameState->running = false;
+
+            update_game(gameState);
+
+            // Reinicio del juego
+            if (gameState->restart) {
+                printf("REINICIANDOOOOO\n\n\n\n");
+                init_game_server();
+            }
+            break;
+
+        case OBSERVER_SELECT: {
+            if (!gameState->comunicationRunning) {
+
+                // Inicializar comunicación del observador
+                initialize_game_communication(gameState, espectadorGetList);
+
+                init_game_server();
+                gameState->running=true;
+                gameState->comunicationRunning=true;
+
+                // Crear el hilo para solicitar la lista de jugadores
+                if (pthread_create(&gameState->askForUsersThread, NULL, askForPlayerList, (void *)gameState) != 0) {
+                    fprintf(stderr, "Error al crear el hilo de solicitud de jugadores\n");
+                    ComServer_destroy(gameState->comServer);
+                    gameState->comunicationRunning=false;
+                    gameState->running = false;
+                    return;
+                }
             }
 
-            // Crear el hilo de comunicaciones
-            if (pthread_create(&gameState->sendStatusThread, NULL, send_game_state_thread, (void *)gameState) != 0) {
-                fprintf(stderr, "Error al crear el hilo de comunicación\n");
-                ComServer_destroy(gameState->comServer);
-                gameState->running = false;
+            PlayerList *playerLista = GetPlayerListInstance();
+            if (playerLista != NULL) {
+                UpdatePlayerList(playerLista);
             }
+            break;
         }
 
-        // Crear los hilos para manejar las tareas de actualización, dibujo y envío
-        update_game(gameState);
-        draw_game(gameState);
+        case SPECTATOR:
+            if (!gameState->comunicationRunning) {
+                init_game_server();
+                gameState->running=true;
+                gameState->comunicationRunning = true;
+                gameState->comServer=NULL;
 
-        // Manejar la condición de reinicio del juego
-        if (gameState->restart) {
-            init_game_server();
-        }
-    }
-    else if (getCurrentScreen() == OBSERVER_SELECT) {
-
-        // Crear el hilo de comunicaciones
-        ComServer *comServer = ComServer_create();
-        // Print the boolean value
-        if (!gameState->running) {
-            // Print the boolean value
-
-            printf("Game is %s\n", gameState->running ? "running" : "not running");
-            gameState->running = true;
-
-            ComServer_registerCallback(comServer,espectadorGetList);
-            gameState->comServer=comServer;
-
-            if (pthread_create(&gameState->communicationThread, NULL, ComServer_messageListeningLoop, (void *)gameState->comServer) != 0) {
-                fprintf(stderr, "Error al crear el hilo de comunicación\n");
-                ComServer_destroy(gameState->comServer);
-                gameState->running = false;
+                // Inicializar comunicación del espectador
+                initialize_game_communication(gameState, espectadorUpdateGame);
             }
+            break;
 
-            if (pthread_create(&gameState->askForUsersThread, NULL, askForPlayerList, (void *)gameState) != 0) {
-                fprintf(stderr, "Error al crear el hilo de comunicación\n");
-                ComServer_destroy(gameState->comServer);
-                gameState->running = false;
-            }
-        }
-        PlayerList *playerLista = GetPlayerListInstance();
-        DrawPlayerList(playerLista);
-        UpdatePlayerList(playerLista);
-
-    }
-
-    else if (getCurrentScreen() == SPECTATOR) {
-        if (!gameState->running) {
-            gameState->running=true;
-            ComServer *comServer = ComServer_create();
-            init_game_server();
-            ComServer_registerCallback(comServer,espectadorUpdateGame);
-        }
-        draw_game(gameState);
+        default:
+            break;
     }
 
+    // Verificar si el jugador perdió todas las vidas
     if (gameState->player.life <= 0) {
         gameState->gameOver = true;
     }
 }
 
 
+
+// ============================================================================================================= //
+
+// UPDATE THREAD
+
+void *update_thread(void *arg) {
+    GameState *gameState = (GameState *)arg;
+
+    while (gameState->running) {
+        pthread_mutex_lock(&gameStateMutex);
+        // Actualizar el estado del juego basado en la pantalla actual
+        update_game_state(gameState);
+        pthread_mutex_unlock(&gameStateMutex);
+
+        // Limitar la velocidad de actualización (~60 FPS)
+        usleep(16000);
+    }
+
+    return NULL;
+}
+
+
+// ============================================================================================================= //
+
+// START GAME
+
+void start_game() {
+    GameState *gameState = getGameState();
+    pthread_t updateThread, drawThread;
+
+    // Inicializar el mutex
+    if (pthread_mutex_init(&gameStateMutex, NULL) != 0) {
+        fprintf(stderr, "Error al inicializar el mutex\n");
+        return;
+    }
+
+    // Establecer el estado inicial
+    gameState->running = true;
+
+    // Crear e iniciar el thread de actualización
+    if (pthread_create(&updateThread, NULL, update_thread, (void *)gameState) != 0) {
+        fprintf(stderr, "Error al crear el thread de actualización\n");
+        gameState->running = false;
+        return;
+    }
+
+    // Crear e iniciar el thread de dibujo
+    if (pthread_create(&drawThread, NULL, draw_thread, (void *)gameState) != 0) {
+        fprintf(stderr, "Error al crear el thread de dibujo\n");
+        gameState->running = false;
+        return;
+    }
+
+    // Esperar a que los threads terminen (opcional)
+    pthread_join(updateThread, NULL);
+    pthread_join(drawThread, NULL);
+
+    // Destruir el mutex al finalizar
+    pthread_mutex_destroy(&gameStateMutex);
+}
+
+
+
+/// VARAS A ELIMINAR
 void GameServer_handleMessage(const char *message) {
     if (strcmp(message, "start") == 0) {
         init_game_server();

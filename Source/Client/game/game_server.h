@@ -2,7 +2,7 @@
 #define GAME_SERVER_H
 
 #include <stdbool.h>
-#include "game_logic.h"
+
 #include "game_screen.h"
 
 

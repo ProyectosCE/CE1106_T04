@@ -33,6 +33,39 @@ void update_game(GameState *gameState) {
 
 }
 
+void *send_game_state_thread(void *arg) {
+    GameState *gameState = (GameState *)arg;
+
+    if (gameState == NULL) {
+        fprintf(stderr, "Error: gameState es NULL\n");
+        return NULL;
+    }
+
+    while (true) {
+        // Crear una copia local del estado del juego
+        GameState localState;
+
+        pthread_mutex_lock(&gameStateMutex);
+        bool isRunning = gameState->running;
+        if (isRunning) {
+            localState = *gameState; // Copiar todo el estado del juego
+        }
+        pthread_mutex_unlock(&gameStateMutex);
+
+        if (!isRunning) {
+            break;
+        }
+
+        // Enviar el estado del juego usando la copia local
+        sendGameState(&localState);
+
+        // Pausar el thread durante 500 ms (~0.5 segundos)
+        usleep(16000);
+    }
+
+    return NULL;
+}
+
 
 
 char* generate_GameState_json(GameState *gameState) {
@@ -93,8 +126,6 @@ char* generate_GameState_json(GameState *gameState) {
 }
 
 void sendGameState(GameState *gameState) {
-
-    sleep(0.75);
 
     const char *json = generate_GameState_json(gameState);
     if (json != NULL) {

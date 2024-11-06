@@ -15,6 +15,7 @@ void initGameState() {
         gameStateInstance->levelsCompleted = 0;
         gameStateInstance->gameOver = false;
         gameStateInstance->running=false;
+        gameStateInstance->comunicationRunning=false;
         gameStateInstance->ball_speed_multiplier = 1.0f;
         gameStateInstance->brickSize = (Vector2){ 40, 20 }; // Tamaño predeterminado de los ladrillos
 
