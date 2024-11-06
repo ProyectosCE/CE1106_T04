@@ -53,7 +53,6 @@ public class ClientHandler implements Runnable {
             }
         } finally {
             // Limpiar y remover al cliente de la lista
-            socketServer.cerrarConexion(cliente);
             System.out.println("Cliente removido: " + cliente);
         }
     }

@@ -13,7 +13,7 @@ import java.util.UUID;
 public class Cliente {
     private final SocketChannel channel;
     private final String id;  // Nuevo identificador único
-    private final String nombre;
+    private String nombre;
 
     public Cliente(SocketChannel channel) {
         this.channel = channel;
@@ -37,8 +37,8 @@ public class Cliente {
         return nombre;
     }
 
-    public String setNombre(String nombre) {
-        return nombre;
+    public void setNombre(String nombre) {
+        this.nombre=nombre;
     }
 
     public void enviarMensaje(String mensaje) {

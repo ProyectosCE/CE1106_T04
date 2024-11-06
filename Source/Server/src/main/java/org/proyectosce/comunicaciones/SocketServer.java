@@ -75,38 +75,36 @@ public class SocketServer {
         }
     }
 
+    // Método para recibir un mensaje de un cliente
     public String recibirMensaje(Cliente cliente) {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(2048); // Aumentar el tamaño del buffer
-            StringBuilder mensajeCompleto = new StringBuilder();
-            int bytesRead;
-            // Leer en un bucle para manejar mensajes grandes
-            while ((bytesRead = cliente.getChannel().read(buffer)) > 0) {
-                buffer.flip();
-                mensajeCompleto.append(new String(buffer.array(), 0, bytesRead));
-                buffer.clear(); // Limpiar el buffer para la próxima lectura
-            }
+            ByteBuffer buffer = ByteBuffer.allocate(4096);
 
+            // Leer datos en un ciclo para asegurarse de recibir el mensaje completo
+            int bytesRead = cliente.getChannel().read(buffer);
 
             // Verificar si el cliente se ha desconectado
             if (bytesRead == -1) {
-                notificarDesconexion(cliente);
+                System.out.println("El cliente se ha desconectado: " + cliente);
+                DisconnectCommand DisconnectCommand = new DisconnectCommand(cliente);
+                DisconnectCommand.ejecutar();
                 return null;
             }
 
+            // Limpiar el buffer antes de cada lectura para evitar residuos
+            buffer.flip();
 
-            // Convertir el mensaje a String
-            String mensajeJson = mensajeCompleto.toString().trim();
-            return mensajeJson; // O retorna el objeto gameState si lo prefieres
+            // Convertir el buffer en cadena de texto y retornar el mensaje
+            return new String(buffer.array(), 0, bytesRead).trim();
 
         } catch (IOException e) {
-            manejarExcepcion("Fallo al recibir mensaje", e);
-            notificarDesconexion(cliente);
+            e.printStackTrace();
+            System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
+            this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
             return null;
-
         }
-
     }
+
 
     /**
      * Cierra la conexión de un cliente.

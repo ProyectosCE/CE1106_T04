@@ -10,6 +10,7 @@ public class TipoClienteCommand implements Command {
     private  Cliente cliente;
 
     public TipoClienteCommand(String tipoCliente, Cliente cliente, String nombre) {
+        System.out.println("UN CLIENTE CREADO");
         this.tipoCliente = tipoCliente;
         this.cliente = cliente;
         this.cliente.setNombre(nombre);
