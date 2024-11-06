@@ -1,9 +1,10 @@
-package org.proyectosce.comandos;
+package org.proyectosce.comandos.factory.products;
 
 import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
 import org.proyectosce.comunicaciones.SocketServer;
 
+import java.util.Map;
 import java.util.Set;
 
 public class DisconnectCommand implements Command {
@@ -38,5 +39,15 @@ public class DisconnectCommand implements Command {
 
         // Eliminar de la lista general de clientes
         comServer.eliminarCliente(cliente);
+    }
+
+    @Override
+    public String getType() {
+        return "";
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

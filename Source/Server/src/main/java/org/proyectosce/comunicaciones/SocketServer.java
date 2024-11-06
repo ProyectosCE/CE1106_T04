@@ -1,7 +1,7 @@
 package org.proyectosce.comunicaciones;
 
-import org.proyectosce.comandos.Command;
-import org.proyectosce.comandos.DisconnectCommand;
+import org.proyectosce.comandos.factory.products.*;
+import org.proyectosce.comandos.factory.products.DisconnectCommand;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
