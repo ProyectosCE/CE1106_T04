@@ -189,7 +189,12 @@ void start_game() {
     }
 
     else if (getCurrentScreen() == SPECTATOR) {
-        init_game_server();
+        if (!gameState->running) {
+            gameState->running=true;
+            ComServer *comServer = ComServer_create();
+            init_game_server();
+            ComServer_registerCallback(comServer,espectadorUpdateGame);
+        }
         draw_game(gameState);
     }
 

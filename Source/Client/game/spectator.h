@@ -16,6 +16,7 @@ typedef struct {
 void DrawPlayerList(const PlayerList *players);
 void UpdatePlayerList(const PlayerList *players);
 void espectadorGetList(const char* recibido);
+void espectadorUpdateGame(const char *recibido);
 PlayerList* GetPlayerListInstance();
 
 //void DrawGameSpectator();
