@@ -8,19 +8,16 @@
 #include <errno.h>
 #include <log.h>
 
-// Puntero estático para almacenar la única instancia de ComServer
+// Puntero estático para almacenar la única instancia de SocketServer
 static SocketServer *socketServer_instance = NULL;
 
 /*
  * Constructor: Inicializa la estructura SocketServer y prepara la conexión
  */
 SocketServer *SocketServer_create() {
-
-    // Verifica si ya existe una instancia
     if (socketServer_instance != NULL) {
         return socketServer_instance;
     }
-
 
     socketServer_instance = (SocketServer *)malloc(sizeof(SocketServer));
     if (socketServer_instance == NULL) {
@@ -29,7 +26,6 @@ SocketServer *SocketServer_create() {
     }
 
     const char* address = get_config_string("socket.address");
-
     socketServer_instance->ipServidor = address;  // Apuntando directamente
     log_debug("IP del servidor: %s\n", socketServer_instance->ipServidor);
     socketServer_instance->port= get_config_int("socket.port");
@@ -49,10 +45,21 @@ void SocketServer_destroy(SocketServer *server) {
             close(server->sock);  // Cerrar el socket si está abierto
         }
         free(server);  // Liberar la memoria de la estructura
-        socketServer_instance=NULL;
+        socketServer_instance = NULL;
     }
 }
 
+/*
+ * Método para configurar la dirección del servidor
+ */
+void SocketServer_configureAddress(SocketServer *server) {
+    server->serverAddress.sin_family = AF_INET;
+    server->serverAddress.sin_port = htons(server->port);
+
+    if (inet_pton(AF_INET, server->ipServidor, &server->serverAddress.sin_addr) <= 0) {
+        log_fatal("Dirección IP inválida\n");
+    }
+}
 
 /*
  * Método para iniciar la conexión del socket con el servidor
@@ -63,14 +70,7 @@ void SocketServer_start(SocketServer *server) {
         return;
     }
 
-    server->serverAddress.sin_family = AF_INET;
-    server->serverAddress.sin_port = htons(server->port);
-
-
-    if (inet_pton(AF_INET, server->ipServidor, &server->serverAddress.sin_addr) <= 0) {
-        log_fatal("Dirección IP inválida\n");
-        return;
-    }
+    SocketServer_configureAddress(server);  // Configurar la dirección del servidor
 
     // Intentar conectar al servidor
     while (connect(server->sock, (struct sockaddr *)&(server->serverAddress), sizeof(server->serverAddress)) < 0) {
@@ -80,7 +80,6 @@ void SocketServer_start(SocketServer *server) {
 
     log_info("Conectado al servidor en el puerto %d\n", ntohs(server->serverAddress.sin_port));
     server->isConnected = 1;  // Marcar como conectado
-
 }
 
 /*
@@ -111,12 +110,10 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
     int valread = read(server->sock, buffer, bufferSize - 1);
 
     if (valread == 0) {
-        // Si read devuelve 0, significa que el servidor ha cerrado la conexión
         log_warn("El servidor se ha desconectado\n");
         server->isConnected = 0;  // Marcar como desconectado
         return 0;  // Indicar que la conexión se ha cerrado
     } else if (valread < 0) {
-        // Si read devuelve -1, ha ocurrido un error, pero puede no ser una desconexión
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
             return -1;  // Indicar que no hay datos sin error crítico
         } else {
@@ -124,13 +121,11 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
             return -1;  // Indicar error
         }
     } else {
-        // Se recibieron datos del servidor correctamente
         buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
         log_info("Mensaje recibido del servidor: %s\n", buffer);
         return valread;  // Retornar la cantidad de bytes leídos
     }
 }
-
 
 /*
  * Método para reconectar si el servidor está desconectado

@@ -6,8 +6,12 @@
 #define CLIENT_SPECTATOR_H
 
 #include "raylib.h"
-#include "game.h"
 
+//void DrawGameSpectator();
+//void parseGameState();
+
+// Cambiar despues para que reciba json
+//char* readJSONFile(const char *filename);
 
 
 #endif //CLIENT_SPECTATOR_H

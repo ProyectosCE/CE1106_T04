@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.27)
 project(Client)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -11,11 +11,9 @@ find_package(log.c)
 find_package(inih)
 
 #Executables here:
-add_executable(Client "main_con_gui_(depreciate).c"
-        game.c
-        game.h
-        spectator.c
-        spectator.h
+add_executable(Client
+        game/spectator.c
+        game/spectator.h
         comunicaciones/comServer.c
         comunicaciones/comServer.h
         comunicaciones/socketServer.c
@@ -27,6 +25,29 @@ add_executable(Client "main_con_gui_(depreciate).c"
         configuracion/configuracion.h
         logs/saveLog.c
         logs/saveLog.h
+        game/game_server.c
+        game/game_server.h
+        game/game_logic.c
+        game/game_logic.h
+        game/game_screen.c
+        game/game_screen.h
+        game/Objects/player.c
+        game/Objects/player.h
+        game/Objects/ball.c
+        game/Objects/ball.h
+        game/Objects/brick.c
+        game/Objects/brick.h
+        gui/camera.c
+        gui/camera.h
+        gui/main_menu.c
+        gui/main_menu.h
+        game_status.c
+        game_status.h
+        game/collision_handler.c
+        game/collision_handler.h
+        game/powerHandler.c
+        game/powerHandler.h
+
 )
 
 

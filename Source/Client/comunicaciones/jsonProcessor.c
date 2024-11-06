@@ -3,18 +3,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Puntero estático para almacenar la única instancia de ComServer
+// Puntero estático para almacenar la única instancia de JsonProcessor
 static JsonProcessor *jsonProcessor_instance = NULL;
 
 /*
  * Constructor: Inicializa el procesador JSON
  */
 JsonProcessor *JsonProcessor_create() {
-
-    // Verifica si ya existe una instancia
     if (jsonProcessor_instance != NULL) {
         return jsonProcessor_instance;
     }
+
     jsonProcessor_instance = (JsonProcessor *)malloc(sizeof(JsonProcessor));
     if (jsonProcessor_instance == NULL) {
         savelog_fatal("Error al asignar memoria para JsonProcessor\n");
@@ -30,7 +29,7 @@ JsonProcessor *JsonProcessor_create() {
 void JsonProcessor_destroy(JsonProcessor *processor) {
     if (processor != NULL) {
         free(processor);
-        jsonProcessor_instance=NULL;
+        jsonProcessor_instance = NULL;
     }
 }
 
@@ -38,6 +37,11 @@ void JsonProcessor_destroy(JsonProcessor *processor) {
  * Método para crear un mensaje JSON a partir de una cadena de texto
  */
 char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *message) {
+    if (processor == NULL) {
+        savelog_error("JsonProcessor no inicializado\n");
+        return NULL;
+    }
+
     // Crear un objeto JSON
     cJSON *json = cJSON_CreateObject();
     if (json == NULL) {
@@ -46,7 +50,8 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
     }
 
     // Añadir el mensaje al objeto JSON
-    cJSON_AddStringToObject(json, "message", message);
+    cJSON_AddStringToObject(json, "command", "tipoCliente");
+    cJSON_AddStringToObject(json, "tipoCliente", message);
 
     // Convertir el objeto JSON a una cadena de texto
     char *jsonString = cJSON_PrintUnformatted(json);
@@ -67,6 +72,11 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
  * Este método toma una cadena JSON y devuelve un mensaje procesado como cadena de texto.
  */
 char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jsonMessage) {
+    if (processor == NULL) {
+        savelog_error("JsonProcessor no inicializado\n");
+        return NULL;
+    }
+
     // Parsear el mensaje JSON recibido
     cJSON *json = cJSON_Parse(jsonMessage);
     if (json == NULL) {

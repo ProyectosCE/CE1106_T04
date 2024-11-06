@@ -11,25 +11,22 @@ static ComServer *comserver_instance = NULL;
  * Constructor: Inicializa el servidor de comunicaciones
  */
 ComServer *ComServer_create() {
-    // Verifica si ya existe una instancia
     if (comserver_instance != NULL) {
         return comserver_instance;
     }
 
-    // Crear nueva instancia si no existe
     comserver_instance = (ComServer *)malloc(sizeof(ComServer));
     if (comserver_instance == NULL) {
         savelog_error("Error al crear el servidor de comunicaciones.\n");
         return NULL;
     }
 
-    // Inicializar los componentes
     comserver_instance->socketServer = SocketServer_create();
     comserver_instance->jsonProcessor = JsonProcessor_create();
     comserver_instance->onMessageReceived = NULL;  // Callback inicializado a NULL
 
     if (comserver_instance->socketServer == NULL || comserver_instance->jsonProcessor == NULL) {
-        ComServer_destroy(comserver_instance);  // Liberar recursos si algo falla
+        ComServer_destroy(comserver_instance);
         return NULL;
     }
 
@@ -59,16 +56,9 @@ void ComServer_sendMessage(ComServer *server, const char *message) {
         return;
     }
 
-    // Convertir el mensaje a JSON utilizando JsonProcessor
     char *jsonMessage = JsonProcessor_createJsonMessage(server->jsonProcessor, message);
-
     savelog_info(jsonMessage);
-
-
-    // Enviar el mensaje al servidor usando el SocketServer
     SocketServer_send(server->socketServer, jsonMessage);
-
-    // Liberar memoria
     free(jsonMessage);
 }
 
@@ -92,28 +82,30 @@ void *ComServer_messageListeningLoop(void *arg) {
     }
 
     char buffer[1024];
-    //SocketServer_isConnected(server->socketServer);
-    // Loop de recepción de mensajes
     while (1) {
-
         if (server->socketServer->isConnected) {
             int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
             if (bytesReceived > 0) {
-                // Procesar el mensaje recibido
                 char *processedMessage = JsonProcessor_processJsonMessage(server->jsonProcessor, buffer);
-
-                // Si el callback está registrado, notificar a main
                 if (server->onMessageReceived != NULL) {
-                    server->onMessageReceived(processedMessage);  // Notificar al observer
+                    //server->onMessageReceived(processedMessage);  // Notificar al observer
                 }
-
-                free(processedMessage);  // Liberar memoria del mensaje procesado
+                free(processedMessage);
             } else {
                 savelog_error("Error al recibir el mensaje del servidor\n");
             }
-            sleep(2);  // Pausar un poco antes de recibir el próximo mensaje
-        } else{
+            sleep(2);
+        } else {
             SocketServer_reconnect(server->socketServer);
         }
+    }
+}
+
+/*
+ * Método para manejar la recepción de mensajes
+ */
+void ComServer_handleReceivedMessage(ComServer *server, const char *message) {
+    if (server->onMessageReceived != NULL) {
+        //server->onMessageReceived(message);
     }
 }
