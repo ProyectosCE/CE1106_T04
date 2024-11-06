@@ -45,7 +45,7 @@ public class CommandFactory {
 
     private TipoClienteCommand crearTipoClienteCommand(Map<String, Object> jsonData, Cliente emisor) {
         String tipoCliente = (String) jsonData.get("tipoCliente");
-        return new TipoClienteCommand(tipoCliente, emisor);
+        return new TipoClienteCommand(tipoCliente, emisor, (String) jsonData.get("playerName"));
     }
 
     private Command crearGameSpectatorCommand(Map<String, Object> jsonData, Cliente emisor) {

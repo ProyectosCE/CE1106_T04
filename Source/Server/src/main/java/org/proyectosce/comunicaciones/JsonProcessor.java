@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.proyectosce.comandos.factory.CommandFactory;
 import org.proyectosce.comandos.factory.products.Command;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,16 +43,36 @@ public class JsonProcessor {
         }
     }
 
-    // Método para crear JSON con lista de clientes
-    public String crearMensajeClientesLista(List<String> listaDeClientes) {
+    // Método para crear JSON con lista de clientes, incluyendo tanto los IDs como los nombres
+    public String crearMensajeClientesLista(List<String> ids, List<String> nombres) {
         try {
+            // Verificar que ambas listas tengan el mismo tamaño
+            if (ids.size() != nombres.size()) {
+                throw new IllegalArgumentException("Las listas de IDs y nombres deben tener el mismo tamaño.");
+            }
+
+            // Crear una lista de mapas para representar cada jugador con su ID y nombre
+            List<Map<String, Object>> jugadores = new ArrayList<>();
+            for (int i = 0; i < ids.size(); i++) {
+                Map<String, Object> jugador = new HashMap<>();
+                jugador.put("id", ids.get(i));
+                jugador.put("nombre", nombres.get(i));
+                jugadores.add(jugador);
+            }
+
+            // Crear el mapa final que contendrá el comando y la lista de jugadores
             Map<String, Object> mensaje = Map.of(
                     "command", "ClientesLista",
-                    "data", listaDeClientes
+                    "data", jugadores
             );
+
+            // Convertir el mapa a JSON
             return objectMapper.writeValueAsString(mensaje);
         } catch (JsonProcessingException e) {
             System.err.println("Error al crear JSON para lista de clientes: " + e.getMessage());
+            return null;
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
             return null;
         }
     }

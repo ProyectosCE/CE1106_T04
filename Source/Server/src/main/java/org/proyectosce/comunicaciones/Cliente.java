@@ -13,10 +13,12 @@ import java.util.UUID;
 public class Cliente {
     private final SocketChannel channel;
     private final String id;  // Nuevo identificador único
+    private final String nombre;
 
     public Cliente(SocketChannel channel) {
         this.channel = channel;
         this.id = UUID.randomUUID().toString(); // Genera un ID único
+        this.nombre = "Jugador"; // Genera un ID único
     }
 
     public SocketChannel getChannel() {
@@ -29,6 +31,14 @@ public class Cliente {
 
     public String getId() {
         return id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String setNombre(String nombre) {
+        return nombre;
     }
 
     public void enviarMensaje(String mensaje) {

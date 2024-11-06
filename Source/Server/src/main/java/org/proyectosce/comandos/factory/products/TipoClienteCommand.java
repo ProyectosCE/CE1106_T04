@@ -9,9 +9,10 @@ public class TipoClienteCommand implements Command {
     private final String tipoCliente;
     private  Cliente cliente;
 
-    public TipoClienteCommand(String tipoCliente, Cliente cliente) {
+    public TipoClienteCommand(String tipoCliente, Cliente cliente, String nombre) {
         this.tipoCliente = tipoCliente;
         this.cliente = cliente;
+        this.cliente.setNombre(nombre);
     }
 
     @Override

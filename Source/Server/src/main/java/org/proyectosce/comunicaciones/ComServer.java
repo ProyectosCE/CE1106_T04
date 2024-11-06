@@ -175,8 +175,10 @@ public class ComServer {
     }
 
     public void enviarListaDeJugadores(Cliente espectador) {
+        // Crear el JSON con IDs y nombres de los jugadores
         String jugadoresJson = JsonProcessor.getInstance().crearMensajeClientesLista(
-                jugadores.stream().map(Cliente::getId).toList()
+                jugadores.stream().map(Cliente::getId).toList(),
+                jugadores.stream().map(Cliente::getNombre).toList()
         );
         socketServer.enviarMensaje(espectador, jugadoresJson);
     }

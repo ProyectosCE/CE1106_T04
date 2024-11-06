@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 #include "raylib.h"
-#include "screen_handler.h"
 #include "game/game_server.h"
 volatile bool running; // Flag para controlar la ejecución
 
