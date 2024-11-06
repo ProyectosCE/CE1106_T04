@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.29)
 project(Client)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -9,7 +9,6 @@ find_package(cJSON)
 find_package(raylib)
 find_package(log.c)
 find_package(inih)
-find_package(OpenCV REQUIRED)
 
 #Executables here:
 add_executable(Client "main_con_gui_(depreciate).c"
@@ -28,7 +27,6 @@ add_executable(Client "main_con_gui_(depreciate).c"
         configuracion/configuracion.h
         logs/saveLog.c
         logs/saveLog.h
-
 )
 
 
@@ -46,5 +44,3 @@ target_link_libraries(Client cjson::cjson raylib)
 target_link_libraries(Client raylib)
 target_link_libraries(Client log.c::log.c)
 target_link_libraries(Client inih::inih)
-target_link_libraries(Client ${OpenCV_LIBS})
-
