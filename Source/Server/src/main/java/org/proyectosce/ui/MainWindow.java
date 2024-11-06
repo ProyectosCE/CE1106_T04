@@ -11,6 +11,9 @@ public class MainWindow extends JFrame {
     private ComServer comServer;
     private CommandHandler commandHandler;
 
+    // Lista de comandos válidos
+    private final List<String> validCommands = List.of("add_life", "add_ball", "double_racket_size", "half_racket_size", "add_speed", "reduce_speed");
+
     public MainWindow() {
         setTitle("Servidor de Juego");
         setSize(600, 500);  // Ajustar el tamaño de la ventana
@@ -26,9 +29,26 @@ public class MainWindow extends JFrame {
 
         // Configurar el botón de enviar comando
         clientListPanel.getSendCommandButton().addActionListener(e -> {
+            // Validar que el JComboBox de jugadores no esté vacío
+            if (clientListPanel.getSelectedPlayer() == null) {
+                JOptionPane.showMessageDialog(this, "No se ha seleccionado un cliente jugador.\nSeleccione un cliente de la lista de jugadores para enviar el comando.",
+                        "Error de Cliente Jugador", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String inputCommand = clientListPanel.getCommandInputField().getText().trim();
             if (!inputCommand.isEmpty()) {
-                processCommand(inputCommand);
+                if (isValidCommand(inputCommand)) {
+                    processCommand(inputCommand);
+                } else {
+                    // Mostrar mensaje de error si el comando es inválido
+                    JOptionPane.showMessageDialog(this, "Comando inválido. Asegúrese de usar el formato:\n" +
+                                    "brick_pwr (i,j,comando)\n" +
+                                    "Donde:\n" +
+                                    "- i y j son enteros positivos que están en el rango de la matriz del cliente\n" +
+                                    "- Comando debe ser uno de estos: add_life, add_ball, double_racket_size, half_racket_size, add_speed, reduce_speed",
+                            "Error de Comando", JOptionPane.ERROR_MESSAGE);
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "Por favor ingrese un comando válido.", "Error", JOptionPane.WARNING_MESSAGE);
             }
@@ -37,8 +57,41 @@ public class MainWindow extends JFrame {
     }
 
     private void processCommand(String inputCommand) {
-        // Lógica para procesar el comando (puedes agregar la implementación específica aquí)
+        // Lógica para procesar el comando
         System.out.println("Comando procesado: " + inputCommand);
+    }
+
+    // Método para verificar si el comando es válido
+    private boolean isValidCommand(String command) {
+        // Verificar que el comando comience con "brick_pwr ("
+        if (!command.startsWith("brick_pwr (") || !command.endsWith(")")) {
+            return false;
+        }
+
+        // Extraer los parámetros entre paréntesis
+        String params = command.substring(command.indexOf('(') + 1, command.lastIndexOf(')'));
+        String[] parts = params.split(",");
+
+        // Verificar que haya tres partes y que las coordenadas sean enteros entre 0 y 8
+        if (parts.length != 3) {
+            return false;
+        }
+
+        try {
+            int i = Integer.parseInt(parts[0].trim());
+            int j = Integer.parseInt(parts[1].trim());
+            String commandType = parts[2].trim();
+
+            // Verificar que i y j estén en el rango de 0 a 8
+            if (i < 0 || i > 8 || j < 0 || j > 8) {
+                return false;
+            }
+
+            // Verificar que el comando sea uno de los válidos
+            return validCommands.contains(commandType);
+        } catch (NumberFormatException e) {
+            return false; // Si no se pueden parsear i o j, el comando es inválido
+        }
     }
 
     // Método para actualizar las listas de JComboBox de forma segura en el hilo de la GUI
