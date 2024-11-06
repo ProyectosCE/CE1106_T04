@@ -1,7 +1,11 @@
 #include "game_server.h"
+
+#include <pthread.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #include "game_logic.h"
 #include "game_screen.h"
 #include "../game_status.h"
@@ -11,6 +15,8 @@
 #include "Objects/brick.h"
 #include "Objects/player.h"
 #include "powerHandler.h"
+
+
 
 
 void init_game_server() {
@@ -28,10 +34,12 @@ void init_game_server() {
     gameStatus->restart=false;
     gameStatus->pause=false;
     gameStatus->gameOver = false;
+
+
 }
 
 void unload_game_server() {
-    // Liberación de recursos si fuera necesario
+
 }
 
 void start_game() {
@@ -39,26 +47,15 @@ void start_game() {
     if (getCurrentScreen() == MENU) {
         UpdateMenu();
         DrawMenu();
-    } else if (getCurrentScreen() == GAME) {
+    }else if (getCurrentScreen() == GAME) {
         update_game(gameState);
         draw_game(gameState);
-        if /*gameState->gameOver*/(gameState->restart) {
+        // Start the sendGameState thread if it hasn't been started yet
+        sendGameState(gameState); // Send the current game state
+        if (gameState->restart) {
             init_game_server();
         }
     } else if (getCurrentScreen() == SPECTATOR) {
-        // Lógica para el espectador
-        // Recibir el estado del juego
-
-        const char *filename = "../gameState.json";
-        //char *jsonStr = readJSONFile(filename);
-        /*if (jsonStr == NULL) {
-            printf("Error al leer el archivo JSON.\n");
-            return;
-        }
-        */
-        //parseGameState();
-        //free(jsonStr); // Liberar la memoria del JSON leído
-
         draw_game(gameState);
     }
 

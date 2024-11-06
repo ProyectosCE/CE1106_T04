@@ -85,17 +85,33 @@ void SocketServer_start(SocketServer *server) {
 /*
  * Método para enviar un mensaje al servidor
  */
+
 void SocketServer_send(SocketServer *server, const char *message) {
     if (!server->isConnected) {
         log_warn("El servidor no está disponible, no se puede enviar el mensaje.\n");
-        return;  // No enviar el mensaje si el servidor está desconectado
+        return;
     }
 
-    if (send(server->sock, message, strlen(message), 0) < 0) {
-        log_error("Error al enviar el mensaje\n");
-    } else {
-        log_info("Mensaje enviado al servidor: %s\n", message);
+    // Concatenar el mensaje con un delimitador de fin de línea.
+    char messageWithDelimiter[4096];  // Ajusta el tamaño si es necesario
+    snprintf(messageWithDelimiter, sizeof(messageWithDelimiter), "%s\n", message);
+
+    size_t totalBytesSent = 0;
+    size_t messageLength = strlen(messageWithDelimiter);
+
+    // Bucle para enviar todos los datos
+    while (totalBytesSent < messageLength) {
+        ssize_t bytesSent = send(server->sock, messageWithDelimiter + totalBytesSent, messageLength - totalBytesSent, 0);
+
+        if (bytesSent < 0) {
+            log_error("Error al enviar el mensaje\n");
+            return;
+        }
+
+        totalBytesSent += bytesSent;
     }
+
+    log_info("Mensaje enviado al servidor: %s\n", message);
 }
 
 /*

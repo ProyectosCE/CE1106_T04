@@ -21,9 +21,10 @@ void UpdateMenu() {
     if (IsKeyPressed(KEY_ENTER)) {
         if (isPlayer()) {
             // Inicializar el servidor de juego y el juego en sí
+            ComServer_sendMessage(comServer, "player");
             init_game_server();
             setCurrentScreen(GAME);
-            ComServer_sendMessage(comServer, "player");
+
 
             if (isCameraEnabled()) {
                 ComServer_sendMessage(comServer, "camera_enabled");

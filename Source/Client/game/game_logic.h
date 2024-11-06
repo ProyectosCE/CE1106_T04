@@ -9,5 +9,6 @@
 #define MAX_BALLS              5
 
 void update_game(GameState* gameState);
+void sendGameState(GameState *gameState);
 
 #endif // GAME_LOGIC_H

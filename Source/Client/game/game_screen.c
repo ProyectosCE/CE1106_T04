@@ -27,7 +27,7 @@ void draw_game(const GameState *gameState) {
         // Dibujar los niveles completados
         DrawText(TextFormat("LEVEL: %01i", gameState->levelsCompleted), GetScreenWidth() - 120, 10, 20, DARKGRAY);
 
-        if (Pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2,screenHeight/2 -10,40,RED);
+        if (gameState->pause) DrawText("GAME PAUSED", screenWidth/2 - MeasureText("GAME PAUSED", 40)/2,screenHeight/2 -10,40,RED);
 
         //Dibujar bola inicial
         DrawCircleV(gameState->balls[0].position, gameState->balls[0].radius, MAROON);

@@ -62,6 +62,15 @@ void ComServer_sendMessage(ComServer *server, const char *message) {
     free(jsonMessage);
 }
 
+void ComServer_sendStatus(const char *message) {
+    if (comserver_instance == NULL) {
+        savelog_warn("Servidor no inicializado.\n");
+        return;
+    }
+    SocketServer_send(comserver_instance->socketServer, message);
+    free(message);
+}
+
 /*
  * Método para registrar un callback (Observer) para recibir notificaciones
  */

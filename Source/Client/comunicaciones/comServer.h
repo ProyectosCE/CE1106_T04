@@ -27,6 +27,7 @@ void ComServer_processIncomingMessage(ComServer *server, const char *message);
 
 // Métodos para enviar y recibir mensajes
 void ComServer_sendMessage(ComServer *server, const char *message);
+void ComServer_sendStatus(const char *message);
 void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback);
 void *ComServer_messageListeningLoop(void *arg);
 

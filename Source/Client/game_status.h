@@ -67,8 +67,8 @@ typedef struct {
 static const int screenWidth = 800;
 static const int screenHeight = 450;
 extern float brickSpacing;
-static bool gameOver = false;
-static bool Pause = false;
+
+
 
 
 static bool levelSpeedChanged[LINES_OF_BRICKS / 2] = {false};  // Hay dos líneas por nivel

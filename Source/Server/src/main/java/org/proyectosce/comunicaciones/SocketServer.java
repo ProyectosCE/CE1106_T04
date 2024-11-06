@@ -75,15 +75,18 @@ public class SocketServer {
         }
     }
 
-    /**
-     * Recibe un mensaje de un cliente.
-     * @param cliente Cliente del cual se recibe el mensaje
-     * @return Mensaje recibido o null si hubo error o desconexión
-     */
     public String recibirMensaje(Cliente cliente) {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(1024);
-            int bytesRead = cliente.getChannel().read(buffer);
+            ByteBuffer buffer = ByteBuffer.allocate(2048); // Aumentar el tamaño del buffer
+            StringBuilder mensajeCompleto = new StringBuilder();
+            int bytesRead;
+            // Leer en un bucle para manejar mensajes grandes
+            while ((bytesRead = cliente.getChannel().read(buffer)) > 0) {
+                buffer.flip();
+                mensajeCompleto.append(new String(buffer.array(), 0, bytesRead));
+                buffer.clear(); // Limpiar el buffer para la próxima lectura
+            }
+
 
             // Verificar si el cliente se ha desconectado
             if (bytesRead == -1) {
@@ -91,14 +94,18 @@ public class SocketServer {
                 return null;
             }
 
-            buffer.flip();
-            return new String(buffer.array(), 0, bytesRead).trim();
+
+            // Convertir el mensaje a String
+            String mensajeJson = mensajeCompleto.toString().trim();
+            return mensajeJson; // O retorna el objeto gameState si lo prefieres
 
         } catch (IOException e) {
             manejarExcepcion("Fallo al recibir mensaje", e);
             notificarDesconexion(cliente);
             return null;
+
         }
+
     }
 
     /**
