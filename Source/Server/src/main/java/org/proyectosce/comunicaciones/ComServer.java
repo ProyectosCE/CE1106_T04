@@ -105,6 +105,37 @@ public class ComServer {
         // Otras acciones para cerrar conexiones y liberar recursos
     }
 
+    // Verificar si un cliente es un jugador
+    public boolean esJugador(Cliente cliente) {
+        return jugadores.contains(cliente);
+    }
+
+    // Eliminar un jugador y su lista de observadores
+    public void eliminarJugador(Cliente cliente) {
+        jugadores.remove(cliente);
+        observadores.remove(cliente);  // Elimina todos los observadores de este jugador
+        System.out.println("Jugador eliminado: " + cliente);
+    }
+
+    // Eliminar un espectador de todas las listas de observadores
+    public void eliminarEspectador(Cliente espectador) {
+        for (Set<Cliente> observadorSet : observadores.values()) {
+            observadorSet.remove(espectador);
+        }
+        System.out.println("Espectador eliminado de las listas de observadores: " + espectador);
+    }
+
+    // Eliminar un cliente de la lista general de clientes
+    public void eliminarCliente(Cliente cliente) {
+        clients.remove(cliente);
+        System.out.println("Cliente eliminado de la lista general: " + cliente);
+    }
+
+    // Eliminar todos los observadores de un jugador
+    public void eliminarObservadores(Cliente jugador) {
+        observadores.remove(jugador);
+    }
+
     public Cliente obtenerClientePorId(String id) {
         for (Cliente cliente : jugadores) {
             if (cliente.getId().equals(id)) {  // Usa el ID único de cada cliente
