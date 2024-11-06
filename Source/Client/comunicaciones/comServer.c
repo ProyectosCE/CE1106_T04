@@ -143,7 +143,7 @@ void *ComServer_messageListeningLoop(void *arg) {
             } else {
                 log_error("Error al recibir el mensaje del servidor\n");
             }
-            sleep(2);
+            sleep(0.5);
         } else {
             SocketServer_reconnect(server->socketServer);
         }

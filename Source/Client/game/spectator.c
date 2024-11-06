@@ -148,6 +148,110 @@ void espectadorGetList(const char *recibido) {
 
 }
 
+void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
+
+    cJSON *json = cJSON_Parse(jsonString);
+
+    if (json == NULL) {
+
+        printf("Error al parsear JSON\n");
+
+        return;
+
+    }
+
+
+    cJSON *command = cJSON_GetObjectItem(json, "command");
+
+    if (command != NULL && strcmp(command->valuestring, "sendGameState") == 0) {
+
+        // Actualizar el jugador
+
+        cJSON *playerJson = cJSON_GetObjectItem(json, "player");
+
+        if (playerJson != NULL) {
+
+            gameState->player.position.x = cJSON_GetObjectItem(playerJson, "positionX")->valueint;
+
+            gameState->player.position.y = cJSON_GetObjectItem(playerJson, "positionY")->valueint;
+
+            gameState->player.size.x = cJSON_GetObjectItem(playerJson, "sizeX")->valueint;
+
+            gameState->player.size.y = cJSON_GetObjectItem(playerJson, "sizeY")->valueint;
+
+            gameState->player.life = cJSON_GetObjectItem(playerJson, "lives")->valueint;
+
+            gameState->player.score = cJSON_GetObjectItem(playerJson, "score")->valueint;
+
+        }
+
+
+        // Actualizar las bolas
+
+        cJSON *ballsJson = cJSON_GetObjectItem(json, "balls");
+
+        if (ballsJson != NULL && cJSON_IsArray(ballsJson)) {
+
+            for (int i = 0; i < cJSON_GetArraySize(ballsJson) && i < MAX_BALLS; i++) {
+
+                cJSON *ballJson = cJSON_GetArrayItem(ballsJson, i);
+
+                gameState->balls[i].active = cJSON_GetObjectItem(ballJson, "active")->valueint;
+
+                gameState->balls[i].position.x = cJSON_GetObjectItem(ballJson, "positionX")->valueint;
+
+                gameState->balls[i].position.y = cJSON_GetObjectItem(ballJson, "positionY")->valueint;
+
+                // Suponiendo que la velocidad y el radio de la bola son constantes o se manejan de otra manera
+
+            }
+
+        }
+
+
+        // Actualizar los ladrillos
+
+        cJSON *bricksJson = cJSON_GetObjectItem(json, "bricks");
+
+        if (bricksJson != NULL && cJSON_IsArray(bricksJson)) {
+
+            for (int i = 0; i < cJSON_GetArraySize(bricksJson); i++) {
+
+                cJSON *brickJson = cJSON_GetArrayItem(bricksJson, i);
+
+                int row = i / BRICKS_PER_LINE;
+                int col = i % BRICKS_PER_LINE;
+
+                gameState->bricks[row][col].active = cJSON_GetObjectItem(brickJson, "active")->valueint;
+
+                // Puedes agregar más propiedades del ladrillo si es necesario
+
+            }
+
+        }
+
+
+        // Actualizar otros campos del estado del juego
+
+        gameState->gameOver = cJSON_GetObjectItem(json, "gameOver")->valueint;
+
+        gameState->pause = cJSON_GetObjectItem(json, "paused")->valueint;
+
+        gameState->levelsCompleted = cJSON_GetObjectItem(json, "levelsCompleted")->valueint;
+
+    }
+
+
+    cJSON_Delete(json); // Liberar la memoria del JSON
+
+}
+
+void espectadorUpdateGame(const char *recibido) {
+    GameState *gameState = getGameState();
+    updateGameStateFromJson(recibido,gameState);
+
+}
+
 void DrawPlayerList(const PlayerList *players) {
 
     BeginDrawing();
@@ -224,6 +328,8 @@ void UpdatePlayerList(const PlayerList *players) {
         setCurrentScreen(SPECTATOR);
         ComServer *comServer = ComServer_create();
         comServer_sendChoosenPlayer(comServer,players->playerUUIDs[selectedPlayerIndex]);
+        GameState *gameState =  getGameState();
+        gameState->running = false;
     }
 
 }
