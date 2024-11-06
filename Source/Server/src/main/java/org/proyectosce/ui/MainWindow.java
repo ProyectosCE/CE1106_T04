@@ -29,6 +29,13 @@ public class MainWindow extends JFrame {
 
         // Configurar el botón de enviar comando
         clientListPanel.getSendCommandButton().addActionListener(e -> {
+            // Validar que el JComboBox de jugadores no esté vacío
+            if (clientListPanel.getSelectedPlayer() == null) {
+                JOptionPane.showMessageDialog(this, "No se ha seleccionado un cliente jugador.\nSeleccione un cliente de la lista de jugadores para enviar el comando.",
+                        "Error de Cliente Jugador", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             String inputCommand = clientListPanel.getCommandInputField().getText().trim();
             if (!inputCommand.isEmpty()) {
                 if (isValidCommand(inputCommand)) {
