@@ -17,6 +17,7 @@ public class TipoClienteCommand implements Command {
     @Override
     public void ejecutar() {
         if ("player".equals(tipoCliente)) {
+            cliente.setNombre(playerName);
             comServer.registrarJugador(cliente);
             System.out.println("Cliente registrado como jugador: " + cliente);
         } else if ("spectador".equals(tipoCliente)) {
