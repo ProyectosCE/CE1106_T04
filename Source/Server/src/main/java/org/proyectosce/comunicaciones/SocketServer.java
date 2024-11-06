@@ -1,5 +1,8 @@
 package org.proyectosce.comunicaciones;
 
+import org.proyectosce.comandos.Command;
+import org.proyectosce.comandos.DisconnectCommand;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -15,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SocketServer {
     private static SocketServer instance;
-    private static final int PORT = 12345;
+    private static final int PORT = 12348;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
@@ -73,6 +76,8 @@ public class SocketServer {
             if (bytesRead == -1) {
                 System.out.println("El cliente se ha desconectado: " + cliente);
                 this.cerrarConexion(cliente); // Cerrar la conexión con el cliente
+                Command DisconnectCommand = new DisconnectCommand(cliente);
+                DisconnectCommand.ejecutar();
                 return null;
             }
 

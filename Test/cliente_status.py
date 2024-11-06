@@ -4,7 +4,7 @@ import time
 
 def jugador_cliente():
     # Configuración del servidor
-    host = '192.168.100.13'  # Cambia esto si el servidor está en otra máquina
+    host = '192.168.100.6'  # Cambia esto si el servidor está en otra máquina
     port = 12345
 
     # Crear socket y conectar al servidor

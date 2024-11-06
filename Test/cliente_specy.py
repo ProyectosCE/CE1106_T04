@@ -3,7 +3,7 @@ import json
 
 def espectador_cliente():
     # Configuración del servidor
-    host = '192.168.100.13'  # Cambia esto si el servidor está en otra máquina
+    host = '192.168.100.6'  # Cambia esto si el servidor está en otra máquina
     port = 12345
 
     # Crear socket y conectar al servidor
@@ -14,7 +14,7 @@ def espectador_cliente():
         tipo_cliente = json.dumps({
             "command": "tipoCliente",
             "tipoCliente": "spectador"
-        }) + "\n"
+        })
         sock.sendall(tipo_cliente.encode('utf-8'))
         
         # Esperar respuesta con lista de jugadores
@@ -22,13 +22,14 @@ def espectador_cliente():
         jugadores_disponibles = json.loads(data)
         print("Jugadores disponibles para observar:", jugadores_disponibles["data"])
 
-        # Elegir el jugador a observar
-        jugador_id = "org.proyectosce.comunicaciones.Cliente@4c1db2d8"
+         # Elegir el jugador a observar
+        jugador_id = input("Ingresa el ID del jugador que deseas observar: ")
         observar_comando = json.dumps({
             "command": "GameSpectator",
             "jugadorId": jugador_id
-        }) + "\n"
+        })
         sock.sendall(observar_comando.encode('utf-8'))
+
 
         # Esperar y mostrar el estado del jugador observado en un bucle
         while True:
