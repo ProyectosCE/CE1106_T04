@@ -10,7 +10,7 @@ public class ClientListPanel extends JPanel {
     private JComboBox<String> spectatorsComboBox;
 
     public ClientListPanel() {
-        setLayout(new GridLayout(2, 1));
+        setLayout(new GridLayout(2, 1, 0, 20)); // Añadido espacio entre filas (20px)
 
         // Crear los JComboBox para los jugadores y espectadores
         playersComboBox = new JComboBox<>();
@@ -19,13 +19,19 @@ public class ClientListPanel extends JPanel {
         // Panel para los jugadores
         JPanel playersPanel = new JPanel();
         playersPanel.setLayout(new BorderLayout());
-        playersPanel.add(new JLabel("Jugadores Conectados:"), BorderLayout.NORTH);
+
+        JLabel playersLabel = new JLabel("Jugadores Conectados:");
+        playersLabel.setHorizontalAlignment(SwingConstants.CENTER);  // Centrado del texto
+        playersPanel.add(playersLabel, BorderLayout.NORTH);
         playersPanel.add(playersComboBox, BorderLayout.CENTER);
 
         // Panel para los espectadores
         JPanel spectatorsPanel = new JPanel();
         spectatorsPanel.setLayout(new BorderLayout());
-        spectatorsPanel.add(new JLabel("Espectadores Conectados:"), BorderLayout.NORTH);
+
+        JLabel spectatorsLabel = new JLabel("Espectadores Conectados:");
+        spectatorsLabel.setHorizontalAlignment(SwingConstants.CENTER);  // Centrado del texto
+        spectatorsPanel.add(spectatorsLabel, BorderLayout.NORTH);
         spectatorsPanel.add(spectatorsComboBox, BorderLayout.CENTER);
 
         // Agregar los paneles al panel principal

@@ -8,9 +8,9 @@ public class MainWindow extends JFrame {
     private ClientListPanel clientListPanel;
 
     public MainWindow() {
-        // Configurando la ventana principal
+        // Configurando la ventana principal con un tamaño mayor
         setTitle("Servidor de Juego");
-        setSize(400, 300);
+        setSize(600, 400);  // Ajustado el tamaño de la ventana
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
