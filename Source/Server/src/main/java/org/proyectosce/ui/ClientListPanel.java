@@ -2,6 +2,8 @@ package org.proyectosce.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
 public class ClientListPanel extends JPanel {
@@ -55,6 +57,30 @@ public class ClientListPanel extends JPanel {
         // Botón "Enviar Comando Jugador"
         sendCommandButton = new JButton("Enviar Comando Jugador");
 
+        // Acción para el botón
+        sendCommandButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedPlayer = (String) playersComboBox.getSelectedItem();
+                String commandText = commandTextField.getText();
+
+                // Validación de selección de jugador
+                if (selectedPlayer == null || selectedPlayer.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Debe seleccionar un jugador antes de enviar el comando.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // Validación de que el campo de texto no esté vacío
+                if (commandText == null || commandText.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "El comando no puede estar vacío.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // Aquí iría la lógica de enviar el comando, ya que ambas validaciones pasaron
+                JOptionPane.showMessageDialog(null, "Comando enviado al jugador: " + selectedPlayer, "Comando Enviado", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
         // Área para ingresar texto
         commandTextField = new JTextField(20);  // Ancho del cuadro de texto
         commandTextField.setPreferredSize(new Dimension(200, 30));  // Tamaño adecuado
@@ -62,12 +88,12 @@ public class ClientListPanel extends JPanel {
 
         // Agregar el botón y el cuadro de texto en el panel de comandos
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 0;
         gbc.gridwidth = 2;
         commandPanel.add(sendCommandButton, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         gbc.gridwidth = 2;
         commandPanel.add(commandTextField, gbc);
 
