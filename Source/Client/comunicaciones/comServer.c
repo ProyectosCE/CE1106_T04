@@ -1,133 +1,76 @@
 #include "comServer.h"
-#include "../logs/saveLog.h"
+#include "socketServer.h"
+#include "jsonProcessor.h"
+#include <log.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-// Puntero estático para almacenar la única instancia de ComServer
-static ComServer *comserver_instance = NULL;
+// Estructura estática para la única instancia de ComServer
+static ComServer *comServer_instance = NULL;
 
 /*
- * Constructor: Inicializa el servidor de comunicaciones
+ * Constructor: Inicializa la estructura ComServer y envía el tipo de cliente
  */
-ComServer *ComServer_create() {
-    // Verifica si ya existe una instancia
-    if (comserver_instance != NULL) {
-        return comserver_instance;
+ComServer *ComServer_create(const char *clientType) {
+    if (comServer_instance != NULL) {
+        return comServer_instance;
     }
 
-    // Crear nueva instancia si no existe
-    comserver_instance = (ComServer *)malloc(sizeof(ComServer));
-    if (comserver_instance == NULL) {
-        savelog_error("Error al crear el servidor de comunicaciones.\n");
+    // Crear la instancia de ComServer
+    comServer_instance = (ComServer *)malloc(sizeof(ComServer));
+    if (comServer_instance == NULL) {
+        log_fatal("Error al asignar memoria para ComServer\n");
         return NULL;
     }
 
-    // Inicializar los componentes
-    comserver_instance->socketServer = SocketServer_create();
-    comserver_instance->jsonProcessor = JsonProcessor_create();
-    comserver_instance->onMessageReceived = NULL;  // Callback inicializado a NULL
-
-    if (comserver_instance->socketServer == NULL || comserver_instance->jsonProcessor == NULL) {
-        ComServer_destroy(comserver_instance);  // Liberar recursos si algo falla
+    // Crear y conectar el socket del servidor
+    comServer_instance->socketServer = SocketServer_create();
+    if (comServer_instance->socketServer == NULL) {
+        free(comServer_instance);
+        comServer_instance = NULL;
         return NULL;
     }
 
-    SocketServer_start(comserver_instance->socketServer);
+    SocketServer_connect(comServer_instance->socketServer);
 
-    return comserver_instance;
+    // Usar JsonProcessor para crear el mensaje inicial
+    char *initMessage = JsonProcessor_createClientTypeMessage(clientType);
+    if (initMessage != NULL) {
+        SocketServer_send(comServer_instance->socketServer, initMessage);
+        free(initMessage);
+    } else {
+        log_error("Error al crear el mensaje de tipo de cliente.\n");
+    }
+
+    return comServer_instance;
 }
 
 /*
- * Destructor: Libera los recursos del servidor de comunicaciones
+ * Destructor: Libera los recursos de ComServer
  */
 void ComServer_destroy(ComServer *server) {
     if (server != NULL) {
         SocketServer_destroy(server->socketServer);
-        JsonProcessor_destroy(server->jsonProcessor);
         free(server);
-        comserver_instance = NULL;
+        comServer_instance = NULL;
     }
 }
 
 /*
- * Método para enviar mensajes al servidor
+ * Enviar un mensaje al servidor
  */
 void ComServer_sendMessage(ComServer *server, const char *message) {
-    if (server == NULL) {
-        savelog_warn("Servidor no inicializado.\n");
-        return;
-    }
-
-    // Convertir el mensaje a JSON utilizando JsonProcessor
-    char *jsonMessage = JsonProcessor_createJsonMessage(server->jsonProcessor, message);
-
-    savelog_info(jsonMessage);
-
-
-    // Enviar el mensaje al servidor usando el SocketServer
-    SocketServer_send(server->socketServer, jsonMessage);
-
-    // Liberar memoria
-    free(jsonMessage);
-}
-
-void ComServer_sendStatus(ComServer *server, const char *message) {
-    if (server != NULL) {
-        // Enviar el mensaje al servidor usando el SocketServer
+    if (server != NULL && server->socketServer != NULL) {
         SocketServer_send(server->socketServer, message);
-
-        // Liberar memoria
-        free(message);
-    }
-    else {
-
-        printf("ayuda\n");
     }
 }
 
 /*
- * Método para registrar un callback (Observer) para recibir notificaciones
+ * Recibir un mensaje del servidor
  */
-void ComServer_registerCallback(ComServer *server, MessageReceivedCallback callback) {
-    if (server != NULL) {
-        server->onMessageReceived = callback;
+int ComServer_receiveMessage(ComServer *server, char *buffer, int bufferSize) {
+    if (server != NULL && server->socketServer != NULL) {
+        return SocketServer_receive(server->socketServer, buffer, bufferSize);
     }
-}
-
-/*
- * Método que ejecuta el loop de recepción de mensajes desde el servidor
- */
-void *ComServer_messageListeningLoop(void *arg) {
-    ComServer *server = (ComServer *)arg;
-    if (server == NULL) {
-        savelog_error("Servidor no inicializado para la escucha de mensajes.\n");
-        return NULL;
-    }
-
-    char buffer[1024];
-    //SocketServer_isConnected(server->socketServer);
-    // Loop de recepción de mensajes
-    while (1) {
-
-        if (server->socketServer->isConnected) {
-            int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
-            if (bytesReceived > 0) {
-                // Procesar el mensaje recibido
-                char *processedMessage = JsonProcessor_processJsonMessage(server->jsonProcessor, buffer);
-
-                // Si el callback está registrado, notificar a main
-                if (server->onMessageReceived != NULL) {
-                    server->onMessageReceived(processedMessage);  // Notificar al observer
-                }
-
-                free(processedMessage);  // Liberar memoria del mensaje procesado
-            } else {
-                savelog_error("Error al recibir el mensaje del servidor\n");
-            }
-            sleep(2);  // Pausar un poco antes de recibir el próximo mensaje
-        } else{
-            SocketServer_reconnect(server->socketServer);
-        }
-    }
+    return -1;
 }

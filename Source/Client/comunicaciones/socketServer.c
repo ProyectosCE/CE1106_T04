@@ -8,19 +8,17 @@
 #include <errno.h>
 #include <log.h>
 
-// Puntero estático para almacenar la única instancia de ComServer
+// Puntero estático para almacenar la única instancia de SocketServer
 static SocketServer *socketServer_instance = NULL;
 
 /*
- * Constructor: Inicializa la estructura SocketServer y prepara la conexión
+ * Constructor: Inicializa la estructura SocketServer sin conectarse al servidor
  */
 SocketServer *SocketServer_create() {
-
     // Verifica si ya existe una instancia
     if (socketServer_instance != NULL) {
         return socketServer_instance;
     }
-
 
     socketServer_instance = (SocketServer *)malloc(sizeof(SocketServer));
     if (socketServer_instance == NULL) {
@@ -28,14 +26,13 @@ SocketServer *SocketServer_create() {
         return NULL;
     }
 
-    Configuracion *configuracion= crear_configuracion();
+    // Configurar los valores iniciales
+    Configuracion *configuracion = crear_configuracion();
     strcpy(socketServer_instance->ipServidor, leer_ip(configuracion));
-    socketServer_instance->port= leer_puerto(configuracion);
+    socketServer_instance->port = leer_puerto(configuracion);
     socketServer_instance->sock = 0;
     socketServer_instance->isConnected = 0;  // El servidor comienza como desconectado
     memset(&(socketServer_instance->serverAddress), 0, sizeof(socketServer_instance->serverAddress));
-
-
     free(configuracion);
 
     return socketServer_instance;
@@ -50,15 +47,14 @@ void SocketServer_destroy(SocketServer *server) {
             close(server->sock);  // Cerrar el socket si está abierto
         }
         free(server);  // Liberar la memoria de la estructura
-        socketServer_instance=NULL;
+        socketServer_instance = NULL;
     }
 }
 
-
 /*
- * Método para iniciar la conexión del socket con el servidor
+ * Conectar el socket al servidor (se llama explícitamente desde el menú)
  */
-void SocketServer_start(SocketServer *server) {
+void SocketServer_connect(SocketServer *server) {
     if ((server->sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         log_fatal("Error al crear el socket\n");
         return;
@@ -66,7 +62,6 @@ void SocketServer_start(SocketServer *server) {
 
     server->serverAddress.sin_family = AF_INET;
     server->serverAddress.sin_port = htons(server->port);
-
 
     if (inet_pton(AF_INET, server->ipServidor, &server->serverAddress.sin_addr) <= 0) {
         log_fatal("Dirección IP inválida\n");
@@ -81,7 +76,6 @@ void SocketServer_start(SocketServer *server) {
 
     log_info("Conectado al servidor en el puerto %d\n", ntohs(server->serverAddress.sin_port));
     server->isConnected = 1;  // Marcar como conectado
-
 }
 
 /*
@@ -112,12 +106,10 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
     int valread = read(server->sock, buffer, bufferSize - 1);
 
     if (valread == 0) {
-        // Si read devuelve 0, significa que el servidor ha cerrado la conexión
         log_warn("El servidor se ha desconectado\n");
         server->isConnected = 0;  // Marcar como desconectado
         return 0;  // Indicar que la conexión se ha cerrado
     } else if (valread < 0) {
-        // Si read devuelve -1, ha ocurrido un error, pero puede no ser una desconexión
         if (errno == EWOULDBLOCK || errno == EAGAIN) {
             return -1;  // Indicar que no hay datos sin error crítico
         } else {
@@ -125,20 +117,18 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
             return -1;  // Indicar error
         }
     } else {
-        // Se recibieron datos del servidor correctamente
         buffer[valread] = '\0';  // Añadir terminador de cadena al buffer
         log_info("Mensaje recibido del servidor: %s\n", buffer);
         return valread;  // Retornar la cantidad de bytes leídos
     }
 }
 
-
 /*
- * Método para reconectar si el servidor está desconectado
+ * Reconectar si el servidor está desconectado
  */
 void SocketServer_reconnect(SocketServer *server) {
     if (!server->isConnected) {
         log_warn("Intentando reconectar al servidor...\n");
-        SocketServer_start(server);  // Intentar reconectar
+        SocketServer_connect(server);  // Intentar reconectar
     }
 }

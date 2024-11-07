@@ -1,145 +1,57 @@
-//BIBLIOTECAS EXTERNAS
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <string.h>
-
-//PAQEUTES DEL PROYECTO
 #include "comunicaciones/comServer.h"
-#include "game.h"
-#include "spectator.h"
+#include "comunicaciones/jsonProcessor.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
+ComServer *crearYConectarComServer(const char *clientType) {
+    // Crear la instancia de ComServer con el tipo de cliente seleccionado
+    ComServer *server = ComServer_create(clientType);
 
-typedef enum {
-    MENU,
-    GAME,
-    SPECTATOR
-} GameScreen;
+    // Crear y enviar el mensaje inicial de tipo de cliente usando JsonProcessor
+    char *initMessage = JsonProcessor_createClientTypeMessage(clientType);
+    if (initMessage != NULL) {
+        ComServer_sendMessage(server, initMessage);
+        free(initMessage);
+    } else {
+        printf("Error al crear el mensaje de tipo de cliente.\n");
+        ComServer_destroy(server);
+        return NULL;
+    }
 
-GameScreen currentScreen = MENU;
-bool isPlayer = true;
-bool isCameraEnabled = false;
-
-void UpdateMenu();
-void DrawMenu();
-void *gameLoop(void *arg);
-
-void onMessageReceived(const char *message) {
-    //TODO: PROCESAR MENSAJES RECIVIDOS
-    printf("Respuesta procesada del servidor: %s\n", message);
-
+    return server;
 }
 
+int main() {
+    int seleccion;
+    const char *clientType;
 
-void camera() {
-    pid_t pid = fork();
-    if (pid == 0) { // Proceso hijo
-        // Redirigir la salida de error a error.log
-        freopen("error.log", "w", stderr);
-        execlp("python3", "python3", "/home/jose/CE1106_T04/Source/computer_vison.py", (char *)NULL);
-        // Si execlp falla
-        perror("Error al ejecutar el script de Python");
-        exit(1); // Salir del hijo si hubo error
-    } else if (pid < 0) {
-        // Error al hacer fork
-        printf("Error al crear un subproceso\n");
-    }
+    // Pedir al usuario que seleccione el tipo de cliente
+    printf("Seleccione el modo:\n1. Jugador\n2. Espectador\n");
+    scanf("%d", &seleccion);
 
-}
-
-void *gameLoop(void *arg) {
-    InitWindow(screenWidth, screenHeight, "Breakout TEC");
-
-    InitGame();
-    SetTargetFPS(60);
-
-    // Main game loop
-    while (!WindowShouldClose()) {
-        start_game();
-    }
-
-    // De-Initialization
-    UnloadGame();
-    CloseWindow();
-
-    return NULL;
-}
-
-
-void start_game() {
-    if (currentScreen == MENU) {
-        UpdateMenu();
-        DrawMenu();
-    } else if (currentScreen == GAME) {
-        UpdateDrawFrame();
-    } else if (currentScreen == SPECTATOR) {
-        // TODO: Implementar el loop del espectador
-    }
-}
-
-void UpdateMenu() {
-    // Navegación por el menú con las flechas
-    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
-        isPlayer = !isPlayer;  // Cambia entre jugador y espectador
-    }
-    if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_LEFT)) {
-        isCameraEnabled = !isCameraEnabled;  // Cambia el estado de la cámara
-    }
-
-    // Acción al presionar Enter
-    if (IsKeyPressed(KEY_ENTER)) {
-        ComServer *comServer = ComServer_create();
-        if (isPlayer) {
-            InitGame();
-            currentScreen = GAME;
-            ComServer_sendMessage(comServer, "player");
-
-            if (isCameraEnabled) {
-                ComServer_sendMessage(comServer, "camera_enabled");
-                camera();  // Inicia la cámara si está habilitada
-            } else {
-                ComServer_sendMessage(comServer, "camera_disabled");
-            }
-        } else {
-            currentScreen = SPECTATOR;
-            ComServer_sendMessage(comServer, "spectator");
-        }
-    }
-}
-
-void DrawMenu() {
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-
-    DrawText("Choose Mode:", screenWidth / 2 - MeasureText("Choose Mode:", 20) / 2, screenHeight / 2 - 60, 20, DARKGRAY);
-    DrawText("1. Player", screenWidth / 2 - MeasureText("1. Player", 20) / 2, screenHeight / 2 - 20, 20, isPlayer ? BLACK : GRAY);
-    DrawText("2. Spectator", screenWidth / 2 - MeasureText("2. Spectator", 20) / 2, screenHeight / 2 + 20, 20, !isPlayer ? BLACK : GRAY);
-    DrawText("Game Camera: ", screenWidth / 2 - MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, DARKGRAY);
-    DrawText(isCameraEnabled ? "Enabled" : "Disabled", screenWidth / 2 + MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, isCameraEnabled ? GREEN : RED);
-    DrawText("Press Enter to Play", screenWidth / 2 - MeasureText("Press Enter to Play", 20) / 2, screenHeight / 2 + 120, 20, DARKGRAY);
-
-    EndDrawing();
-}
-
-int main(void) {
-    pthread_t communicationThread, gameThread;
-
-    // Crear la instancia del ComServer
-    ComServer *comServer = ComServer_create();
-
-    // Crear el hilo para manejar las comunicaciones con el servidor
-    if (pthread_create(&communicationThread, NULL, ComServer_messageListeningLoop, (void *) comServer) != 0) {
-        printf("Error al crear el hilo de comunicación\n");
-
-
-    }
-    // Crear hilo para el bucle del juego
-    if (pthread_create(&gameThread, NULL, gameLoop, NULL) != 0) {
-        printf("Error al crear el hilo del juego\n");
+    // Determinar el tipo de cliente basado en la selección
+    if (seleccion == 1) {
+        clientType = "player";
+    } else if (seleccion == 2) {
+        clientType = "spectator";
+    } else {
+        printf("Selección no válida. Saliendo...\n");
         return 1;
     }
 
-    pthread_join(gameThread, NULL);
+    // Crear y conectar ComServer con el tipo de cliente seleccionado
+    ComServer *server = crearYConectarComServer(clientType);
+    if (server == NULL) {
+        printf("No se pudo conectar al servidor. Saliendo...\n");
+        return 1;
+    }
+
+    // Aquí puede añadirse el bucle de juego o el código para recibir mensajes
+    sleep(10);
+
+    // Al final, destruir el servidor de comunicaciones
+    ComServer_destroy(server);
 
     return 0;
 }

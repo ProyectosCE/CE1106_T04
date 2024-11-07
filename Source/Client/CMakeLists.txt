@@ -9,11 +9,9 @@ find_package(cJSON)
 find_package(raylib)
 find_package(log.c)
 find_package(inih)
-find_package(OpenCV REQUIRED)
 
 #Executables here:
 add_executable(Client "main_con_gui_(depreciate).c"
-        game.c
         game.h
         spectator.c
         spectator.h
@@ -46,5 +44,5 @@ target_link_libraries(Client cjson::cjson raylib)
 target_link_libraries(Client raylib)
 target_link_libraries(Client log.c::log.c)
 target_link_libraries(Client inih::inih)
-target_link_libraries(Client ${OpenCV_LIBS})
+
 

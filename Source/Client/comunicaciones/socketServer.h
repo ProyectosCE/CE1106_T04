@@ -8,7 +8,7 @@ typedef struct {
     char ipServidor[16];
     int port;
     int sock;  // Descriptor del socket
-    bool isConnected;  // Bool para conocer si el servidor está activado o no
+    bool isConnected;  // Indica si el servidor está conectado
     struct sockaddr_in serverAddress;  // Dirección del servidor
 } SocketServer;
 
@@ -16,11 +16,14 @@ typedef struct {
 SocketServer *SocketServer_create();
 void SocketServer_destroy(SocketServer *server);
 
-// Métodos de la clase
-void SocketServer_start(SocketServer *server);
+// Conecta el socket al servidor (llamado explícitamente desde el menú)
+void SocketServer_connect(SocketServer *server);
+
+// Métodos para enviar y recibir mensajes
 void SocketServer_send(SocketServer *server, const char *message);
 int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize);
+
+// Método para reconectar si el servidor está desconectado
 void SocketServer_reconnect(SocketServer *server);
-bool SocketServer_isConnected(SocketServer *server);
 
 #endif // SOCKET_SERVER_H
