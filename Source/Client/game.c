@@ -117,6 +117,7 @@ void speedDown() {
 // Función para actualizar el poder del ladrillo desde el servidor
 void update_brick_power(int i, int j, BrickPower newPower) {
     if (i >= 0 && i < LINES_OF_BRICKS && j >= 0 && j < BRICKS_PER_LINE) {
+        printf("Se actualizóooo elputo bloque");
         brick[i][j].power = newPower;
     }
 }
