@@ -27,6 +27,7 @@ public class ClientListPanel extends JPanel {
         playersPanel.add(playersLabel, BorderLayout.NORTH);
 
         playersComboBox = new JComboBox<>();
+        playersComboBox.addItem("");  // Campo vacío al inicio
         playersPanel.add(playersComboBox, BorderLayout.CENTER);
 
         // Panel para los espectadores
@@ -38,6 +39,7 @@ public class ClientListPanel extends JPanel {
         spectatorsPanel.add(spectatorsLabel, BorderLayout.NORTH);
 
         spectatorsComboBox = new JComboBox<>();
+        spectatorsComboBox.addItem("");  // Campo vacío al inicio
         spectatorsPanel.add(spectatorsComboBox, BorderLayout.CENTER);
 
         clientPanels.add(playersPanel);
@@ -45,10 +47,13 @@ public class ClientListPanel extends JPanel {
 
         // Panel de comando
         JPanel commandPanel = new JPanel();
-        commandPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        commandPanel.setLayout(new GridBagLayout());  // Para centrar los componentes
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);  // Espacio alrededor de los componentes
 
-        // Botón "Enviar Comando"
-        sendCommandButton = new JButton("Enviar Comando");
+        // Botón "Enviar Comando Jugador"
+        sendCommandButton = new JButton("Enviar Comando Jugador");
 
         // Área para ingresar texto
         commandTextField = new JTextField(20);  // Ancho del cuadro de texto
@@ -56,8 +61,15 @@ public class ClientListPanel extends JPanel {
         commandTextField.setBorder(BorderFactory.createLineBorder(Color.BLACK));  // Recuadro
 
         // Agregar el botón y el cuadro de texto en el panel de comandos
-        commandPanel.add(sendCommandButton);
-        commandPanel.add(commandTextField);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        commandPanel.add(sendCommandButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        commandPanel.add(commandTextField, gbc);
 
         // Agregar los paneles a la interfaz
         add(clientPanels, BorderLayout.CENTER);
@@ -67,6 +79,7 @@ public class ClientListPanel extends JPanel {
     // Método para actualizar el JComboBox de jugadores
     public void updatePlayersComboBox(List<String> players) {
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("");  // Campo vacío al inicio
         for (String player : players) {
             model.addElement(player);
         }
@@ -76,6 +89,7 @@ public class ClientListPanel extends JPanel {
     // Método para actualizar el JComboBox de espectadores
     public void updateSpectatorsComboBox(List<String> spectators) {
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("");  // Campo vacío al inicio
         for (String spectator : spectators) {
             model.addElement(spectator);
         }
