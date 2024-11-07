@@ -85,8 +85,14 @@ public class ComServer {
                 return;
             }
 
+            // Crear el Map de datos para el comando
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("x", Integer.parseInt(cStr));
+            jsonData.put("y", Integer.parseInt(fStr));
+            jsonData.put("power", power);
+
             // Crear el comando usando la fábrica
-            Command comando = (Command) commandFactory.crearComando("brick_pwr", fStr, cStr, power);
+            Command comando = commandFactory.crearComando("brick_pwr", "", null, jsonData);  // Ajusta el parámetro de mensajeJson a una cadena vacía
 
             // Obtener el primer cliente conectado del set
             Cliente primerCliente = clients.stream().findFirst().orElse(null);
