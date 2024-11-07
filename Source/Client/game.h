@@ -32,18 +32,37 @@ typedef struct Ball {
     bool active;
 } Ball;
 
+// Estructura para los poderes del bloque
+typedef struct BrickPower {
+    bool addLife;
+    bool addBall;
+    bool doubleRacket;
+    bool halfRacket;
+    bool speedUp;
+    bool speedDown;
+} BrickPower;
+
+// Estructura del ladrillo, ahora incluye `BrickPower`
 typedef struct Brick {
     Vector2 position;
     bool active;
     int points;
     Color color;
-    bool add_life;
-    bool add_ball;
-    bool add_doubleRacket;
-    bool add_halfRacket;
-    bool speedUp;
-    bool speedDown;
+    BrickPower power; // Estructura para los poderes
 } Brick;
+
+typedef enum {
+    MENU,
+    GAME,
+    RECONNECTING,
+    SPECTATOR
+} GameScreen;
+
+// Declarar currentScreen como extern para que sea accesible desde otros archivos
+extern GameScreen currentScreen;
+extern bool isConnected;
+extern bool isReconnecting;
+extern bool stopReconnect;
 
 #define PLAYER_MAX_LIFE         3
 #define MAX_BALLS              5
@@ -71,28 +90,18 @@ void UpdateDrawFrame();  // Update and Draw (one frame)
 void start_game();       // Inicia el juego
 
 void check_brick(int i, int j);
+// Funciones para manejar los poderes
+void applyPower(BrickPower power);
 
-void update_brick_score(int level, int new_points);
-void update_player_score(int brickx, int bricky);
-
-void update_brick_ball(int i, int j);
-void add_ball(int i, int j);
-
-void update_brick_life(int i, int j);
+// Funciones para poderes específicos
+void add_ball(int posX, int posY);
 void add_life();
-
-void update_brick_doubleRacket(int i, int j);
 void doubleRacket();
-
-void update_brick_halfRacket(int i, int j);
 void halfRacket();
-
-void update_brick_speedUp(int i, int j);
 void speedUp();
-
-void update_brick_speedDown(int i, int j);
 void speedDown();
 
+void processUpdateBrickMessage(cJSON *data);
 char* generateGameStateJSON();
 
 #endif //CLIENT_GAME_H

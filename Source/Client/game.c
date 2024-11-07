@@ -7,6 +7,10 @@ float lastUpdateTime = 0.0f; // Último tiempo de actualización
 float deltaTime = 0.0f; // Tiempo transcurrido desde la última actualización
 float ball_speed_multiplier = 1.0f;
 
+
+float reconnectionTimer = 0.0f;
+const float reconnectionInterval = 2.0f; // Intento de reconexión cada 2 segundo
+
 // Inicializar variables de juego
 void InitGame() {
     // Inicializar el jugador
@@ -49,62 +53,50 @@ bool CheckCollisionBallBrick(Ball ball, Brick brick) {
     return (deltaX * deltaX + deltaY * deltaY) < (ball.radius * ball.radius);
 }
 
-void check_brick(int i, int j){
-    if (brick[i][j].add_ball) {
-        add_ball(brick[i][j].position.x, brick[i][j].position.y);
-    } else if (brick[i][j].add_life) {
-        add_life();
-    } else if (brick[i][j].add_doubleRacket) {
-        doubleRacket();
-    } else if (brick[i][j].add_halfRacket) {
-        halfRacket();
-    } else if (brick[i][j].speedUp) {
-        speedUp();
-    } else if (brick[i][j].speedDown) {
-        speedDown();
+
+// Función para manejar la colisión de una bola con un ladrillo
+void check_brick(int i, int j) {
+    if (brick[i][j].active) {
+        applyPower(brick[i][j].power); // Aplica el poder del ladrillo
+        brick[i][j].active = false;    // Desactiva el ladrillo
     }
 }
 
-void update_brick_score(int level, int new_points) {
-    for (int i = 0; i < LINES_OF_BRICKS; i++) {
-        for (int j = 0; j < BRICKS_PER_LINE; j++) {
-            if (brick[i][j].active) {
-                // Actualizar puntos únicamente en el nivel especificado
-                if ((level == 4 && i < 2) ||
-                    (level == 3 && i >= 2 && i < 4) ||
-                    (level == 2 && i >= 4 && i < 6) ||
-                    (level == 1 && i >= 6)) {
-
-                    brick[i][j].points = new_points;
-                }
-            }
-        }
-    }
+// Función para aplicar los poderes
+void applyPower(BrickPower power) {
+    if (power.addLife) add_life();
+    if (power.addBall) add_ball(player.position.x, player.position.y);
+    if (power.doubleRacket) doubleRacket();
+    if (power.halfRacket) halfRacket();
+    if (power.speedUp) speedUp();
+    if (power.speedDown) speedDown();
 }
 
-
-
+// Funciones de poderes específicos
 void add_ball(int posX, int posY) {
     for (int i = 0; i < MAX_BALLS; i++) {
         if (!balls[i].active) {
             balls[i].active = true;
-            balls[i].position = (Vector2){ posX, posY };  // Posición del ladrillo destruido
+            balls[i].position = (Vector2){ posX, posY };
             balls[i].speed = (Vector2){0, -5};
-            break;  // Salir del bucle una vez que activamos una nueva bola
+            break;
         }
     }
 }
 
-void add_life(){
+void add_life() {
     player.life++;
 }
-void doubleRacket(){
-    player.size = (Vector2){ screenWidth/5, 10 };
+
+void doubleRacket() {
+    player.size = (Vector2){ screenWidth / 5, 10 };
 }
-void halfRacket(){
-    player.size = (Vector2){ screenWidth/20, 10 };
+
+void halfRacket() {
+    player.size = (Vector2){ screenWidth / 20, 10 };
 }
-void speedUp(){
+
+void speedUp() {
     for (int i = 0; i < MAX_BALLS; i++) {
         if (balls[i].active) {
             balls[i].speed.y *= 2;
@@ -112,7 +104,8 @@ void speedUp(){
         }
     }
 }
-void speedDown(){
+
+void speedDown() {
     for (int i = 0; i < MAX_BALLS; i++) {
         if (balls[i].active) {
             balls[i].speed.y /= 2;
@@ -121,29 +114,11 @@ void speedDown(){
     }
 }
 
-
-void update_brick_ball(int i, int j){
-    brick[i][j].add_ball = true;
-}
-
-void update_brick_life(int i, int j){
-    brick[i][j].add_life = true;
-}
-
-void update_brick_doubleRacket(int i, int j){
-    brick[i][j].add_doubleRacket = true;
-}
-
-void update_brick_halfRacket(int i, int j){
-    brick[i][j].add_halfRacket = true;
-}
-
-void update_brick_speedUp(int i, int j){
-    brick[i][j].speedUp = true;
-}
-
-void update_brick_speedDown(int i, int j){
-    brick[i][j].speedDown = true;
+// Función para actualizar el poder del ladrillo desde el servidor
+void update_brick_power(int i, int j, BrickPower newPower) {
+    if (i >= 0 && i < LINES_OF_BRICKS && j >= 0 && j < BRICKS_PER_LINE) {
+        brick[i][j].power = newPower;
+    }
 }
 
 void update_player_score(int brickx, int bricky) {
@@ -151,6 +126,30 @@ void update_player_score(int brickx, int bricky) {
 }
 
 void UpdateGame() {
+    if (!isConnected) {
+        // Incrementa el temporizador de reconexión
+        reconnectionTimer += deltaTime;
+        ComServer *comServer = ComServer_create("player");
+
+
+        // Intenta reconectar al servidor en intervalos regulares
+        if (reconnectionTimer >= reconnectionInterval) {
+            reconnectionTimer = 0.0f;
+            SocketServer_reconnect(comServer->socketServer);
+
+            if (SocketServer_isConnected(comServer->socketServer)) {
+                isConnected = true;
+                printf("Reconectado al servidor\n");
+                // Reinicia el juego si estaba en pausa por desconexión
+                if (currentScreen == GAME || currentScreen == SPECTATOR) {
+                    Pause = false;
+                }
+            } else {
+                printf("Intentando reconectar...\n");
+            }
+        }
+        return; // Salir de UpdateGame si no está conectado
+    }
     if (!gameOver) {
         if (IsKeyPressed('P')) Pause = !Pause;
 
@@ -293,6 +292,17 @@ void UpdateGame() {
     }
 }
 
+void DrawErrorScreen() {
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+
+    DrawText("Connection lost...", screenWidth / 2 - MeasureText("Connection lost...", 20) / 2, screenHeight / 2 - 40, 20, DARKGRAY);
+    DrawText("Attempting to reconnect", screenWidth / 2 - MeasureText("Attempting to reconnect", 20) / 2, screenHeight / 2, 20, DARKGRAY);
+    DrawText("Please wait...", screenWidth / 2 - MeasureText("Please wait...", 20) / 2, screenHeight / 2 + 40, 20, GRAY);
+
+    EndDrawing();
+}
+
 // Generar estado del juego en formato JSON
 char *generateGameStateJSON() {
     // Crear objeto raíz JSON para el estado del juego
@@ -334,6 +344,13 @@ void DrawGame() {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
+    if (isReconnecting) {
+        DrawText("Reconectando... Espere por favor", screenWidth / 2 - MeasureText("Reconectando... Espere por favor", 20) / 2, screenHeight / 2, 20, DARKGRAY);
+    }
+    if (currentScreen == RECONNECTING) {
+        // Mostrar la pantalla de reconexión
+        DrawText("Reconectando... Espere por favor", screenWidth / 2 - MeasureText("Reconectando... Espere por favor", 20) / 2, screenHeight / 2, 20, DARKGRAY);
+    }
     if (!gameOver) {
         // Dibujar el jugador
         DrawRectangle(player.position.x - player.size.x / 2, player.position.y - player.size.y / 2, player.size.x, player.size.y, BLACK);
@@ -414,8 +431,46 @@ void UnloadGame() {
 }
 
 // Actualizar y dibujar cada fotograma
-void UpdateDrawFrame() {
-    // Llama a las funciones de actualización y dibujo
-    UpdateGame();
-    DrawGame();
+void UpdateDrawFrame(){
+    if (isConnected) {
+        UpdateGame(); // Solo actualiza el juego si está conectado
+        DrawGame();
+    } else {
+        DrawErrorScreen(); // Muestra la pantalla de error si no está conectado
+    }
+}
+
+
+
+void processUpdateBrickMessage(cJSON *data) {
+    if (!data) return;
+
+    cJSON *x = cJSON_GetObjectItem(data, "x");
+    cJSON *y = cJSON_GetObjectItem(data, "y");
+
+    if (x && y && cJSON_IsNumber(x) && cJSON_IsNumber(y)) {
+        int brickX = x->valueint;
+        int brickY = y->valueint;
+
+        BrickPower power = {0};
+
+        // Extraer los poderes del JSON
+        cJSON *addLife = cJSON_GetObjectItem(data, "addLife");
+        cJSON *addBall = cJSON_GetObjectItem(data, "addBall");
+        cJSON *doubleRacket = cJSON_GetObjectItem(data, "doubleRacket");
+        cJSON *halfRacket = cJSON_GetObjectItem(data, "halfRacket");
+        cJSON *speedUp = cJSON_GetObjectItem(data, "speedUp");
+        cJSON *speedDown = cJSON_GetObjectItem(data, "speedDown");
+
+        // Asignar valores a la estructura de poder
+        power.addLife = addLife && cJSON_IsBool(addLife) ? cJSON_IsTrue(addLife) : false;
+        power.addBall = addBall && cJSON_IsBool(addBall) ? cJSON_IsTrue(addBall) : false;
+        power.doubleRacket = doubleRacket && cJSON_IsBool(doubleRacket) ? cJSON_IsTrue(doubleRacket) : false;
+        power.halfRacket = halfRacket && cJSON_IsBool(halfRacket) ? cJSON_IsTrue(halfRacket) : false;
+        power.speedUp = speedUp && cJSON_IsBool(speedUp) ? cJSON_IsTrue(speedUp) : false;
+        power.speedDown = speedDown && cJSON_IsBool(speedDown) ? cJSON_IsTrue(speedDown) : false;
+
+        // Actualizar el ladrillo con los poderes
+        update_brick_power(brickX, brickY, power);
+    }
 }

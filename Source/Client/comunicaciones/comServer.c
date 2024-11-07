@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <cjson/cJSON.h>
 
 // Estructura estática para la única instancia de ComServer
 static ComServer *comServer_instance = NULL;
@@ -84,29 +85,31 @@ void *ComServer_messageListeningLoop(void *arg) {
 
     char buffer[1024];
 
-    // Bucle de recepción de mensajes
     while (1) {
         if (SocketServer_isConnected(server->socketServer)) {
-            // Recibir el mensaje del servidor
             int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
             if (bytesReceived > 0) {
-                // Procesar el mensaje recibido utilizando JsonProcessor
-                char *processedMessage = JsonProcessor_processJsonMessage(buffer);
+                buffer[bytesReceived] = '\0';  // Asegurarse de que el buffer está terminado en nulo
 
-                // Si el callback está registrado, notificar al observador
-                if (server->onMessageReceived != NULL) {
-                    server->onMessageReceived(processedMessage);  // Notificar al observador
+                // Procesar el mensaje JSON
+                cJSON *jsonMessage = cJSON_Parse(buffer);
+                if (jsonMessage) {
+                    cJSON *command = cJSON_GetObjectItem(jsonMessage, "comando");
+                    if (command && strcmp(command->valuestring, "updateBrick") == 0) {
+                        cJSON *data = cJSON_GetObjectItem(jsonMessage, "data");
+                        processUpdateBrickMessage(data);  // Llama a la función para aplicar el poder
+                    }
+                    cJSON_Delete(jsonMessage);  // Liberar memoria JSON
                 }
 
-                free(processedMessage);  // Liberar la memoria del mensaje procesado
+                if (server->onMessageReceived != NULL) {
+                    server->onMessageReceived(buffer);  // Notificar al observador
+                }
             } else {
                 log_error("Error al recibir el mensaje del servidor\n");
             }
-
-            // Pausa antes de recibir el próximo mensaje
-            sleep(2);
+            sleep(2);  // Pausa antes de recibir el próximo mensaje
         } else {
-            // Intentar reconectar si la conexión se ha perdido
             SocketServer_reconnect(server->socketServer);
         }
     }
