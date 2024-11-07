@@ -4,6 +4,7 @@
 #include <log.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 // Estructura estática para la única instancia de ComServer
 static ComServer *comServer_instance = NULL;
@@ -73,4 +74,42 @@ int ComServer_receiveMessage(ComServer *server, char *buffer, int bufferSize) {
         return SocketServer_receive(server->socketServer, buffer, bufferSize);
     }
     return -1;
+}
+void *ComServer_messageListeningLoop(void *arg) {
+    ComServer *server = (ComServer *)arg;
+    if (server == NULL) {
+        log_error("Servidor no inicializado para la escucha de mensajes.\n");
+        return NULL;
+    }
+
+    char buffer[1024];
+
+    // Bucle de recepción de mensajes
+    while (1) {
+        if (SocketServer_isConnected(server->socketServer)) {
+            // Recibir el mensaje del servidor
+            int bytesReceived = SocketServer_receive(server->socketServer, buffer, sizeof(buffer));
+            if (bytesReceived > 0) {
+                // Procesar el mensaje recibido utilizando JsonProcessor
+                char *processedMessage = JsonProcessor_processJsonMessage(buffer);
+
+                // Si el callback está registrado, notificar al observador
+                if (server->onMessageReceived != NULL) {
+                    server->onMessageReceived(processedMessage);  // Notificar al observador
+                }
+
+                free(processedMessage);  // Liberar la memoria del mensaje procesado
+            } else {
+                log_error("Error al recibir el mensaje del servidor\n");
+            }
+
+            // Pausa antes de recibir el próximo mensaje
+            sleep(2);
+        } else {
+            // Intentar reconectar si la conexión se ha perdido
+            SocketServer_reconnect(server->socketServer);
+        }
+    }
+
+    return NULL;
 }

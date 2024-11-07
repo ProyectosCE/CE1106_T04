@@ -51,6 +51,11 @@ void SocketServer_destroy(SocketServer *server) {
     }
 }
 
+// Devuelve el estado de la conexión
+bool SocketServer_isConnected(SocketServer *server) {
+    return server->isConnected;
+}
+
 /*
  * Conectar el socket al servidor (se llama explícitamente desde el menú)
  */

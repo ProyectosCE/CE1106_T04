@@ -26,6 +26,7 @@ add_executable(Client "main_con_gui_(depreciate).c"
         configuracion/configuracion.h
         logs/saveLog.c
         logs/saveLog.h
+        game.c
 
 )
 

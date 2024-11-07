@@ -15,6 +15,7 @@ typedef struct {
 // Constructor y Destructor
 SocketServer *SocketServer_create();
 void SocketServer_destroy(SocketServer *server);
+bool SocketServer_isConnected(SocketServer *server);
 
 // Conecta el socket al servidor (llamado explícitamente desde el menú)
 void SocketServer_connect(SocketServer *server);
