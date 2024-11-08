@@ -80,7 +80,7 @@ void init_game_server() {
     gameStatus->pause = false;
     gameStatus->winner = false;
     gameStatus->gameOver = false;
-    gameStatus->levelsCompleted = 0;
+
 }
 
 /* Function: gameServerCallback
@@ -285,10 +285,16 @@ void update_game_state(GameState *gameState) {
             // Actualiza la lógica principal del juego
             update_game(gameState);
 
+            if (gameState->winner && gameState->restart) {
+                init_game_server();
+                gameState->ball_speed_multiplier+=0.25f;
+                gameState->levelsCompleted+=1;
+            }
             // Reinicia el juego si se solicita
             if (gameState->restart) {
-                printf("REINICIANDOOOOO\n\n\n\n");
                 init_game_server();
+                gameState->ball_speed_multiplier=1.0f;
+                gameState->levelsCompleted=0;
             }
             break;
 

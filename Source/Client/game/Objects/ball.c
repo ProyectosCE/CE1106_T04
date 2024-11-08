@@ -166,7 +166,7 @@ void update_ball_positions(Player *player, Ball *balls) {
     // Lógica de lanzamiento de la primera bola
     if (noBallsActive(balls, game_state->maxBalls) && IsKeyPressed(KEY_W)) {
         balls[0].active = true;
-        balls[0].speed = (Vector2){0, -5};
+        balls[0].speed = (Vector2){0, -5*game_state->ball_speed_multiplier};
         game_state->bolaLanzada=true;
     }
 }

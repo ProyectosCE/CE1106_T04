@@ -117,6 +117,7 @@ typedef struct {
     int levels;
     bool winner;
     bool bolaLanzada;
+    bool isControllerActive;
 } GameState;
 
 
@@ -165,10 +166,12 @@ GameState *getGameState();
 GameScreen getCurrentScreen();
 bool isCameraEnabled();
 bool isPlayer();
+bool isControllerActive();
 
 // Setters
 void setCurrentScreen(GameScreen screen);
 void setCameraEnabled(bool enabled);
 void setPlayer(bool player);
+void setControllerEnable();
 
 #endif // GAME_STATUS_H

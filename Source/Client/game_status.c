@@ -237,6 +237,10 @@ bool isCameraEnabled() {
     if (gameStateInstance == NULL) initGameState();
     return gameStateInstance->isCameraEnabled;
 }
+bool isControllerActive() {
+  if (gameStateInstance == NULL) initGameState();
+  return gameStateInstance->isControllerActive;
+}
 
 /* Function: isPlayer
    Descripción:
@@ -355,4 +359,10 @@ Problems:
 void setPlayer(bool player) {
     if (gameStateInstance == NULL) initGameState();
     gameStateInstance->isPlayer = player;
+}
+
+
+void setControllerEnable() {
+  if (!gameStateInstance) initGameState();
+  gameStateInstance->isControllerActive = !gameStateInstance->isControllerActive;
 }

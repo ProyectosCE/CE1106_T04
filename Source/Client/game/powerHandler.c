@@ -128,7 +128,7 @@ void add_ball(int posX, int posY) {
         if (!gameStateHandler->balls[i].active) {
             gameStateHandler->balls[i].active = true;
             gameStateHandler->balls[i].position = (Vector2){ posX, posY };  // Posición del ladrillo destruido
-            gameStateHandler->balls[i].speed = (Vector2){0, 5};
+            gameStateHandler->balls[i].speed = (Vector2){0, 5 * gameStateHandler->ball_speed_multiplier};
             break;  // Salir del bucle una vez que activamos una nueva bola
         }
     }

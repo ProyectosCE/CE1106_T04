@@ -4,11 +4,13 @@ project(Client)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 23)
 
+
 #FIND PACKEGES HERE:
 find_package(cJSON)
 find_package(raylib)
 find_package(log.c)
 find_package(inih)
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
 #Executables here:
 add_executable(Client
@@ -50,12 +52,19 @@ add_executable(Client
         gui/nameInput.c
         gui/nameInput.h
         gui/screenHandler.c
+        comunicaciones/ESP32_Controller/websocket_client.c
+        comunicaciones/ESP32_Controller/websocket_client.h
 
 )
 
 
 # Copiar el archivo settings.ini al directorio de salida
 file(COPY ${CMAKE_SOURCE_DIR}/settings.ini DESTINATION ${CMAKE_BINARY_DIR})
+
+set(PYTHON_SCRIPT_PATH ${CMAKE_SOURCE_DIR}/comunicaciones/ESP32_Controller)
+add_compile_definitions(PYTHON_SCRIPT_PATH="${PYTHON_SCRIPT_PATH}")
+
+
 
 # Crear la carpeta logs en tiempo de compilación
 add_custom_command(
@@ -64,7 +73,14 @@ add_custom_command(
 )
 
 #Targets here:
-target_link_libraries(Client cjson::cjson raylib)
-target_link_libraries(Client raylib)
-target_link_libraries(Client log.c::log.c)
-target_link_libraries(Client inih::inih)
+
+
+target_include_directories(Client PRIVATE ${Python3_INCLUDE_DIRS})
+target_link_libraries(Client
+        PRIVATE
+        cjson::cjson
+        raylib
+        log.c::log.c
+        inih::inih
+        ${Python3_LIBRARIES}
+)

@@ -17,6 +17,8 @@ Consulta el archivo LICENSE para más detalles.
 // BIBLIOTECAS EXTERNAS
 #include "raylib.h"
 
+#include "../comunicaciones/ESP32_Controller/websocket_client.h"
+
 
 
 /* Function: UpdateMenu
@@ -52,10 +54,12 @@ void UpdateMenu() {
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
         setPlayer(!isPlayer());
     }
-
     // Activa o desactiva la cámara
     if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_LEFT)) {
         setCameraEnabled(!isCameraEnabled());
+    }
+    if (IsKeyPressed(KEY_C)) {
+        setControllerEnable();
     }
 
     // Acción al presionar Enter
@@ -65,7 +69,9 @@ void UpdateMenu() {
             setCurrentScreen(NAME_INPUT);
             if (isCameraEnabled()) {
                 start_camera();
-            } else {
+            } else if (isControllerActive()) {
+
+                start_websocket_client();
             }
         } else {
             setCurrentScreen(OBSERVER_SELECT);
@@ -115,6 +121,8 @@ void DrawMenu() {
     DrawText("2. Spectator", screenWidth / 2 - MeasureText("2. Spectator", 20) / 2, screenHeight / 2 + 20, 20, !isPlayer() ? BLACK : GRAY);
     DrawText("Game Camera: ", screenWidth / 2 - MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, DARKGRAY);
     DrawText(isCameraEnabled() ? "Enabled" : "Disabled", screenWidth / 2 + MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, isCameraEnabled() ? GREEN : RED);
+    DrawText(isControllerActive() ? "Activado" : "Desactivado", screenWidth / 2 + MeasureText("Control ESP-32: ", 20) / 2, screenHeight / 2 + 60, 20, isCameraEnabled() ? BLACK : GRAY);
+
     DrawText("Press Enter to Play", screenWidth / 2 - MeasureText("Press Enter to Play", 20) / 2, screenHeight / 2 + 120, 20, DARKGRAY);
 
     EndDrawing();

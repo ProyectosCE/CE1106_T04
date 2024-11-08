@@ -86,7 +86,11 @@ void update_game(GameState *gameState) {
     }
 
     // Maneja la transición a reinicio del juego en caso de Game Over o victoria.
-    if (gameState->gameOver || gameState->winner) {
+    if (gameState->gameOver && !gameState->winner) {
+        if (IsKeyPressed(KEY_ENTER)) gameState->restart = true;
+    }
+    // Maneja la transición a reinicio del juego en caso de Game Over o victoria.
+    if (gameState->winner) {
         if (IsKeyPressed(KEY_ENTER)) gameState->restart = true;
     }
 }
