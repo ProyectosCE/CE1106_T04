@@ -13,6 +13,7 @@ Consulta el archivo LICENSE para más detalles.
 #include "camera.h"
 #include "../game_status.h"
 #include "main_menu.h"
+#include "../configuracion/configuracion.h"
 
 // BIBLIOTECAS EXTERNAS
 #include "raylib.h"
@@ -70,8 +71,8 @@ void UpdateMenu() {
             if (isCameraEnabled()) {
                 start_camera();
             } else if (isControllerActive()) {
-
-                start_websocket_client();
+                const char* espAddress = get_config_string("controller.ipEsp");
+                start_websocket_client_thread(espAddress);
             }
         } else {
             setCurrentScreen(OBSERVER_SELECT);
@@ -121,9 +122,10 @@ void DrawMenu() {
     DrawText("2. Spectator", screenWidth / 2 - MeasureText("2. Spectator", 20) / 2, screenHeight / 2 + 20, 20, !isPlayer() ? BLACK : GRAY);
     DrawText("Game Camera: ", screenWidth / 2 - MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, DARKGRAY);
     DrawText(isCameraEnabled() ? "Enabled" : "Disabled", screenWidth / 2 + MeasureText("Game Camera: ", 20) / 2, screenHeight / 2 + 60, 20, isCameraEnabled() ? GREEN : RED);
-    DrawText(isControllerActive() ? "Activado" : "Desactivado", screenWidth / 2 + MeasureText("Control ESP-32: ", 20) / 2, screenHeight / 2 + 60, 20, isCameraEnabled() ? BLACK : GRAY);
+    DrawText("Control ESP-32: ", screenWidth / 2 - MeasureText("Control ESP-32: ", 20) / 2, screenHeight / 2 + 100, 20, DARKGRAY);
+    DrawText(isControllerActive() ? "Activado" : "Desactivado", screenWidth / 2 + MeasureText("Control ESP-32: ", 20) / 2, screenHeight / 2 + 100, 20, isControllerActive() ? GREEN : RED);
 
-    DrawText("Press Enter to Play", screenWidth / 2 - MeasureText("Press Enter to Play", 20) / 2, screenHeight / 2 + 120, 20, DARKGRAY);
+    DrawText("Press Enter to Play", screenWidth / 2 - MeasureText("Press Enter to Play", 20) / 2, screenHeight / 2 + 140, 20, DARKGRAY);
 
     EndDrawing();
 }
