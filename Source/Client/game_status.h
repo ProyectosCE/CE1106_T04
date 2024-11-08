@@ -1,10 +1,19 @@
+/*
+================================== LICENCIA ==================================================
+MIT License
+Copyright (c) 2024 José Bernardo Barquero Bonilla,
+                   Jose Eduardo Campos Salazar,
+                   Jimmy Feng Feng,
+                   Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+==============================================================================================
+*/
 #ifndef GAME_STATUS_H
 #define GAME_STATUS_H
 #include <raylib.h>
 #include <pthread.h>
 
 #include "comunicaciones/comServer.h"
-
 
 /*
  * Header: Game Data Structures
