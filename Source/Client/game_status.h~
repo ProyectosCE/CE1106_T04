@@ -5,6 +5,7 @@
 
 #include "comunicaciones/comServer.h"
 
+
 typedef enum {
     MENU,
     NAME_INPUT,
@@ -13,12 +14,15 @@ typedef enum {
     SPECTATOR,
     EXIT
 } GameScreen;
+
 typedef struct Ball {
     Vector2 position;
     Vector2 speed;
     int radius;
     bool active;
 } Ball;
+
+
 // Enumeración para los poderes
 typedef enum PowerType {
     NONE,           // Sin poder
@@ -30,6 +34,7 @@ typedef enum PowerType {
     SPEED_DOWN,      // Reducir velocidad
     UPDATE_POINTS
 } PowerType;
+
 // Estructura Brick
 typedef struct Brick {
     Vector2 position;  // Posición del ladrillo
@@ -38,6 +43,8 @@ typedef struct Brick {
     Color color;       // Color del ladrillo
     PowerType power;   // Tipo de poder asociado al ladrillo
 } Brick;
+
+
 typedef struct Player {
     Vector2 position;
     Vector2 size;
@@ -46,6 +53,7 @@ typedef struct Player {
     bool doubleRacket;
     bool halfRacket;
 } Player;
+
 typedef struct {
     Player player;
     Ball *balls;

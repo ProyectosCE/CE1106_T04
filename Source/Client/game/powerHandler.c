@@ -11,24 +11,25 @@ void initPowerHandler() {
 
 
 void update_brick_score(int level, int new_points) {
-    level++;
-    new_points++;
+    level++;  // Incrementa el nivel según tu lógica actual
+    new_points++;  // Incrementa los puntos según tu lógica actual
+
+    int lines_per_level = 2; // Cada nivel tiene 2 líneas
+
     for (int i = 0; i < gameStateHandler->linesOfBricks; i++) {
         for (int j = 0; j < gameStateHandler->bricksPerLine; j++) {
             if (gameStateHandler->bricks[i][j].active) {
-                // Actualizar puntos únicamente en el nivel especificado
-                if ((level == 4 && i < 2) ||
-                    (level == 3 && i >= 2 && i < 4) ||
-                    (level == 2 && i >= 4 && i < 6) ||
-                    (level == 1 && i >= 6)) {
+                // Calcula el nivel actual para la línea i
+                int current_level = gameStateHandler->linesOfBricks / lines_per_level - i / lines_per_level;
 
+                // Actualiza puntos si la línea pertenece al nivel especificado
+                if (current_level == level) {
                     gameStateHandler->bricks[i][j].points = new_points;
                 }
             }
         }
     }
 }
-
 
 
 void add_ball(int posX, int posY) {

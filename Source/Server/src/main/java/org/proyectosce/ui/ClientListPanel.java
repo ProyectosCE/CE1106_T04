@@ -1,11 +1,13 @@
 package org.proyectosce.ui;
 
+import org.proyectosce.comunicaciones.Cliente;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class ClientListPanel extends JPanel {
-    private JComboBox<String> playersComboBox;
+    private JComboBox<Cliente> playersComboBox;
     private JComboBox<String> spectatorsComboBox;
     private JTextField commandInputField;  // Campo para ingresar el comando
     private JButton sendCommandButton;     // Botón para enviar el comando
@@ -44,13 +46,17 @@ public class ClientListPanel extends JPanel {
     }
 
     public String getSelectedPlayer() {
-        return (String) playersComboBox.getSelectedItem();
+        Cliente seleccionado = (Cliente) playersComboBox.getSelectedItem();
+        if (seleccionado != null) {
+            return seleccionado.getId(); // Devuelve el ID del cliente seleccionado
+        }
+        return null; // Retorna null si no hay selección
     }
 
-    public void updatePlayersComboBox(List<String> jugadores) {
-        playersComboBox.removeAllItems();
-        for (String jugador : jugadores) {
-            playersComboBox.addItem(jugador);
+    public void updatePlayersComboBox(List<Cliente> jugadores) {
+        playersComboBox.removeAllItems(); // Limpia el JComboBox
+        for (Cliente jugador : jugadores) {
+            playersComboBox.addItem(jugador); // Agrega objetos Cliente directamente
         }
     }
 

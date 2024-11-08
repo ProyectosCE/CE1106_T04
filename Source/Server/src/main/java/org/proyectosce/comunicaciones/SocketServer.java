@@ -1,5 +1,6 @@
 package org.proyectosce.comunicaciones;
 
+import org.proyectosce.SettingsReader;
 import org.proyectosce.comandos.factory.CommandFactory;
 import org.proyectosce.comandos.factory.products.Command;
 import org.proyectosce.comandos.factory.products.DisconnectCommand;
@@ -18,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SocketServer {
     private static SocketServer instance;
-    private static final int PORT = 12346;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
@@ -37,15 +37,20 @@ public class SocketServer {
      */
     public void abrirPuerto() {
         try {
+            SettingsReader settings = SettingsReader.getInstance();
+            String address = settings.getSocketAddress();
+            int port = settings.getSocketPort();
+
             serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-            serverSocketChannel.bind(new InetSocketAddress(PORT));
+            serverSocketChannel.bind(new InetSocketAddress(address, port));
             serverSocketChannel.configureBlocking(true);
-            System.out.println("Servidor escuchando en el puerto " + PORT);
+            System.out.println("Servidor escuchando en " + address + ":" + port);
         } catch (IOException e) {
             manejarExcepcion("No se pudo abrir el puerto del servidor", e);
         }
     }
+
 
     /**
      * Espera la conexión de un cliente y lo añade a la lista de clientes activos.

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.proyectosce.comandos.factory.CommandFactory;
 import org.proyectosce.comandos.factory.products.Command;
+import org.proyectosce.comunicaciones.Cliente;
 import org.proyectosce.comunicaciones.ComServer;
 import org.proyectosce.comandos.CommandHandler;
 
@@ -140,7 +141,7 @@ public class MainWindow extends JFrame {
     }
 
     // Método para actualizar las listas de JComboBox de forma segura en el hilo de la GUI
-    public void updateClientLists(List<String> jugadores, List<String> espectadores) {
+    public void updateClientLists(List<Cliente> jugadores, List<String> espectadores) {
         SwingUtilities.invokeLater(() -> {
             clientListPanel.updatePlayersComboBox(jugadores);
             clientListPanel.updateSpectatorsComboBox(espectadores);

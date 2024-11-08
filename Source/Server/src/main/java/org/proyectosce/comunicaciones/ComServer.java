@@ -31,7 +31,7 @@ public class ComServer {
 
 
     private ServerSocketChannel serverSocketChannel;
-    private BiConsumer<List<String>, List<String>> updateCallback;
+    private BiConsumer<List<Cliente>, List<String>> updateCallback;
     private MainWindow mainWindow;
 
     private ComServer() {}
@@ -47,7 +47,7 @@ public class ComServer {
         this.mainWindow = mainWindow;
     }
 
-    public void setUpdateCallback(BiConsumer<List<String>, List<String>> callback) {
+    public void setUpdateCallback(BiConsumer<List<Cliente>, List<String>> callback) {
         this.updateCallback = callback;
     }
 
@@ -96,8 +96,8 @@ public class ComServer {
         actualizarListas();
     }
 
-    private List<String> obtenerNombresClientes() {
-        return jugadores.stream().map(Cliente::getId).toList();
+    private List<Cliente> obtenerClientes() {
+        return new ArrayList<>(jugadores); // Convierte el Set a una lista
     }
 
     private List<String> obtenerNombresEspectadores() {
@@ -109,11 +109,11 @@ public class ComServer {
     }
 
     private void actualizarListas() {
-        List<String> jugadoresNames = obtenerNombresClientes();
-        List<String> espectadoresNames = obtenerNombresEspectadores();
+        List<Cliente> jugadoresClientes = obtenerClientes();
+        List<String> espectadoresClientes = obtenerNombresEspectadores(); // Asumiendo que tienes una lógica similar para espectadores
 
         if (mainWindow != null) {
-            SwingUtilities.invokeLater(() -> mainWindow.updateClientLists(jugadoresNames, espectadoresNames));
+            SwingUtilities.invokeLater(() -> mainWindow.updateClientLists(jugadoresClientes, espectadoresClientes));
         }
     }
 

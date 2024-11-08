@@ -80,4 +80,8 @@ public class Cliente {
             System.err.println("Error al cerrar la conexión del cliente: " + e.getMessage());
         }
     }
+
+    public String toString() {
+        return getNombre(); // O el método que devuelve el nombre del cliente
+    }
 }

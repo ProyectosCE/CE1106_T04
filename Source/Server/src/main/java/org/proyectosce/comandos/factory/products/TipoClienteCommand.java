@@ -23,7 +23,6 @@ public class TipoClienteCommand implements Command {
         } else if ("spectador".equals(tipoCliente)) {
             comServer.registrarEspectadorTemporal(cliente);
             comServer.enviarListaDeJugadores(cliente);
-            System.out.println("Cliente registrado como espectador: " + cliente);
         } else {
             System.err.println("Tipo de cliente desconocido: " + tipoCliente);
         }
