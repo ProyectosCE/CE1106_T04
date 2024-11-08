@@ -1,4 +1,49 @@
+/*
+================================== LICENCIA ==================================================
+MIT License
+Copyright (c) 2024 José Bernardo Barquero Bonilla,
+                   Jose Eduardo Campos Salazar,
+                   Jimmy Feng Feng,
+                   Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+==============================================================================================
+*/
+
+// BIBLIOTECAS DE PROYECTO
+
 #include "brick.h"
+
+
+/* Function: init_bricks
+   Descripción:
+     Inicializa la matriz de ladrillos dentro del juego, configurando su posición, puntos, colores,
+     y estado inicial. La posición de los ladrillos depende del número de filas y del tamaño de cada ladrillo.
+
+   Params:
+     gameState - Puntero a la instancia de `GameState` que contiene la matriz de ladrillos.
+     brickSize - Tamaño de cada ladrillo en la matriz.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `gameState` y `brickSize` deben ser punteros válidos.
+     - Se espera que `gameState->linesOfBricks` y `gameState->bricksPerLine` estén configurados correctamente.
+
+   Example:
+     Vector2 brickSize = {40, 20};
+     init_bricks(gameState, brickSize);
+     // Inicializa los ladrillos en el estado del juego.
+
+   Problems:
+     - Problema: Si `linesOfBricks` o `bricksPerLine` son valores no válidos, puede causar un fallo.
+       - Solución: Validar los valores antes de proceder.
+     - Problema: Si los colores y puntos no se configuran correctamente, los ladrillos podrían no tener coherencia visual o lógica.
+       - Solución: Revisar las condiciones para la asignación de colores y puntos.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 
 void init_bricks(GameState* gameState, Vector2 brickSize) {
     // Ajuste para colocar ladrillos debajo del texto de puntaje
@@ -66,7 +111,30 @@ void init_bricks(GameState* gameState, Vector2 brickSize) {
     }
 }
 
+/* Function: deactivate_brick
+Descripción:
+Desactiva un ladrillo específico al establecer su estado como inactivo.
 
+Params:
+brick - Puntero a la estructura `Brick` que será desactivada.
+
+Returns:
+- void: No retorna valores.
+
+Restriction:
+- `brick` debe ser un puntero válido a una estructura `Brick`.
+
+Example:
+deactivate_brick(&gameState->bricks[0][0]);
+// Desactiva el primer ladrillo en la matriz.
+
+Problems:
+- Problema: Si `brick` es nulo, la función no funcionará.
+- Solución: Validar el puntero antes de proceder.
+
+References:
+- Ninguna referencia externa específica.
+*/
 void deactivate_brick(Brick* brick) {
     brick->active = false;
 }

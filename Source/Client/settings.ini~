@@ -1,5 +1,5 @@
 [socket]
-address="192.168.1.105"
+address="192.168.1.124"
 port=12541
 
 [network]

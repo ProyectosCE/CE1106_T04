@@ -1,16 +1,27 @@
-//
-// Created by jimmy on 12/10/24.
-//
+/*
+================================== LICENCIA ==================================================
+MIT License
+Copyright (c) 2024 José Bernardo Barquero Bonilla,
+                   Jose Eduardo Campos Salazar,
+                   Jimmy Feng Feng,
+                   Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+==============================================================================================
+*/
 
+// BIBLIOTECAS DE PROYECTO
+#include "../game_status.h"
 #include "spectator.h"
 
+
+// BIBLIOTECAS EXTERNAS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <cjson/cJSON.h>
 
-#include "../game_status.h"
+
 
 int selectedPlayerIndex = 0; // Índice del jugador seleccionado
 
@@ -19,7 +30,33 @@ int selectedPlayerIndex = 0; // Índice del jugador seleccionado
 static PlayerList *instance = NULL;
 
 
-// Función para inicializar la estructura PlayerList
+/* Function: InitializePlayerList
+   Descripción:
+     Inicializa una estructura `PlayerList`, configurando el número de jugadores en 0 y asignando cadenas vacías
+     a los nombres y UUIDs de los jugadores.
+
+   Params:
+     playerList - Puntero a la estructura `PlayerList` que será inicializada.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `playerList` debe ser un puntero válido antes de llamar a esta función.
+
+   Example:
+     PlayerList playerList;
+InitializePlayerList(&playerList);
+// Inicializa la lista de jugadores con valores predeterminados.
+
+Problems:
+  - Problema: Si `playerList` es un puntero nulo, la función provocará un comportamiento indefinido.
+    - Solución: Asegurarse de que `playerList` sea válido antes de la llamada.
+
+References:
+  - Ninguna referencia externa específica.
+*/
+
 
 void InitializePlayerList(PlayerList *playerList) {
 
@@ -39,7 +76,30 @@ void InitializePlayerList(PlayerList *playerList) {
 }
 
 
-// Función para obtener la instancia única de PlayerList
+/* Function: GetPlayerListInstance
+   Descripción:
+     Obtiene la instancia única de la estructura `PlayerList`. Si no existe, crea e inicializa una nueva instancia.
+
+   Params:
+     (Ninguno)
+
+   Returns:
+     - PlayerList*: Un puntero a la instancia única de `PlayerList`.
+
+   Restriction:
+     - La instancia devuelta debe ser manejada correctamente para evitar fugas de memoria.
+
+   Example:
+     PlayerList *playerList = GetPlayerListInstance();
+     // Obtiene la instancia única de `PlayerList`.
+
+   Problems:
+     - Problema: Si no se puede asignar memoria para la instancia, se retorna un puntero nulo.
+       - Solución: Manejar este caso con validaciones y mensajes de error.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 
 PlayerList* GetPlayerListInstance() {
 
@@ -61,7 +121,39 @@ PlayerList* GetPlayerListInstance() {
 
 }
 
-// Función para procesar el JSON y llenar la estructura PlayerList
+/* Function: processJson
+   Descripción:
+     Procesa una cadena JSON para llenar la estructura `PlayerList` con los datos obtenidos. La función
+     busca específicamente el campo "command" con valor "ClientesLista" y extrae los campos "id" y "nombre"
+     de cada jugador en el array "data".
+
+   Params:
+     jsonString - Cadena de texto que contiene el mensaje JSON recibido.
+     playerList - Puntero a la estructura `PlayerList` que será llenada con los datos extraídos.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `jsonString` debe ser una cadena válida y no nula.
+     - `playerList` debe ser un puntero válido antes de llamar a esta función.
+
+   Example:
+     const char *json = "{\"command\":\"ClientesLista\",\"data\":[{\"id\":\"123\",\"nombre\":\"Jugador1\"}]}";
+     PlayerList playerList;
+     InitializePlayerList(&playerList);
+     processJson(json, &playerList);
+     // Llena la estructura playerList con los datos obtenidos del JSON.
+
+   Problems:
+     - Problema: Si el JSON no tiene un formato válido, no se procesarán los datos.
+       - Solución: Registrar un mensaje de error y manejar el caso.
+     - Problema: Si el array "data" tiene más elementos que la capacidad de `PlayerList`, puede ocurrir un desbordamiento.
+       - Solución: Limitar el número de jugadores procesados y registrar un mensaje cuando se alcance el límite.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
+*/
 
 void processJson(const char *jsonString, PlayerList *playerList) {
 
@@ -141,7 +233,31 @@ void processJson(const char *jsonString, PlayerList *playerList) {
 
 }
 
+/* Function: espectadorGetList
+   Descripción:
+     Procesa un mensaje recibido que contiene la lista de jugadores y actualiza la instancia de `PlayerList` con los datos.
 
+   Params:
+     recibido - Cadena de texto que contiene el mensaje JSON con la lista de jugadores.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `recibido` debe ser una cadena válida y no nula.
+
+   Example:
+     const char *json = "{\"command\":\"ClientesLista\",\"data\":[{\"id\":\"123\",\"nombre\":\"Jugador1\"}]}";
+     espectadorGetList(json);
+     // Actualiza la lista de jugadores basada en el JSON recibido.
+
+   Problems:
+     - Problema: Si `recibido` no es un JSON válido, no se procesará correctamente.
+       - Solución: Registrar un mensaje de error en caso de fallo en `processJson`.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 
 void espectadorGetList(const char *recibido) {
     PlayerList *playerList = GetPlayerListInstance();
@@ -149,6 +265,37 @@ void espectadorGetList(const char *recibido) {
 
 }
 
+
+/* Function: updateGameStateFromJson
+   Descripción:
+     Actualiza el estado del juego (`GameState`) basado en un mensaje JSON recibido. Procesa datos
+     relacionados con el jugador, las bolas, los ladrillos y otros atributos del juego.
+
+   Params:
+     jsonString - Cadena de texto que contiene el mensaje JSON con el estado del juego.
+     gameState - Puntero al estado del juego (`GameState *`) que será actualizado.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `jsonString` debe ser una cadena válida y no nula.
+     - `gameState` debe ser un puntero válido antes de llamar a esta función.
+
+   Example:
+     const char *json = "{\"command\":\"sendGameState\", \"player\": {...}, \"balls\": [...], \"bricks\": [...]}";
+     updateGameStateFromJson(json, gameState);
+     // Actualiza el estado del juego basado en el JSON recibido.
+
+   Problems:
+     - Problema: Si `jsonString` no es un JSON válido, no se procesará correctamente.
+       - Solución: Registrar un mensaje de error en caso de fallo en `cJSON_Parse`.
+     - Problema: Si algún campo esperado no está presente en el JSON, los datos pueden quedar incompletos.
+       - Solución: Validar que los campos estén presentes antes de usarlos.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
+     */
 void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
     cJSON *json = cJSON_Parse(jsonString);
@@ -193,7 +340,7 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
         if (ballsJson != NULL && cJSON_IsArray(ballsJson)) {
 
-            for (int i = 0; i < cJSON_GetArraySize(ballsJson) && i < MAX_BALLS; i++) {
+            for (int i = 0; i < cJSON_GetArraySize(ballsJson) && i < gameState->maxBalls; i++) {
 
                 cJSON *ballJson = cJSON_GetArrayItem(ballsJson, i);
 
@@ -249,6 +396,32 @@ void updateGameStateFromJson(const char *jsonString, GameState *gameState) {
 
 }
 
+/* Function: espectadorUpdateGame
+   Descripción:
+     Actualiza el estado del juego (`GameState`) utilizando los datos recibidos en formato JSON.
+     Asegura la exclusividad de acceso al `GameState` utilizando un mutex.
+
+   Params:
+     recibido - Cadena de texto que contiene el mensaje JSON con el estado del juego.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `recibido` debe ser una cadena válida y no nula.
+
+   Example:
+     espectadorUpdateGame("{\"command\":\"sendGameState\", ...}");
+     // Actualiza el estado del juego basado en el mensaje recibido.
+
+   Problems:
+     - Problema: Si `recibido` es NULL o no se puede obtener el estado del juego, no se realizará ninguna operación.
+       - Solución: Validar los parámetros antes de proceder y registrar errores.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
+
 void espectadorUpdateGame(const char *recibido) {
     if (recibido == NULL) {
         fprintf(stderr, "Error: Datos recibidos son NULL\n");
@@ -266,6 +439,30 @@ void espectadorUpdateGame(const char *recibido) {
     pthread_mutex_unlock(&gameStateMutex); // Desbloquear el mutex después de la modificación
 }
 
+/* Function: DrawPlayerList
+   Descripción:
+     Dibuja en pantalla la lista de jugadores disponibles, permitiendo resaltar al jugador seleccionado.
+
+   Params:
+     (Ninguno)
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - La lista de jugadores debe haber sido inicializada previamente.
+
+   Example:
+     DrawPlayerList();
+     // Dibuja la lista de jugadores en pantalla.
+
+   Problems:
+     - Problema: Si la lista de jugadores no está inicializada, no se dibujará nada.
+       - Solución: Validar la instancia antes de proceder y registrar un error.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 
 void DrawPlayerList() {
 
@@ -297,6 +494,31 @@ void DrawPlayerList() {
     EndDrawing();
 }
 
+/* Function: UpdatePlayerList
+   Descripción:
+     Permite al usuario navegar por la lista de jugadores utilizando las teclas de dirección y seleccionar
+     un jugador al presionar Enter. Envía la selección al servidor.
+
+   Params:
+     players - Puntero a la estructura `PlayerList` que contiene la lista de jugadores.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - `players` debe ser un puntero válido antes de llamar a esta función.
+
+   Example:
+     UpdatePlayerList(playerList);
+     // Permite navegar y seleccionar jugadores de la lista.
+
+   Problems:
+     - Problema: Si no hay jugadores disponibles, la navegación y selección no tendrán efecto.
+       - Solución: Validar que la lista no esté vacía y registrar mensajes para depuración.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 
 void UpdatePlayerList(const PlayerList *players) {
 
@@ -352,83 +574,3 @@ void *askForPlayerList(void *arg) {
     gameState->comunicationRunning=false;// Send the current game state
     return NULL;
 }
-
-
-/*
-// Función para parsear el JSON y llenar GameState
-void parseGameState(GameState *gameState, const char *json) {
-    cJSON *root = cJSON_Parse(json);
-    if (!root) return;
-
-    cJSON *brickSize = cJSON_GetObjectItem(root, "brickSize");
-    gameState->brickSizeX = cJSON_GetObjectItem(brickSize, "sizeX")->valuedouble;
-    gameState->brickSizeY = cJSON_GetObjectItem(brickSize, "sizeY")->valuedouble;
-
-
-    // Parsear información del jugador
-    cJSON *player = cJSON_GetObjectItem(root, "player");
-    gameState->player.positionX = cJSON_GetObjectItem(player, "positionX")->valuedouble;
-    gameState->player.positionY = cJSON_GetObjectItem(player, "positionY")->valuedouble;
-    gameState->player.sizeX = cJSON_GetObjectItem(player, "sizeX")->valuedouble;
-    gameState->player.sizeY = cJSON_GetObjectItem(player, "sizeY")->valuedouble;
-    gameState->player.life = cJSON_GetObjectItem(player, "life")->valueint;
-    gameState->player.score = cJSON_GetObjectItem(player, "score")->valueint;
-
-    // Parsear el array de bolas
-    cJSON *ballsArray = cJSON_GetObjectItem(root, "balls");
-    int ballCount = cJSON_GetArraySize(ballsArray);
-    gameState->balls = (BallSpectator *)malloc(ballCount * sizeof(BallSpectator));
-    for (int i = 0; i < ballCount; i++) {
-        cJSON *ball = cJSON_GetArrayItem(ballsArray, i);
-        gameState->balls[i].positionX = cJSON_GetObjectItem(ball, "positionX")->valuedouble;
-        gameState->balls[i].positionY = cJSON_GetObjectItem(ball, "positionY")->valuedouble;
-    }
-
-    // Parsear el array de ladrillos
-    cJSON *bricksArray = cJSON_GetObjectItem(root, "bricks");
-    int brickCount = cJSON_GetArraySize(bricksArray);
-    gameState->bricks = (BrickSpectator *)malloc(brickCount * sizeof(BrickSpectator));
-    for (int i = 0; i < brickCount; i++) {
-        cJSON *brick = cJSON_GetArrayItem(bricksArray, i);
-        gameState->bricks[i].positionX = cJSON_GetObjectItem(brick, "positionX")->valuedouble;
-        gameState->bricks[i].positionY = cJSON_GetObjectItem(brick, "positionY")->valuedouble;
-
-        // Asignar color basado en posición o nivel, ajusta esto según lo necesario
-        if (gameState->bricks[i].positionY <= 70) gameState->bricks[i].color = RED;
-        else if (gameState->bricks[i].positionY <= 110) gameState->bricks[i].color = ORANGE;
-        else if (gameState->bricks[i].positionY <= 150) gameState->bricks[i].color = YELLOW;
-        else gameState->bricks[i].color = GREEN;
-    }
-
-    // Parsear los otros elementos del juego
-    gameState->lives = cJSON_GetObjectItem(root, "lives")->valueint;
-    gameState->score = cJSON_GetObjectItem(root, "score")->valueint;
-    gameState->levelsCompleted = cJSON_GetObjectItem(root, "levelsCompleted")->valueint;
-    gameState->gameOver = cJSON_GetObjectItem(root, "gameOver")->valueint;
-
-    cJSON_Delete(root);
-}
-
-
-// Función para leer el archivo JSON
-char* readJSONFile(const char *filename) {
-    FILE *file = fopen(filename, "r");
-    if (file == NULL) {
-        printf("No se pudo abrir el archivo %s\n", filename);
-        return NULL;
-    }
-
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    char *content = (char *)malloc(length + 1);
-    if (content) {
-        fread(content, 1, length, file);
-        content[length] = '\0';
-    }
-    fclose(file);
-    return content;
-}
-
-*/

@@ -317,30 +317,8 @@ int SocketServer_receive(SocketServer *server, char *buffer, int bufferSize) {
     }
 }
 
-/* Function: SocketServer_reconnect
-   Descripción:
-     Intenta reconectar al servidor si está desconectado, utilizando la configuración previa.
-
-   Params:
-     server - Puntero a la instancia del servidor de sockets (`SocketServer *`) que intentará reconectarse.
-
-   Returns:
-     - void: No retorna valores.
-
-   Restriction:
-     - `server` debe estar correctamente inicializado.
-     - La dirección y el puerto del servidor deben estar configurados correctamente.
-
-   Example:
-     SocketServer_reconnect(server);
-     // Intenta reconectar al servidor si la conexión actual está cerrada.
-
-   Problems:
-     - Problema: Si la conexión falla repetidamente, puede causar un bucle de reconexión continuo.
-       - Solución: Implementar un límite de intentos de reconexión o tiempos de espera adecuados.
-
-   References:
-     - Ninguna referencia externa específica.
+/*
+ * Método para reconectar si el servidor está desconectado
  */
 void SocketServer_reconnect(SocketServer *server) {
     if (!server->isConnected) {

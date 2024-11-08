@@ -56,13 +56,13 @@ import java.util.concurrent.ConcurrentHashMap;
 */
 public class SocketServer {
     private static SocketServer instance;
+    private final JsonProcessor jsonProcessor = JsonProcessor.getInstance();
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
     /* Function: SocketServer
         Constructor privado para la implementación del patrón Singleton.
     */
-    private SocketServer() {}
 
     /* Function: getInstance
         Retorna la instancia única de la clase SocketServer.
@@ -138,52 +138,92 @@ public class SocketServer {
             - cliente: Cliente - Cliente del que se recibe el mensaje.
 
         Returns:
-            - String - Mensaje recibido o null si hubo un error o desconexión.
+            - Void - no retorna nada
     */
-    public String recibirMensaje(Cliente cliente) {
+    public void recibirMensajes(Cliente cliente) {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(4096);
+            ByteBuffer buffer = ByteBuffer.allocate(8192);
+            StringBuilder mensajeAcumulado = new StringBuilder();
 
-            // Leer datos en un ciclo para asegurarse de recibir el mensaje completo
-            int bytesRead = cliente.getChannel().read(buffer);
+            while (true) {
+                int bytesRead = cliente.getChannel().read(buffer);
 
-            // Verificar si el cliente se ha desconectado
-            if (bytesRead == -1) {
-                System.out.println("El cliente se ha desconectado: " + cliente);
-                // Crear y ejecutar DisconnectCommand usando CommandFactory
-                CommandFactory commandFactory = CommandFactory.getInstance();
-                Map<String, Object> params = Map.of(
-                        "cliente", cliente, // Cliente desconectado
-                        "comServer", ComServer.getInstance(), // Instancia del ComServer
-                        "socketServer", SocketServer.getInstance() // Instancia del SocketServer
-                );
-                Command disconnectCommand = commandFactory.crearComando("disconnect", params);
-                disconnectCommand.ejecutar();
-                return null;
+                if (bytesRead == -1) {
+                    System.out.println("El cliente se ha desconectado: " + cliente);
+                    ejecutarDisconnectCommand(cliente);
+                    break;
+                }
+
+                buffer.flip();
+
+                // Convertir el buffer en texto y agregarlo al acumulador
+                mensajeAcumulado.append(new String(buffer.array(), 0, bytesRead));
+                buffer.clear();
+
+                // Procesar mensajes completos (separados por '\n')
+                while (mensajeAcumulado.indexOf("\n") != -1) {
+                    int finDeMensaje = mensajeAcumulado.indexOf("\n");
+                    String mensajeCompleto = mensajeAcumulado.substring(0, finDeMensaje).trim();
+                    mensajeAcumulado.delete(0, finDeMensaje + 1);
+
+                    // Procesar el mensaje como JSON
+                    procesarMensajeJson(mensajeCompleto, cliente);
+                }
             }
-
-            // Limpiar el buffer antes de cada lectura para evitar residuos
-            buffer.flip();
-
-            // Convertir el buffer en cadena de texto y retornar el mensaje
-            return new String(buffer.array(), 0, bytesRead).trim();
-
         } catch (IOException e) {
-            //e.printStackTrace();
-            System.out.println("Fallo al recibir mensaje en read buffer"+cliente);
-            // Crear y ejecutar DisconnectCommand usando CommandFactory
-            CommandFactory commandFactory = CommandFactory.getInstance();
-            Map<String, Object> params = Map.of(
-                    "cliente", cliente, // Cliente desconectado
-                    "comServer", ComServer.getInstance(), // Instancia del ComServer
-                    "socketServer", SocketServer.getInstance() // Instancia del SocketServer
-            );
-            Command disconnectCommand = commandFactory.crearComando("disconnect", params);
-            disconnectCommand.ejecutar();
-            this.cerrarConexion(cliente); // Cerrar la conexión en caso de error
-            return null;
+            System.out.println("Fallo al recibir mensaje: " + e.getMessage());
+            ejecutarDisconnectCommand(cliente);
         }
     }
+
+
+    /**
+     * Procesa un mensaje JSON recibido de un cliente.
+     * @param mensaje El mensaje recibido en formato JSON.
+     * @param cliente El cliente que envió el mensaje.
+     */
+    private void procesarMensajeJson(String mensaje, Cliente cliente) {
+        try {
+            // Procesar el mensaje JSON y convertirlo en un comando ejecutable
+            Command comando = jsonProcessor.procesarComando(mensaje, cliente);
+
+            // Verificar si el comando procesado no es nulo
+            if (comando != null) {
+                // Ejecutar el comando procesado
+                comando.ejecutar();
+            } else {
+                // Mensaje de error si el comando no es reconocido
+                System.out.println("Comando no reconocido del cliente: " + cliente);
+            }
+        } catch (Exception e) {
+            // Capturar y mostrar cualquier error durante el procesamiento del mensaje JSON
+            System.err.println("Error al procesar JSON: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Ejecuta el comando de desconexión para un cliente específico.
+     * @param cliente El cliente que se desconectó.
+     */
+    private void ejecutarDisconnectCommand(Cliente cliente) {
+        // Obtener la instancia de la fábrica de comandos
+        CommandFactory commandFactory = CommandFactory.getInstance();
+
+        // Crear un mapa con los parámetros necesarios para el comando de desconexión
+        Map<String, Object> params = Map.of(
+                "cliente", cliente, // Cliente desconectado
+                "comServer", ComServer.getInstance(), // Instancia del servidor de comunicaciones
+                "socketServer", SocketServer.getInstance() // Instancia del servidor de sockets
+        );
+
+        // Crear el comando de desconexión con los parámetros especificados
+        Command disconnectCommand = commandFactory.crearComando("disconnect", params);
+
+        // Ejecutar el comando de desconexión
+        disconnectCommand.ejecutar();
+    }
+
+
 
     /* Function: cerrarConexion
         Cierra la conexión de un cliente.

@@ -1,14 +1,56 @@
+/*
+================================== LICENCIA ==================================================
+MIT License
+Copyright (c) 2024 José Bernardo Barquero Bonilla,
+                   Jose Eduardo Campos Salazar,
+                   Jimmy Feng Feng,
+                   Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+==============================================================================================
+*/
+
+
+
+// BIBLIOTECAS DE PROYECTO
+
 #include "jsonProcessor.h"
 #include "../logs/saveLog.h"
+
+// BIBLIOTECAS EXTRERNAS
 #include <stdlib.h>
 #include <string.h>
 
 // Puntero estático para almacenar la única instancia de JsonProcessor
 static JsonProcessor *jsonProcessor_instance = NULL;
 
-/*
- * Constructor: Inicializa el procesador JSON
- */
+/* Function: JsonProcessor_create
+   Descripción:
+     Crea e inicializa una instancia única del procesador JSON (`JsonProcessor`). Si ya existe una instancia,
+     retorna la existente.
+
+   Params:
+     (Ninguno)
+
+   Returns:
+     - JsonProcessor*: Un puntero a la instancia creada del procesador JSON.
+       Retorna `NULL` si ocurre un error durante la inicialización.
+
+   Restriction:
+     - La instancia debe ser liberada posteriormente con `JsonProcessor_destroy` para evitar fugas de memoria.
+
+   Example:
+     JsonProcessor *processor = JsonProcessor_create();
+     if (processor == NULL) {
+         printf("Error al inicializar el procesador JSON.\n");
+     }
+
+   Problems:
+     - Problema: Si no hay suficiente memoria para crear `JsonProcessor`, retorna `NULL`.
+       - Solución: Manejar errores y registrar un mensaje crítico con `savelog_fatal`.
+
+   References:
+     - Ninguna referencia externa específica.
+*/
 JsonProcessor *JsonProcessor_create() {
     if (jsonProcessor_instance != NULL) {
         return jsonProcessor_instance;
@@ -23,8 +65,30 @@ JsonProcessor *JsonProcessor_create() {
     return jsonProcessor_instance;
 }
 
-/*
- * Destructor: Libera los recursos de JsonProcessor
+/* Function: JsonProcessor_destroy
+   Descripción:
+     Libera los recursos asociados al procesador JSON (`JsonProcessor`) y elimina la instancia global.
+
+   Params:
+     processor - Puntero a la instancia del procesador JSON (`JsonProcessor *`) que se destruirá.
+
+   Returns:
+     - void: No retorna valores.
+
+   Restriction:
+     - El puntero `processor` debe ser válido y no `NULL` al momento de llamar a esta función.
+     - Debe ser invocado después de `JsonProcessor_create` para liberar correctamente los recursos asignados.
+
+   Example:
+     JsonProcessor_destroy(processor);
+     // Libera los recursos del procesador JSON.
+
+   Problems:
+     - Problema: Si `processor` ya fue liberado previamente, puede causar un fallo.
+       - Solución: Validar que `processor` no sea `NULL` antes de proceder.
+
+   References:
+     - Ninguna referencia externa específica.
  */
 void JsonProcessor_destroy(JsonProcessor *processor) {
     if (processor != NULL) {
@@ -33,8 +97,41 @@ void JsonProcessor_destroy(JsonProcessor *processor) {
     }
 }
 
-/*
- * Método para crear un mensaje JSON a partir de una cadena de texto
+/* Function: JsonProcessor_createJsonMessage
+   Descripción:
+     Crea un mensaje JSON a partir de una cadena de texto proporcionada. El mensaje se estructura con
+     los campos "command" y "tipoCliente".
+
+   Params:
+     processor - Puntero al procesador JSON (`JsonProcessor *`) que se utiliza para generar el mensaje.
+     message - Cadena de texto que contiene el valor del campo "tipoCliente".
+
+   Returns:
+     - char*: Una cadena de texto con el mensaje JSON generado.
+       Retorna `NULL` si ocurre un error durante la creación o conversión del JSON.
+
+   Restriction:
+     - `processor` debe estar correctamente inicializado mediante `JsonProcessor_create`.
+     - `message` debe ser una cadena válida y no nula.
+     - La cadena devuelta debe ser liberada por el llamador utilizando `free` después de su uso.
+
+   Example:
+     char *jsonMessage = JsonProcessor_createJsonMessage(processor, "jugador");
+     if (jsonMessage != NULL) {
+         printf("Mensaje JSON generado: %s\n", jsonMessage);
+         free(jsonMessage);
+     }
+
+   Problems:
+     - Problema: Si `processor` es `NULL`, no se puede generar el mensaje JSON.
+       - Solución: Registrar un error y retornar `NULL`.
+     - Problema: Si `cJSON_CreateObject` falla, no se crea el objeto JSON.
+       - Solución: Registrar un error crítico y manejarlo adecuadamente.
+     - Problema: Si `cJSON_PrintUnformatted` falla, no se convierte el JSON a cadena.
+       - Solución: Liberar el objeto JSON y retornar `NULL`.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
  */
 char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *message) {
     if (processor == NULL) {
@@ -66,6 +163,45 @@ char *JsonProcessor_createJsonMessage(JsonProcessor *processor, const char *mess
 
     return jsonString;
 }
+
+
+/* Function: JsonProcessor_createJsonPlayerName
+   Descripción:
+     Crea un mensaje JSON que incluye el nombre del jugador. El mensaje tiene los campos "command",
+     "tipoCliente" y "playerName".
+
+   Params:
+     processor - Puntero al procesador JSON (`JsonProcessor *`) que se utiliza para generar el mensaje.
+     playerName - Cadena de texto que contiene el nombre del jugador.
+
+   Returns:
+     - char*: Una cadena de texto con el mensaje JSON generado.
+       Retorna `NULL` si ocurre un error durante la creación o conversión del JSON.
+
+   Restriction:
+     - `processor` debe estar correctamente inicializado mediante `JsonProcessor_create`.
+     - `playerName` debe ser una cadena válida y no nula.
+     - La cadena devuelta debe ser liberada por el llamador utilizando `free` después de su uso.
+
+   Example:
+     char *jsonMessage = JsonProcessor_createJsonPlayerName(processor, "Jugador1");
+     if (jsonMessage != NULL) {
+         printf("Mensaje JSON generado: %s\n", jsonMessage);
+         free(jsonMessage);
+     }
+
+   Problems:
+     - Problema: Si `processor` es `NULL`, no se puede generar el mensaje JSON.
+       - Solución: Registrar un error y retornar `NULL`.
+     - Problema: Si `cJSON_CreateObject` falla, no se crea el objeto JSON.
+       - Solución: Registrar un error crítico y manejarlo adecuadamente.
+     - Problema: Si `cJSON_PrintUnformatted` falla, no se convierte el JSON a cadena.
+       - Solución: Liberar el objeto JSON y retornar `NULL`.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
+
+*/
 
 char *JsonProcessor_createJsonPlayerName(JsonProcessor *processor, const char *playerName) {
     if (processor == NULL) {
@@ -99,6 +235,43 @@ char *JsonProcessor_createJsonPlayerName(JsonProcessor *processor, const char *p
     return jsonString;
 }
 
+/* Function: JsonProcessor_createJsonChoosenPlayer
+   Descripción:
+     Crea un mensaje JSON que incluye el ID del jugador elegido por el espectador. El mensaje contiene
+     los campos "command" y "jugadorId".
+
+   Params:
+     processor - Puntero al procesador JSON (`JsonProcessor *`) que se utiliza para generar el mensaje.
+     playerId - Cadena de texto que contiene el ID del jugador elegido.
+
+   Returns:
+     - char*: Una cadena de texto con el mensaje JSON generado.
+       Retorna `NULL` si ocurre un error durante la creación o conversión del JSON.
+
+   Restriction:
+     - `processor` debe estar correctamente inicializado mediante `JsonProcessor_create`.
+     - `playerId` debe ser una cadena válida y no nula.
+     - La cadena devuelta debe ser liberada por el llamador utilizando `free` después de su uso.
+
+   Example:
+     char *jsonMessage = JsonProcessor_createJsonChoosenPlayer(processor, "12345");
+     if (jsonMessage != NULL) {
+         printf("Mensaje JSON generado: %s\n", jsonMessage);
+         free(jsonMessage);
+     }
+
+   Problems:
+     - Problema: Si `processor` es `NULL`, no se puede generar el mensaje JSON.
+       - Solución: Registrar un error y retornar `NULL`.
+     - Problema: Si `cJSON_CreateObject` falla, no se crea el objeto JSON.
+       - Solución: Registrar un error crítico y manejarlo adecuadamente.
+     - Problema: Si `cJSON_PrintUnformatted` falla, no se convierte el JSON a cadena.
+       - Solución: Liberar el objeto JSON y retornar `NULL`.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
+*/
+
 char *JsonProcessor_createJsonChoosenPlayer(JsonProcessor *processor, const char *playerId) {
     if (processor == NULL) {
         savelog_error("JsonProcessor no inicializado\n");
@@ -130,6 +303,40 @@ char *JsonProcessor_createJsonChoosenPlayer(JsonProcessor *processor, const char
     return jsonString;
 }
 
+/* Function: JsonProcessor_createJsonGetListPlayers
+   Descripción:
+     Crea un mensaje JSON que solicita la lista de jugadores disponibles. El mensaje contiene
+     los campos "command", "tipoCliente" y "playerName".
+
+   Params:
+     processor - Puntero al procesador JSON (`JsonProcessor *`) que se utiliza para generar el mensaje.
+
+   Returns:
+     - char*: Una cadena de texto con el mensaje JSON generado.
+       Retorna `NULL` si ocurre un error durante la creación o conversión del JSON.
+
+   Restriction:
+     - `processor` debe estar correctamente inicializado mediante `JsonProcessor_create`.
+     - La cadena devuelta debe ser liberada por el llamador utilizando `free` después de su uso.
+
+   Example:
+     char *jsonMessage = JsonProcessor_createJsonGetListPlayers(processor);
+     if (jsonMessage != NULL) {
+         printf("Mensaje JSON generado: %s\n", jsonMessage);
+         free(jsonMessage);
+     }
+
+   Problems:
+     - Problema: Si `processor` es `NULL`, no se puede generar el mensaje JSON.
+       - Solución: Registrar un error y retornar `NULL`.
+     - Problema: Si `cJSON_CreateObject` falla, no se crea el objeto JSON.
+       - Solución: Registrar un error crítico y manejarlo adecuadamente.
+     - Problema: Si `cJSON_PrintUnformatted` falla, no se convierte el JSON a cadena.
+       - Solución: Liberar el objeto JSON y retornar `NULL`.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
+*/
 char *JsonProcessor_createJsonGetListPlayers(JsonProcessor *processor) {
     if (processor == NULL) {
         savelog_error("JsonProcessor no inicializado\n");
@@ -162,9 +369,41 @@ char *JsonProcessor_createJsonGetListPlayers(JsonProcessor *processor) {
     return jsonString;
 }
 
-/*
- * Método para procesar un mensaje JSON recibido
- * Este método toma una cadena JSON y devuelve un mensaje procesado como cadena de texto.
+/* Function: JsonProcessor_processJsonMessage
+   Descripción:
+     Procesa un mensaje JSON recibido, extrayendo el valor del campo "message". Devuelve el mensaje como
+     una nueva cadena de texto, la cual debe ser liberada por el llamador.
+
+   Params:
+     processor - Puntero al procesador JSON (`JsonProcessor *`) que se utiliza para procesar el mensaje.
+     jsonMessage - Cadena de texto que contiene el mensaje JSON recibido.
+
+   Returns:
+     - char*: Una cadena de texto con el valor del campo "message".
+       Retorna `NULL` si ocurre un error durante el procesamiento.
+
+   Restriction:
+     - `processor` debe estar correctamente inicializado mediante `JsonProcessor_create`.
+     - `jsonMessage` debe ser una cadena válida y no nula.
+     - La cadena devuelta debe ser liberada por el llamador utilizando `free` después de su uso.
+
+   Example:
+     char *processedMessage = JsonProcessor_processJsonMessage(processor, "{\"message\":\"Hola\"}");
+     if (processedMessage != NULL) {
+         printf("Mensaje procesado: %s\n", processedMessage);
+         free(processedMessage);
+     }
+
+   Problems:
+     - Problema: Si `processor` es `NULL`, no se puede procesar el mensaje JSON.
+       - Solución: Registrar un error y retornar `NULL`.
+     - Problema: Si el mensaje JSON recibido no es válido, no se puede extraer el campo "message".
+       - Solución: Registrar un error y manejarlo adecuadamente.
+     - Problema: Si `strdup` falla, no se puede duplicar el valor del mensaje.
+       - Solución: Manejar el error y registrar un mensaje de advertencia.
+
+   References:
+     - cJSON Documentation: https://github.com/DaveGamble/cJSON
  */
 char *JsonProcessor_processJsonMessage(JsonProcessor *processor, const char *jsonMessage) {
     if (processor == NULL) {
