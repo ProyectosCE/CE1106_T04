@@ -1,3 +1,15 @@
+/*
+================================== LICENCIA =================
+=================================
+MIT License
+Copyright (c) 2024  José Bernardo Barquero Bonilla,
+                    Jose Eduardo Campos Salazar,
+                    Jimmy Feng Feng,
+                    Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+=============================================================
+Cambios y Configuraciones del Proyecto3=================================
+*/
 package org.proyectosce.comandos.factory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,20 +21,61 @@ import org.proyectosce.comunicaciones.SocketServer;
 
 import java.util.Map;
 
+/*
+ * Class: CommandFactory
+ * Esta clase sigue el patrón Singleton y se encarga de la creación de comandos en función de los datos proporcionados.
+ * Según el tipo de comando solicitado, crea y configura el comando adecuado.
+ *
+ * Attributes:
+ *     - instance: CommandFactory - Instancia única de CommandFactory (Singleton).
+ *     - comServer: ComServer - Instancia de la clase ComServer para interactuar con la lógica del servidor.
+ *     - socketServer: SocketServer - Instancia de la clase SocketServer para gestionar las conexiones y mensajes.
+ *     - objectMapper: ObjectMapper - Instancia para convertir JSON en objetos Java.
+ *
+ * Constructor:
+ *     - CommandFactory(ComServer, SocketServer, ObjectMapper): Constructor privado para inicializar la instancia única del CommandFactory.
+ *
+ * Methods:
+ *     - getInstance(): Devuelve la instancia única del CommandFactory (Singleton).
+ *     - crearComando(String, Map<String, Object>): Crea el comando adecuado según el tipo proporcionado.
+ *     - crearSendGameStateCommand(Map<String, Object>): Crea un comando SendGameStateCommand con los parámetros proporcionados.
+ *     - crearTipoClienteCommand(Map<String, Object>): Crea un comando TipoClienteCommand con los parámetros proporcionados.
+ *     - crearGameSpectatorCommand(Map<String, Object>): Crea un comando GameSpectatorCommand con los parámetros proporcionados.
+ *     - crearPowerCommand(Map<String, Object>): Crea un comando PowerCommand con los parámetros proporcionados.
+ *     - crearDisconnectCommand(Map<String, Object>): Crea un comando DisconnectCommand con los parámetros proporcionados.
+ *     - validarParametros(Map<String, Object>, String...): Valida que los parámetros requeridos estén presentes y no sean nulos.
+ *
+ * Example:
+ *     CommandFactory factory = CommandFactory.getInstance();
+ *     Command command = factory.crearComando("hola", params);
+ *
+ * Problems:
+ *
+ * References:
+ */
 public class CommandFactory {
     private static CommandFactory instance; // Singleton instance
     private final ComServer comServer;
     private final SocketServer socketServer;
     private final ObjectMapper objectMapper;
 
-    // Constructor privado para Singleton
+    /* Constructor: CommandFactory
+        Constructor privado para Singleton. Inicializa las instancias de ComServer, SocketServer y ObjectMapper.
+
+        Params:
+            - comServer: ComServer - Instancia del servidor de comunicación.
+            - socketServer: SocketServer - Instancia del servidor de socket.
+            - objectMapper: ObjectMapper - Instancia para procesar JSON.
+    */
     private CommandFactory(ComServer comServer, SocketServer socketServer, ObjectMapper objectMapper) {
         this.comServer = comServer;
         this.socketServer = socketServer;
         this.objectMapper = objectMapper;
     }
 
-    // Singleton: Obtener la instancia única de CommandFactory
+    /* Function: getInstance
+        Devuelve la instancia única de CommandFactory (Singleton).
+    */
     public static synchronized CommandFactory getInstance() {
         if (instance == null) {
             ComServer comServer = ComServer.getInstance(); // Singleton
@@ -33,7 +86,19 @@ public class CommandFactory {
         return instance;
     }
 
-    // Método principal para crear comandos
+    /* Function: crearComando
+        Crea el comando adecuado basado en el tipo proporcionado.
+
+        Params:
+            - tipoComando: String - El tipo de comando a crear.
+            - params: Map<String, Object> - Los parámetros para configurar el comando.
+
+        Returns:
+            - Command - El comando creado y configurado.
+
+        Example:
+            Command comando = commandFactory.crearComando("hola", params);
+    */
     public Command crearComando(String tipoComando, Map<String, Object> params) {
         try {
             switch (tipoComando) {
@@ -65,6 +130,15 @@ public class CommandFactory {
         }
     }
 
+    /* Function: crearSendGameStateCommand
+        Crea un comando SendGameStateCommand y lo configura con los parámetros.
+
+        Params:
+            - params: Map<String, Object> - Parámetros necesarios para configurar el comando.
+
+        Returns:
+            - Command - El comando SendGameStateCommand creado y configurado.
+    */
     private Command crearSendGameStateCommand(Map<String, Object> params) {
         validarParametros(params, "jsonCompleto", "emisor");
         Command command = new SendGameStateCommand();
@@ -77,6 +151,15 @@ public class CommandFactory {
         return command;
     }
 
+    /* Function: crearTipoClienteCommand
+        Crea un comando TipoClienteCommand y lo configura con los parámetros proporcionados.
+
+        Params:
+            - params: Map<String, Object> - Parámetros necesarios para configurar el comando.
+
+        Returns:
+            - Command - El comando TipoClienteCommand creado y configurado.
+    */
     private Command crearTipoClienteCommand(Map<String, Object> params) {
         validarParametros(params, "jsonCompleto", "emisor");
 
@@ -100,16 +183,15 @@ public class CommandFactory {
         return command;
     }
 
+    /* Function: crearGameSpectatorCommand
+        Crea un comando GameSpectatorCommand y lo configura con los parámetros.
 
-    // Método genérico para validar parámetros requeridos
-    private void validarParametros(Map<String, Object> params, String... requiredKeys) {
-        for (String key : requiredKeys) {
-            if (!params.containsKey(key) || params.get(key) == null) {
-                throw new IllegalArgumentException("Falta el parámetro requerido: " + key);
-            }
-        }
-    }
+        Params:
+            - params: Map<String, Object> - Parámetros necesarios para configurar el comando.
 
+        Returns:
+            - Command - El comando GameSpectatorCommand creado y configurado.
+    */
     private Command crearGameSpectatorCommand(Map<String, Object> params) {
         // Obtener el JSON completo y el cliente emisor
         String jsonCompleto = (String) params.get("jsonCompleto");
@@ -148,6 +230,15 @@ public class CommandFactory {
         return command;
     }
 
+    /* Function: crearPowerCommand
+        Crea un comando PowerCommand y lo configura con los parámetros.
+
+        Params:
+            - params: Map<String, Object> - Parámetros necesarios para configurar el comando.
+
+        Returns:
+            - Command - El comando PowerCommand creado y configurado.
+    */
     private Command crearPowerCommand(Map<String, Object> params) {
         Command command = new PowerCommand();
         command.configure(Map.of(
@@ -161,9 +252,36 @@ public class CommandFactory {
         return command;
     }
 
+    /* Function: crearDisconnectCommand
+        Crea un comando DisconnectCommand y lo configura con los parámetros.
+
+        Params:
+            - params: Map<String, Object> - Parámetros necesarios para configurar el comando.
+
+        Returns:
+            - Command - El comando DisconnectCommand creado y configurado.
+    */
     private Command crearDisconnectCommand(Map<String, Object> params) {
         DisconnectCommand command = new DisconnectCommand(); // Usar constructor vacío
         command.configure(params); // Configuración dinámica
         return command;
+    }
+
+    /* Function: validarParametros
+        Valida que los parámetros requeridos estén presentes y no sean nulos.
+
+        Params:
+            - params: Map<String, Object> - El mapa de parámetros a validar.
+            - requiredKeys: String... - Claves que deben estar presentes en los parámetros.
+
+        Throws:
+            - IllegalArgumentException: Si falta algún parámetro requerido.
+    */
+    private void validarParametros(Map<String, Object> params, String... requiredKeys) {
+        for (String key : requiredKeys) {
+            if (!params.containsKey(key) || params.get(key) == null) {
+                throw new IllegalArgumentException("Falta el parámetro requerido: " + key);
+            }
+        }
     }
 }

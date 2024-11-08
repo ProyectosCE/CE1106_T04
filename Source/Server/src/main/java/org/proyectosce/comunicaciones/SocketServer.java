@@ -1,9 +1,22 @@
+/*
+================================== LICENCIA =================
+=================================
+MIT License
+Copyright (c) 2024  José Bernardo Barquero Bonilla,
+                    Jose Eduardo Campos Salazar,
+                    Jimmy Feng Feng,
+                    Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+=============================================================
+Cambios y Configuraciones del Proyecto3=================================
+*/
+
 package org.proyectosce.comunicaciones;
 
 import org.proyectosce.SettingsReader;
 import org.proyectosce.comandos.factory.CommandFactory;
 import org.proyectosce.comandos.factory.products.Command;
-import org.proyectosce.comandos.factory.products.DisconnectCommand;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
@@ -14,17 +27,49 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Singleton SocketServer: maneja la conexión de clientes y la comunicación mediante mensajes.
- */
+/* Class: SocketServer
+    Clase Singleton que maneja las conexiones de clientes y la comunicación mediante mensajes.
+
+    Attributes:
+        - instance: SocketServer - Instancia única de la clase (Singleton).
+        - serverSocketChannel: ServerSocketChannel - Canal del servidor para aceptar conexiones.
+        - clientesActivos: Set<Cliente> - Conjunto de clientes conectados activamente.
+
+    Constructor:
+        - SocketServer: Constructor privado para implementar el patrón Singleton.
+
+    Methods:
+        - getInstance: Retorna la instancia única de SocketServer.
+        - abrirPuerto: Abre el puerto para escuchar conexiones.
+        - esperarCliente: Espera y acepta conexiones entrantes de clientes.
+        - enviarMensaje: Envía un mensaje a un cliente específico.
+        - recibirMensaje: Recibe un mensaje de un cliente conectado.
+        - cerrarConexion: Cierra la conexión con un cliente.
+        - notificarDesconexion: Maneja la desconexión de un cliente.
+        - manejarExcepcion: Maneja excepciones y muestra mensajes de error.
+
+    Example:
+        SocketServer servidor = SocketServer.getInstance();
+        servidor.abrirPuerto();
+        Cliente cliente = servidor.esperarCliente();
+        servidor.enviarMensaje(cliente, "Bienvenido al servidor.");
+*/
 public class SocketServer {
     private static SocketServer instance;
     private ServerSocketChannel serverSocketChannel;
     private final Set<Cliente> clientesActivos = ConcurrentHashMap.newKeySet();
 
-    // Constructor privado para Singleton
+    /* Function: SocketServer
+        Constructor privado para la implementación del patrón Singleton.
+    */
     private SocketServer() {}
 
+    /* Function: getInstance
+        Retorna la instancia única de la clase SocketServer.
+
+        Returns:
+            - SocketServer - Instancia única del servidor.
+    */
     public static synchronized SocketServer getInstance() {
         if (instance == null) {
             instance = new SocketServer();
@@ -32,9 +77,9 @@ public class SocketServer {
         return instance;
     }
 
-    /**
-     * Abre el puerto del servidor para escuchar nuevas conexiones.
-     */
+    /* Function: abrirPuerto
+        Configura el servidor para escuchar nuevas conexiones en la dirección y puerto especificados.
+    */
     public void abrirPuerto() {
         try {
             SettingsReader settings = SettingsReader.getInstance();
@@ -51,11 +96,12 @@ public class SocketServer {
         }
     }
 
+    /* Function: esperarCliente
+        Acepta la conexión de un cliente y lo añade a la lista de clientes activos.
 
-    /**
-     * Espera la conexión de un cliente y lo añade a la lista de clientes activos.
-     * @return Cliente conectado o null si hubo error
-     */
+        Returns:
+            - Cliente - Objeto Cliente conectado, o null si hubo un error.
+    */
     public Cliente esperarCliente() {
         try {
             SocketChannel clientChannel = serverSocketChannel.accept();
@@ -69,11 +115,13 @@ public class SocketServer {
         }
     }
 
-    /**
-     * Envía un mensaje a un cliente específico.
-     * @param cliente Cliente al que se envía el mensaje
-     * @param mensaje Mensaje a enviar
-     */
+    /* Function: enviarMensaje
+        Envía un mensaje a un cliente específico.
+
+        Params:
+            - cliente: Cliente - Cliente al que se envía el mensaje.
+            - mensaje: String - Mensaje a enviar.
+    */
     public void enviarMensaje(Cliente cliente, String mensaje) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(mensaje.getBytes());
@@ -83,7 +131,15 @@ public class SocketServer {
         }
     }
 
-    // Método para recibir un mensaje de un cliente
+    /* Function: recibirMensaje
+        Recibe un mensaje de un cliente conectado.
+
+        Params:
+            - cliente: Cliente - Cliente del que se recibe el mensaje.
+
+        Returns:
+            - String - Mensaje recibido o null si hubo un error o desconexión.
+    */
     public String recibirMensaje(Cliente cliente) {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(4096);
@@ -129,11 +185,12 @@ public class SocketServer {
         }
     }
 
+    /* Function: cerrarConexion
+        Cierra la conexión de un cliente.
 
-    /**
-     * Cierra la conexión de un cliente.
-     * @param cliente Cliente a desconectar
-     */
+        Params:
+            - cliente: Cliente - Cliente a desconectar.
+    */
     public void cerrarConexion(Cliente cliente) {
         try {
             if (cliente != null && cliente.getChannel().isOpen()) {
@@ -146,19 +203,20 @@ public class SocketServer {
         }
     }
 
-    /**
-     * Notifica y maneja la desconexión de un cliente.
-     * @param cliente Cliente desconectado
-     */
+    /* Function: notificarDesconexion
+        Notifica y maneja la desconexión de un cliente.
+
+        Params:
+            - cliente: Cliente - Cliente desconectado.
+    */
     private void notificarDesconexion(Cliente cliente) {
         if (cliente != null) {
             clientesActivos.remove(cliente);
-            // Crear y ejecutar DisconnectCommand usando CommandFactory
             CommandFactory commandFactory = CommandFactory.getInstance();
             Map<String, Object> params = Map.of(
-                    "cliente", cliente, // Cliente desconectado
-                    "comServer", ComServer.getInstance(), // Instancia del ComServer
-                    "socketServer", SocketServer.getInstance() // Instancia del SocketServer
+                    "cliente", cliente,
+                    "comServer", ComServer.getInstance(),
+                    "socketServer", SocketServer.getInstance()
             );
             Command disconnectCommand = commandFactory.crearComando("disconnect", params);
             disconnectCommand.ejecutar();
@@ -166,11 +224,13 @@ public class SocketServer {
         }
     }
 
-    /**
-     * Maneja excepciones centralizadamente.
-     * @param mensaje Mensaje de error
-     * @param e Excepción lanzada
-     */
+    /* Function: manejarExcepcion
+        Maneja excepciones centralizadamente y muestra un mensaje de error.
+
+        Params:
+            - mensaje: String - Mensaje de error descriptivo.
+            - e: Exception - Excepción lanzada.
+    */
     private void manejarExcepcion(String mensaje, Exception e) {
         System.err.println(mensaje + ": " + e.getMessage());
         e.printStackTrace();

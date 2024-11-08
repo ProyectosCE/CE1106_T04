@@ -1,87 +1,115 @@
+/*
+================================== LICENCIA =================
+=================================
+MIT License
+Copyright (c) 2024  José Bernardo Barquero Bonilla,
+                    Jose Eduardo Campos Salazar,
+                    Jimmy Feng Feng,
+                    Alexander Montero Vargas
+Consulta el archivo LICENSE para más detalles.
+=============================================================
+Cambios y Configuraciones del Proyecto3=================================
+*/
 package org.proyectosce.comunicaciones;
 
-import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 /*
  * Class: Cliente
+ * Esta clase almacena la información relacionada con los clientes conectados al servidor.
+ * Cada cliente está identificado de forma única mediante un ID generado aleatoriamente,
+ * y se le asigna un canal de comunicación a través de un SocketChannel.
  *
- * Almacena la información relacionada con los clientes conectados.
+ * Attributes:
+ *     - channel: SocketChannel - Canal de comunicación asociado al cliente.
+ *     - id: String - Identificador único generado para cada cliente.
+ *     - nombre: String - Nombre del cliente.
+ *
+ * Constructor:
+ *     - Cliente(SocketChannel channel): Inicializa un cliente con el canal de comunicación y
+ *       genera un ID único.
+ *
+ * Methods:
+ *     - getChannel(): Devuelve el canal de comunicación asociado al cliente.
+ *     - getId(): Devuelve el identificador único del cliente.
+ *     - getNombre(): Devuelve el nombre del cliente.
+ *     - setNombre(String nombre): Establece el nombre del cliente.
+ *     - toString(): Devuelve una representación en cadena del nombre del cliente.
+ *
+ * Example:
+ *     Cliente cliente = new Cliente(socketChannel);
+ *     cliente.setNombre("Juan");
+ *     System.out.println(cliente.toString()); // Imprime el nombre del cliente
+ *
+ * Problems:
+ *
+ * References:
  */
 public class Cliente {
     private final SocketChannel channel;
     private final String id;  // Nuevo identificador único
     private String nombre;
 
+    /* Constructor: Cliente
+        Inicializa un cliente con un canal de comunicación y un ID único.
+
+        Params:
+            - channel: SocketChannel - Canal de comunicación para este cliente.
+    */
     public Cliente(SocketChannel channel) {
         this.channel = channel;
         this.id = UUID.randomUUID().toString(); // Genera un ID único
-        this.nombre = "Jugador"; // Genera un ID único
+        this.nombre = "Jugador"; // Nombre por defecto
     }
 
+    /* Function: getChannel
+        Devuelve el canal de comunicación del cliente.
+
+        Returns:
+            - SocketChannel: El canal de comunicación asociado al cliente.
+    */
     public SocketChannel getChannel() {
         return channel;
     }
 
-    public String getDireccion() throws IOException {
-        return channel.getRemoteAddress().toString();
-    }
+    /* Function: getId
+        Devuelve el identificador único del cliente.
 
+        Returns:
+            - String: El ID único del cliente.
+    */
     public String getId() {
         return id;
     }
 
+    /* Function: getNombre
+        Devuelve el nombre del cliente.
+
+        Returns:
+            - String: El nombre del cliente.
+    */
     public String getNombre() {
         return nombre;
     }
 
+    /* Function: setNombre
+        Establece el nombre del cliente.
+
+        Params:
+            - nombre: String - El nombre que se asignará al cliente.
+    */
     public void setNombre(String nombre) {
-        this.nombre=nombre;
+        this.nombre = nombre;
     }
 
-    public void enviarMensaje(String mensaje) {
-        try {
-            ByteBuffer buffer = ByteBuffer.wrap(mensaje.getBytes());
-            channel.write(buffer);
-            System.out.println("Mensaje enviado al cliente: " + mensaje);
-        } catch (IOException e) {
-            System.err.println("Error al enviar mensaje al cliente: " + e.getMessage());
-        }
-    }
+    /* Function: toString
+        Devuelve una representación en cadena del cliente, en este caso su nombre.
 
-    public String recibirMensaje() {
-        try {
-            ByteBuffer buffer = ByteBuffer.allocate(4096); // Tamaño del buffer para recibir datos
-            int bytesRead = channel.read(buffer); // Lee datos del canal
-            if (bytesRead == -1) {
-                cerrarConexion(); // Cierra la conexión si no hay más datos
-                return null; // Retorna null si se ha cerrado el canal
-            }
-            buffer.flip(); // Prepara el buffer para leer
-            byte[] bytes = new byte[buffer.remaining()]; // Crea un array para almacenar los datos leídos
-            buffer.get(bytes); // Copia los datos del buffer al array
-            return new String(bytes).trim(); // Retorna el mensaje como string, eliminando espacios en blanco
-        } catch (IOException e) {
-            System.err.println("Error al recibir mensaje del cliente: " + e.getMessage());
-            cerrarConexion(); // Cierra la conexión en caso de error
-            return null; // Retorna null en caso de error
-        }
-    }
-
-    public void cerrarConexion() {
-        try {
-            if (channel.isOpen()) {
-                channel.close(); // Cierra el canal si está abierto
-                System.out.println("Conexión cerrada con el cliente.");
-            }
-        } catch (IOException e) {
-            System.err.println("Error al cerrar la conexión del cliente: " + e.getMessage());
-        }
-    }
-
+        Returns:
+            - String: El nombre del cliente.
+    */
     public String toString() {
-        return getNombre(); // O el método que devuelve el nombre del cliente
+        return getNombre(); // Devuelve el nombre del cliente
     }
 }
