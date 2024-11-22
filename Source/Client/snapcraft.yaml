@@ -1,0 +1,37 @@
+name: client-app           # Nombre único de tu aplicación
+version: '1.0.0'           # Versión de tu aplicación
+summary: Aplicación Cliente # Breve descripción
+description: |
+  Cliente, un programa en C con múltiples dependencias empaquetado como Snap.
+
+base: core20               # Base para Ubuntu 20.04
+confinement: strict        # Seguridad estricta
+grade: stable              # Para versiones finales (o usa 'devel' para pruebas)
+
+apps:
+  client:
+    command: Client
+    plugs: [network, home] # Permisos necesarios, como acceso a red o carpetas de usuario
+
+parts:
+  client:
+    plugin: cmake          # Construcción usando CMake
+    source: .              # Carpeta raíz del proyecto
+    build-packages:        # Paquetes necesarios para la compilación
+      - build-essential
+      - cmake
+      - python3
+      - python3-pip
+    override-build: |
+      # Instalar Conan
+      pip3 install conan
+      
+      # Configurar Conan para instalar dependencias
+      conan install . --build=missing
+      
+      # Continuar con la compilación
+      snapcraftctl build
+    stage-packages:        # Paquetes necesarios en el runtime
+      - libc6
+      - python3
+      - python3-minimal
