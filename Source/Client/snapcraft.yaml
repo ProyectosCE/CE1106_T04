@@ -21,12 +21,19 @@ parts:
       - build-essential
       - cmake
       - python3
+      - python3-venv
       - python3-pip
+      - conan
     override-build: |
-      # Instalar Conan
-      pip3 install conan
+      # Crear un entorno virtual para Conan
+      python3 -m venv venv
+      source venv/bin/activate
       
-      # Configurar Conan para instalar dependencias
+      # Instalar Conan en el venv
+      pip install --upgrade pip
+      pip install conan
+
+      # Instalar dependencias con Conan desde conanfile.py
       conan install . --build=missing
       
       # Continuar con la compilación
