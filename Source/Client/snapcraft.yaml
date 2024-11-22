@@ -23,7 +23,7 @@ parts:
       - python3
       - python3-venv
       - python3-pip
-      - conan
+      - curl
     override-build: |
       # Crear un entorno virtual para Conan
       python3 -m venv venv
@@ -33,7 +33,11 @@ parts:
       pip install --upgrade pip
       pip install conan
 
-      # Instalar dependencias con Conan desde conanfile.py
+      # Copiar los archivos de Conan al directorio de construcción
+      cp ${SNAPCRAFT_PROJECT_DIR}/conanfile.py .
+      cp ${SNAPCRAFT_PROJECT_DIR}/conandata.yml .
+
+      # Instalar dependencias usando Conan
       conan install . --build=missing
       
       # Continuar con la compilación
