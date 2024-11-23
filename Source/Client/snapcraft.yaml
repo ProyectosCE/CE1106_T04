@@ -2,7 +2,7 @@ name: client-app           # Nombre único de tu aplicación
 version: '1.0.0'           # Versión de tu aplicación
 summary: Aplicación Cliente # Breve descripción
 description: |
-  Cliente, un programa en C con múltiples dependencias empaquetado como Snap.
+ Cliente, un programa en C con múltiples dependencias empaquetado como Snap.
 
 base: core20               # Base para Ubuntu 20.04
 confinement: strict        # Seguridad estricta
@@ -10,8 +10,13 @@ grade: stable              # Para versiones finales (o usa 'devel' para pruebas)
 
 apps:
   client:
-    command: Client
-    plugs: [network, home] # Permisos necesarios, como acceso a red o carpetas de usuario
+    command: desktop-launch usr/bin/Client
+    plugs: 
+      - network
+      - home
+      - opengl
+      - x11
+      - wayland
 
 parts:
   client:
@@ -23,12 +28,22 @@ parts:
       - python3
       - python3-venv
       - python3-pip
+      - python3-dev
       - curl
+      - pkg-config
+      - libx11-dev
+      - libgl-dev
+      - libglfw3-dev
     override-build: |
+      # Descargar e instalar CMake 3.31.0 desde el script
+      curl -LO https://github.com/Kitware/CMake/releases/download/v3.31.0/cmake-3.31.0-linux-x86_64.sh
+      chmod +x cmake-3.31.0-linux-x86_64.sh
+      sudo ./cmake-3.31.0-linux-x86_64.sh --skip-license --prefix=/usr/local
+
       # Crear un entorno virtual para Conan
       python3 -m venv venv
       source venv/bin/activate
-      
+
       # Instalar Conan en el venv
       pip install --upgrade pip
       pip install conan
@@ -37,12 +52,57 @@ parts:
       cp ${SNAPCRAFT_PROJECT_DIR}/conanfile.py .
       cp ${SNAPCRAFT_PROJECT_DIR}/conandata.yml .
 
+      conan profile detect --force
+
       # Instalar dependencias usando Conan
-      conan install . --build=missing
+      conan install . --build=missing -c tools.system.package_manager:mode=install
+
+      # Exportar el directorio donde Conan genera archivos de configuración
+      export CMAKE_PREFIX_PATH=/root/parts/client/build/build/Release/generators
       
+      # Ejecutar CMake con la configuración correcta
+      cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake \
+            -G "Unix Makefiles" -S /root/parts/client/src -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH} \
+            -DCMAKE_INSTALL_PREFIX=/usr
+
       # Continuar con la compilación
       snapcraftctl build
+
     stage-packages:        # Paquetes necesarios en el runtime
       - libc6
       - python3
+      - libpython3.8
       - python3-minimal
+      - libgl1-mesa-dri
+      - libgl1-mesa-glx
+      - libglu1-mesa
+      - libx11-6
+      - libxcb1
+      - libxrandr2
+      - libxinerama1
+      - libxcursor1
+      - libxi6
+      - libxxf86vm1
+      - mesa-utils
+      - libglfw3
+
+  desktop-helpers:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - build-essential
+    stage-packages:
+      - libgl1-mesa-dri
+      - libgl1-mesa-glx
+      - libxrandr2
+      - libxinerama1
+      - libxcursor1
+      - libxi6
+      - libxxf86vm1
+
+environment:
+  LIBGL_ALWAYS_INDIRECT: "1"
+  DISPLAY: :0
+  XDG_SESSION_TYPE: x11
+  WAYLAND_DISPLAY: wayland-0
