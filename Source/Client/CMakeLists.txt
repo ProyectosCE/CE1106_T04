@@ -84,3 +84,13 @@ target_link_libraries(Client
         inih::inih
         ${Python3_LIBRARIES}
 )
+
+# INSTALLATION RULES:
+# Instalar el ejecutable en el directorio bin
+install(TARGETS Client DESTINATION bin)
+
+# Instalar archivos de configuración en el directorio etc
+install(FILES ${CMAKE_SOURCE_DIR}/settings.ini DESTINATION etc/client)
+
+# Crear el directorio logs en el runtime
+install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/logs\")")
